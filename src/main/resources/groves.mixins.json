@@ -1,0 +1,11 @@
+{
+	"required": true,
+	"package": "github.xevira.groves.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"fluid.BucketItemMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

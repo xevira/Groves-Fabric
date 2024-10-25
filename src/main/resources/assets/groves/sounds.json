@@ -1,0 +1,14 @@
+{
+  "moonwell_activate": {
+    "subtitle": "sound.groves.moonwell.activate",
+    "sounds": [
+      "groves:moonwell_activate"
+    ]
+  },
+  "moonwell_deactivate": {
+    "subtitle": "sound.groves.moonwell.deactivate",
+    "sounds": [
+      "groves:moonwell_deactivate"
+    ]
+  }
+}

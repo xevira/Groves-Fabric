@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "groves:block/moonwell_fake_fluid"
+    }
+  }
+}

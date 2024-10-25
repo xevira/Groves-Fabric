@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "groves",
+	"version": "${version}",
+	"name": "Groves",
+	"description": "A druid experience.",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/groves/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"github.xevira.groves.Groves"
+		],
+		"client": [
+			"github.xevira.groves.GrovesClient"
+		],
+		"fabric-datagen": [
+			"github.xevira.groves.GrovesDataGenerator"
+		]
+	},
+	"mixins": [
+		"groves.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.7",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
