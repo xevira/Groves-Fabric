@@ -1,9 +1,14 @@
 package github.xevira.groves;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import github.xevira.groves.events.*;
+import github.xevira.groves.poi.POIManager;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -13,18 +18,24 @@ import org.slf4j.LoggerFactory;
 
 public class Groves implements ModInitializer {
 	public static final String MOD_ID = "groves";
-
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+
 
 	@Override
 	public void onInitialize() {
 		Registration.load();
 
+		ServerLifecycleEvents.SERVER_STARTED.register(POIManager::onServerStared);
+		ServerLifecycleEvents.SERVER_STOPPED.register(POIManager::onServerStopped);
+		ServerLifecycleEvents.AFTER_SAVE.register(POIManager::onAfterSave);
+
+		ServerWorldEvents.LOAD.register(POIManager::onWorldLoad);
+		ServerWorldEvents.UNLOAD.register(POIManager::onWorldUnload);
+
 		UseItemCallback.EVENT.register(ModUseItemEvents::onUseItem);
-		ServerTickEvents.START_WORLD_TICK.register(ModServerTickEvents::onStartTick);
+		ServerTickEvents.START_WORLD_TICK.register(ModServerTickEvents::onStartWorldTick);
+		ServerTickEvents.END_SERVER_TICK.register(ModServerTickEvents::onEndServerTick);
 	}
 
 	public static Identifier id(String path) {

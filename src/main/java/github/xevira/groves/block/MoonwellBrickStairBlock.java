@@ -43,20 +43,7 @@ public class MoonwellBrickStairBlock extends StairsBlock implements BlockEntityP
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
-            if (world.getBlockEntity(pos) instanceof MoonwellMultiblockSlaveBlockEntity slave) {
-                BlockPos masterPos = slave.getMaster();
-                if (masterPos != null) {
-                    if (world.getBlockEntity(masterPos) instanceof MoonwellMultiblockMasterBlockEntity master)
-                    {
-                        long amount = master.getMoonlightAmount();
-                        int percent = master.getMoonlightPercent();
-
-                        player.sendMessage(Text.literal(String.format("Total Stored Moonlight: %d (%d%%)", amount, percent)));
-                    }
-                }
-            }
-        }
+        Moonwell.onUse(state, world, pos, player, hit);
 
         return ActionResult.success(world.isClient);
     }

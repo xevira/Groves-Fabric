@@ -109,5 +109,9 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Registration.MOONWELL_BRICK_SLAB_BLOCK)
                 .add(Registration.MOONWELL_BRICK_STAIRS_BLOCK)
                 .add(Registration.MOONWELL_BRICK_WALL_BLOCK);
+
+        getOrCreateTagBuilder(Registration.MOONWELL_INTERACTION_BLOCKS)
+                .addTag(Registration.MOONWELL_BLOCKS)
+                .add(Registration.MOONWELL_FAKE_FLUID_BLOCK);
     }
 }

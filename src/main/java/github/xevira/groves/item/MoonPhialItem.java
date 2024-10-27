@@ -67,6 +67,7 @@ public class MoonPhialItem extends Item {
     public static final Text WORLD_NO_TIME_TEXT = Groves.text("text", "moon_phial.world_no_time");
     public static final Text WORLD_DAYTIME_TEXT = Groves.text("text", "moon_phial.world_daytime");
     public static final Text WRONG_PHASE_TEXT = Groves.text("text", "moon_phial.wrong_phase");
+    public static final Text NOT_OWNER_TEXT = Groves.text("text", "moon_phial.grove.not_owner");
 
     public MoonPhialItem(Settings settings) {
         super(settings);

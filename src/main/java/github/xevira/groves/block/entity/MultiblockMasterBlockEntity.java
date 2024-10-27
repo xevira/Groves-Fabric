@@ -2,10 +2,12 @@ package github.xevira.groves.block.entity;
 
 import github.xevira.groves.Groves;
 import github.xevira.groves.util.BlockStateHelper;
+import github.xevira.groves.util.OwnableBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
@@ -18,23 +20,56 @@ import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
-public abstract class MultiblockMasterBlockEntity extends BlockEntity {
+public abstract class MultiblockMasterBlockEntity extends BlockEntity implements OwnableBlockEntity {
     private final List<BlockPos> slaves = new ArrayList<>();
     private final List<BlockPos> decorations = new ArrayList<>();
     private boolean multiblockFormed;
     private @Nullable BlockState originalState;
+
+    private UUID owner;
 
     public MultiblockMasterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
 
         this.multiblockFormed = false;
         this.originalState = null;
+        this.owner = null;
+    }
+
+    @Override
+    public void setOwner(UUID owner)
+    {
+        this.owner = owner;
+        markDirty();
+    }
+
+    @Override
+    public @Nullable UUID getOwner()
+    {
+        return this.owner;
+    }
+
+    @Override
+    public boolean isOwner(@NotNull PlayerEntity player) {
+        return this.owner != null && this.owner.equals(player.getUuid());
+    }
+
+    @Override
+    public boolean canInteract(@NotNull PlayerEntity player) {
+        return isOwner(player) || player.isCreativeLevelTwoOp();
+    }
+
+    @Override
+    public boolean canBreak(@NotNull PlayerEntity player) {
+        return isOwner(player) || player.isCreativeLevelTwoOp();
     }
 
     @Override
@@ -137,6 +172,8 @@ public abstract class MultiblockMasterBlockEntity extends BlockEntity {
 
         multiblock.putBoolean("formed", this.multiblockFormed);
 
+        writeOwnerNBT(this.owner, multiblock, registryLookup);
+
         nbt.put("multiblock", multiblock);
     }
 
@@ -172,6 +209,8 @@ public abstract class MultiblockMasterBlockEntity extends BlockEntity {
 
             if (multiblock.contains("formed", NbtElement.BYTE_TYPE))
                 this.multiblockFormed = multiblock.getBoolean("formed");
+
+            this.owner = readOwnerNBT(multiblock, registryLookup);
         }
     }
 

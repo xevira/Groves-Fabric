@@ -2,6 +2,7 @@ package github.xevira.groves.data.provider;
 
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
+import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.registry.RegistryWrapper;
@@ -87,8 +88,16 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.WAXED_MOONSTONE_BRICK_STAIRS_BLOCK, "Waxed Moonstone Brick Stairs");
         translationBuilder.add(Registration.WAXED_MOONSTONE_BRICK_WALL_BLOCK, "Waxed Moonstone Brick Wall");
 
+        translationBuilder.add(Registration.BLESSED_MOON_WATER_BLOCK, "Blessed Moon Water");
+        translationBuilder.add(Registration.MOONLIGHT_BLOCK, "Moonlight");
+
         translationBuilder.add(Registration.BLESSED_MOON_WATER_BUCKET_ITEM, "Bucket of Blessed Moon Water");
+        translationBuilder.add(Registration.IMPRINTING_SIGIL_ITEM, "Imprinting Sigil");
+        translationBuilder.add(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, "Enchanted Imprinting Sigil");
+        translationBuilder.add(Registration.MOONLIGHT_BUCKET_ITEM, "Bucket of Moonlight");
         translationBuilder.add(Registration.MOON_PHIAL_ITEM, "Phial of the Moon");
+
+        addText(translationBuilder, MoonwellMultiblockMasterBlockEntity.TITLE, "Moonwell");
 
         addText(translationBuilder, "itemgroup", "groves_items", "Groves");
 
@@ -112,9 +121,12 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "sound", "moonwell.activate", "Moonwell activates");
         addText(translationBuilder, "sound", "moonwell.deactivate", "Moonwell deactivates");
 
+        addText(translationBuilder, "text", "imprinting.already_exists", "§cThere is already a Grove Sanctuary here.§r");
+        addText(translationBuilder, "text", "imprinting.has_grove", "§cYou already possess a Grove Sanctuary.§r");
         addText(translationBuilder, "text", "moon_phial.world_no_time", "§cWorld has no time.§r");
         addText(translationBuilder, "text", "moon_phial.world_daytime", "§cMust be at night.§c");
         addText(translationBuilder, "text", "moon_phial.wrong_phase", "§cThe moon is in the wrong phase.  Try a brighter phase.§r");
+        addText(translationBuilder, "text", "moon_phial.grove.not_owner", "§cThis Grove Sanctuary belongs to someone else.§r");
         addText(translationBuilder, "text", "moonwell.invalid_block", "§cInvalid block at (%s, %s, %s).§r");
     }
 }

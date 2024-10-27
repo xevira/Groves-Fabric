@@ -13,6 +13,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
@@ -330,6 +331,33 @@ public class Moonwell {
             else
             {
                 superOnStateChanged.accept(state, world, pos, newState, moved);
+            }
+        }
+    }
+
+    private static boolean tryOpenScreen(MoonwellMultiblockMasterBlockEntity master, PlayerEntity player)
+    {
+        player.openHandledScreen(master);
+        return true;
+    }
+
+    public static void onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit)
+    {
+        if (!world.isClient) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof MoonwellMultiblockMasterBlockEntity master) {
+                if (master.canInteract(player)) {
+                    player.openHandledScreen(master);
+                }
+
+            } else if (blockEntity instanceof MoonwellMultiblockSlaveBlockEntity slave) {
+                BlockPos masterPos = slave.getMaster();
+
+                if (masterPos != null && world.getBlockEntity(masterPos) instanceof MoonwellMultiblockMasterBlockEntity master) {
+                    if (master.canInteract(player)) {
+                        player.openHandledScreen(master);
+                    }
+                }
             }
         }
     }

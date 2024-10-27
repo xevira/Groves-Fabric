@@ -3,7 +3,10 @@ package github.xevira.groves;
 import github.xevira.groves.block.*;
 import github.xevira.groves.block.entity.*;
 import github.xevira.groves.fluid.BlessedMoonWaterFluid;
+import github.xevira.groves.fluid.MoonlightFluid;
 import github.xevira.groves.item.*;
+import github.xevira.groves.network.MoonwellScreenPayload;
+import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
@@ -21,12 +24,12 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
@@ -42,6 +45,8 @@ public class Registration {
     // Fluids
     public static final FlowableFluid BLESSED_MOON_WATER_FLUID = register("blessed_moon_water", new BlessedMoonWaterFluid.Still());
     public static final FlowableFluid FLOWING_BLESSED_MOON_WATER_FLUID = register("flowing_blessed_moon_water", new BlessedMoonWaterFluid.Flowing());
+    public static final FlowableFluid FLOWING_MOONLIGHT_FLUID = register("flowing_moonlight", new MoonlightFluid.Flowing());
+    public static final FlowableFluid MOONLIGHT_FLUID = register("moonlight", new MoonlightFluid.Still());
 
     // Block Settings
     public static final AbstractBlock.Settings MOONSTONE_SETTINGS = AbstractBlock.Settings.create()
@@ -58,6 +63,22 @@ public class Registration {
                     BLESSED_MOON_WATER_FLUID,
                     AbstractBlock.Settings.create()
                             .mapColor(MapColor.LIGHT_BLUE)
+                            .replaceable()
+                            .noCollision()
+                            .strength(100.0F)
+                            .pistonBehavior(PistonBehavior.DESTROY)
+                            .dropsNothing()
+                            .liquid()
+                            .sounds(BlockSoundGroup.INTENTIONALLY_EMPTY)
+            )
+    );
+
+    public static final Block MOONLIGHT_BLOCK = register(
+            "moonlight",
+            new MoonlightBlock(
+                    MOONLIGHT_FLUID,
+                    AbstractBlock.Settings.create()
+                            .mapColor(MapColor.WHITE)
                             .replaceable()
                             .noCollision()
                             .strength(100.0F)
@@ -109,7 +130,7 @@ public class Registration {
                     .solidBlock(Blocks::never)
                     .suffocates(Blocks::never)
                     .blockVision(Blocks::never)
-                    .luminance(state -> 3)
+                    .luminance(state -> 8)
                     .air()
             ));
 
@@ -258,6 +279,9 @@ public class Registration {
     public static final Item BLESSED_MOON_WATER_ITEM = register("blessed_moon_water",
             new BlockItem(BLESSED_MOON_WATER_BLOCK, new Item.Settings()));
 
+    public static final Item MOONLIGHT_ITEM = register("moonlight",
+            new BlockItem(MOONLIGHT_BLOCK, new Item.Settings()));
+
     public static final Item CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM = register("chiseled_moonstone_bricks_full_moon",
             new BlockItem(CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK, new Item.Settings()));
 
@@ -351,9 +375,14 @@ public class Registration {
     // Items
     public static final Item BLESSED_MOON_WATER_BUCKET_ITEM = register("blessed_moon_water_bucket", new BucketItem(BLESSED_MOON_WATER_FLUID, new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1)));
 
+    public static final Item ENCHANTED_IMPRINTING_SIGIL_ITEM = register("enchanted_imprinting_sigil", new ImprintingSigilItem(true, new Item.Settings().rarity(Rarity.EPIC).maxCount(1).fireproof()));
+
+    public static final Item IMPRINTING_SIGIL_ITEM = register("imprinting_sigil", new ImprintingSigilItem(false, new Item.Settings().rarity(Rarity.RARE).maxCount(1).fireproof()));
+
+    public static final Item MOONLIGHT_BUCKET_ITEM = register("moonlight_bucket", new BucketItem(MOONLIGHT_FLUID, new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1)));
+
     public static final Item MOON_PHIAL_ITEM = register("moon_phial",
             new MoonPhialItem(new Item.Settings().maxCount(16).rarity(Rarity.RARE)));
-
 
     // Block Entities
     public static final BlockEntityType<MoonwellMultiblockMasterBlockEntity> MOONWELL_MULTIBLOCK_MASTER_BLOCK_ENTITY = register("moonwell_master",
@@ -384,6 +413,9 @@ public class Registration {
                             MOONWELL_FAKE_FLUID_BLOCK)
                     .build());
 
+    // Screen Handlers
+    public static final ScreenHandlerType<MoonwellScreenHandler> MOONWELL_SCREEN_HANDLER = register("moonwell", MoonwellScreenHandler::new, MoonwellScreenPayload.PACKET_CODEC);
+
     // Sound Events
     public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
     public static final SoundEvent MOONWELL_DEACTIVATE_SOUND = register("moonwell_deactivate");
@@ -396,8 +428,14 @@ public class Registration {
     /** Valid blocks that compose a {@code Moonwell} **/
     public static final TagKey<Block> MOONWELL_BLOCKS = registerBlockTag("moonwell_blocks");
 
+    /** Valid blocks that compose a {@code Moonwell} for interacting with the screen **/
+    public static final TagKey<Block> MOONWELL_INTERACTION_BLOCKS = registerBlockTag("moonwell_interaction_blocks");
+
     /** Valid fluids considered {@code Blessed Moon Water} **/
-    public static final TagKey<Fluid> BLESSED_MOON_WATERS = registerFluidTag("blessed_moon_waters");
+    public static final TagKey<Fluid> BLESSED_MOON_WATERS_TAG = registerFluidTag("blessed_moon_waters");
+
+    /** Valid fluids considered {@code Moonlight} **/
+    public static final TagKey<Fluid> MOONLIGHT_TAG = registerFluidTag("moonlight");
 
     // Item Groups
     public static final ItemGroup GROVES_ITEM_GROUP = registerItemGroup("groves_items", MOONSTONE_BRICKS_ITEM, "groves_items",
@@ -434,7 +472,10 @@ public class Registration {
 
             // Items
             BLESSED_MOON_WATER_BUCKET_ITEM,
-            MOON_PHIAL_ITEM);
+            MOONLIGHT_BUCKET_ITEM,
+            MOON_PHIAL_ITEM,
+            IMPRINTING_SIGIL_ITEM,
+            ENCHANTED_IMPRINTING_SIGIL_ITEM);
 
     // Registration Functions
     public static <T extends FlowableFluid> T register(String name, T fluid) {

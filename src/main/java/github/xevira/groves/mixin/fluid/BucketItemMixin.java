@@ -24,6 +24,7 @@ public class BucketItemMixin {
         if(original)
             return true;
 
-        return this.fluid.isIn(Registration.BLESSED_MOON_WATERS);
+        return this.fluid.isIn(Registration.BLESSED_MOON_WATERS_TAG) ||
+                this.fluid.isIn(Registration.MOONLIGHT_TAG);
     }
 }

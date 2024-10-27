@@ -4,6 +4,8 @@ import com.mojang.serialization.MapCodec;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import github.xevira.groves.block.entity.MoonwellMultiblockSlaveBlockEntity;
+import github.xevira.groves.block.multiblock.Moonwell;
+import github.xevira.groves.util.OwnedBlock;
 import github.xevira.groves.util.ServerTickableBlockEntity;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -24,7 +26,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class MoonwellBasinBlock extends BlockWithEntity {
+public class MoonwellBasinBlock extends BlockWithEntity implements OwnedBlock {
     public static final MapCodec<MoonwellBasinBlock> CODEC = createCodec(MoonwellBasinBlock::new);
     private static final VoxelShape RAYCAST_SHAPE = createCuboidShape(2.0, 4.0, 2.0, 14.0, 16.0, 14.0);
     protected static final VoxelShape OUTLINE_SHAPE = VoxelShapes.combineAndSimplify(
@@ -81,15 +83,7 @@ public class MoonwellBasinBlock extends BlockWithEntity {
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
-            if (world.getBlockEntity(pos) instanceof MoonwellMultiblockMasterBlockEntity master)
-            {
-                long amount = master.getMoonlightAmount();
-                int percent = master.getMoonlightPercent();
-
-                player.sendMessage(Text.literal(String.format("Total Stored Moonlight: %d (%d%%)", amount, percent)));
-            }
-        }
+        Moonwell.onUse(state, world, pos, player, hit);
 
         return ActionResult.success(world.isClient);
     }

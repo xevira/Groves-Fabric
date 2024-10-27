@@ -104,10 +104,14 @@ public class ModBlockModelProvider extends FabricModelProvider {
         blockStateModelGenerator.registerParented(Registration.CRACKED_MOONSTONE_BRICKS_BLOCK, Registration.WAXED_CRACKED_MOONSTONE_BRICKS_BLOCK);
 
         blockStateModelGenerator.registerSimpleState(Registration.BLESSED_MOON_WATER_BLOCK);
+        blockStateModelGenerator.registerSimpleState(Registration.MOONLIGHT_BLOCK);
     }
 
     @Override
     public void generateItemModels(ItemModelGenerator itemModelGenerator) {
         itemModelGenerator.register(Registration.BLESSED_MOON_WATER_BUCKET_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.MOONLIGHT_BUCKET_ITEM, Models.HANDHELD);
     }
 }
