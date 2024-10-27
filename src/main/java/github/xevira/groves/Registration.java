@@ -3,12 +3,14 @@ package github.xevira.groves;
 import github.xevira.groves.block.*;
 import github.xevira.groves.block.entity.*;
 import github.xevira.groves.fluid.BlessedMoonWaterFluid;
+import github.xevira.groves.fluid.FluidData;
 import github.xevira.groves.fluid.MoonlightFluid;
 import github.xevira.groves.item.*;
 import github.xevira.groves.network.MoonwellScreenPayload;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.block.*;
@@ -26,6 +28,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandler;
@@ -39,6 +42,8 @@ import net.minecraft.util.Rarity;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class Registration {
@@ -59,66 +64,87 @@ public class Registration {
     // -- Fluid Blocks
     public static final Block BLESSED_MOON_WATER_BLOCK = register(
             "blessed_moon_water",
-            new BlessedMoonWaterBlock(
-                    BLESSED_MOON_WATER_FLUID,
-                    AbstractBlock.Settings.create()
-                            .mapColor(MapColor.LIGHT_BLUE)
-                            .replaceable()
-                            .noCollision()
-                            .strength(100.0F)
-                            .pistonBehavior(PistonBehavior.DESTROY)
-                            .dropsNothing()
-                            .liquid()
-                            .sounds(BlockSoundGroup.INTENTIONALLY_EMPTY)
-            )
-    );
+            settings -> new BlessedMoonWaterBlock(BLESSED_MOON_WATER_FLUID, settings),
+            AbstractBlock.Settings.create()
+                .mapColor(MapColor.LIGHT_BLUE)
+                .replaceable()
+                .noCollision()
+                .strength(100.0F)
+                .pistonBehavior(PistonBehavior.DESTROY)
+                .dropsNothing()
+                .liquid()
+                .sounds(BlockSoundGroup.INTENTIONALLY_EMPTY));
 
     public static final Block MOONLIGHT_BLOCK = register(
             "moonlight",
-            new MoonlightBlock(
-                    MOONLIGHT_FLUID,
-                    AbstractBlock.Settings.create()
-                            .mapColor(MapColor.WHITE)
-                            .replaceable()
-                            .noCollision()
-                            .strength(100.0F)
-                            .pistonBehavior(PistonBehavior.DESTROY)
-                            .dropsNothing()
-                            .liquid()
-                            .sounds(BlockSoundGroup.INTENTIONALLY_EMPTY)
-            )
-    );
+            settings -> new MoonlightBlock(MOONLIGHT_FLUID, settings),
+            AbstractBlock.Settings.create()
+                .mapColor(MapColor.WHITE)
+                .replaceable()
+                .noCollision()
+                .strength(100.0F)
+                .pistonBehavior(PistonBehavior.DESTROY)
+                .dropsNothing()
+                .liquid()
+                .sounds(BlockSoundGroup.INTENTIONALLY_EMPTY));
 
     // -- Moonstone
-    public static final Block CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK = register("chiseled_moonstone_bricks_full_moon", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.FULL_MOON,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK = register(
+            "chiseled_moonstone_bricks_full_moon",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.FULL_MOON, settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK = register("chiseled_moonstone_bricks_waning_gibbous", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_GIBBOUS,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK = register(
+            "chiseled_moonstone_bricks_waning_gibbous",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_GIBBOUS,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK = register("chiseled_moonstone_bricks_third_quarter", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.THIRD_QUARTER,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK = register(
+            "chiseled_moonstone_bricks_third_quarter",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.THIRD_QUARTER,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK = register("chiseled_moonstone_bricks_waning_crescent", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_CRESCENT,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK = register(
+            "chiseled_moonstone_bricks_waning_crescent",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_CRESCENT, settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK = register("chiseled_moonstone_bricks_new_moon", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.NEW_MOON,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK = register(
+            "chiseled_moonstone_bricks_new_moon",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.NEW_MOON,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK = register("chiseled_moonstone_bricks_waxing_crescent", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_CRESCENT,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK = register(
+            "chiseled_moonstone_bricks_waxing_crescent",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_CRESCENT,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK = register("chiseled_moonstone_bricks_first_quarter", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.FIRST_QUARTER,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK = register(
+            "chiseled_moonstone_bricks_first_quarter",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.FIRST_QUARTER,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK = register("chiseled_moonstone_bricks_waxing_gibbous", new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_GIBBOUS,MOONSTONE_SETTINGS));
+    public static final Block CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK = register(
+            "chiseled_moonstone_bricks_waxing_gibbous",
+            settings -> new ChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_GIBBOUS,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block CRACKED_MOONSTONE_BRICKS_BLOCK = register("cracked_moonstone_bricks", new MoonstoneBrickBlock(MOONSTONE_SETTINGS));
+    public static final Block CRACKED_MOONSTONE_BRICKS_BLOCK = register("cracked_moonstone_bricks", MoonstoneBrickBlock::new, MOONSTONE_SETTINGS);
 
-    public static final Block MOONSTONE_BRICKS_BLOCK = register("moonstone_bricks", new MoonstoneBrickBlock(MOONSTONE_SETTINGS));
+    public static final Block MOONSTONE_BRICKS_BLOCK = register("moonstone_bricks", MoonstoneBrickBlock::new, MOONSTONE_SETTINGS);
 
-    public static final Block MOONSTONE_BRICK_SLAB_BLOCK = register("moonstone_brick_slab", new MoonstoneBrickSlabBlock(MOONSTONE_SETTINGS));
+    public static final Block MOONSTONE_BRICK_SLAB_BLOCK = register("moonstone_brick_slab", MoonstoneBrickSlabBlock::new, MOONSTONE_SETTINGS);
 
-    public static final Block MOONSTONE_BRICK_STAIRS_BLOCK = register("moonstone_brick_stairs", new MoonstoneBrickStairBlock(MOONSTONE_BRICKS_BLOCK.getDefaultState(), MOONSTONE_SETTINGS));
+    public static final Block MOONSTONE_BRICK_STAIRS_BLOCK = register(
+            "moonstone_brick_stairs",
+            settings -> new MoonstoneBrickStairBlock(MOONSTONE_BRICKS_BLOCK.getDefaultState(), settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block MOONSTONE_BRICK_WALL_BLOCK = register("moonstone_brick_wall", new MoonstoneBrickWallBlock(MOONSTONE_SETTINGS));
+    public static final Block MOONSTONE_BRICK_WALL_BLOCK = register("moonstone_brick_wall", MoonstoneBrickWallBlock::new, MOONSTONE_SETTINGS);
 
     // -- Moonwell
     // TODO: Figure out how to make this block get ignored by raycasting
-    public static final Block MOONWELL_FAKE_FLUID_BLOCK = register("moonwell_fake_fluid", new MoonwellFakeFluidBlock(
+    public static final Block MOONWELL_FAKE_FLUID_BLOCK = register( "moonwell_fake_fluid", MoonwellFakeFluidBlock::new,
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.CLEAR)
                     .instrument(NoteBlockInstrument.CHIME)
@@ -131,266 +157,290 @@ public class Registration {
                     .suffocates(Blocks::never)
                     .blockVision(Blocks::never)
                     .luminance(state -> 8)
-                    .air()
-            ));
+                    .air());
 
-    public static final Block CHISELED_MOONWELL_BRICKS_FULL_MOON_BLOCK = register("chiseled_moonwell_bricks_full_moon", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.FULL_MOON,
+    public static final Block CHISELED_MOONWELL_BRICKS_FULL_MOON_BLOCK = register(
+            "chiseled_moonwell_bricks_full_moon",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.FULL_MOON, settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CHISELED_MOONWELL_BRICKS_WANING_GIBBOUS_BLOCK = register("chiseled_moonwell_bricks_waning_gibbous", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WANING_GIBBOUS,
+    public static final Block CHISELED_MOONWELL_BRICKS_WANING_GIBBOUS_BLOCK = register(
+            "chiseled_moonwell_bricks_waning_gibbous",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WANING_GIBBOUS, settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CHISELED_MOONWELL_BRICKS_THIRD_QUARTER_BLOCK = register("chiseled_moonwell_bricks_third_quarter", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.THIRD_QUARTER,
+    public static final Block CHISELED_MOONWELL_BRICKS_THIRD_QUARTER_BLOCK = register(
+            "chiseled_moonwell_bricks_third_quarter",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.THIRD_QUARTER, settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CHISELED_MOONWELL_BRICKS_WANING_CRESCENT_BLOCK = register("chiseled_moonwell_bricks_waning_crescent", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WANING_CRESCENT,
+    public static final Block CHISELED_MOONWELL_BRICKS_WANING_CRESCENT_BLOCK = register(
+            "chiseled_moonwell_bricks_waning_crescent",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WANING_CRESCENT,settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CHISELED_MOONWELL_BRICKS_NEW_MOON_BLOCK = register("chiseled_moonwell_bricks_new_moon", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.NEW_MOON,
+    public static final Block CHISELED_MOONWELL_BRICKS_NEW_MOON_BLOCK = register(
+            "chiseled_moonwell_bricks_new_moon",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.NEW_MOON,settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CHISELED_MOONWELL_BRICKS_WAXING_CRESCENT_BLOCK = register("chiseled_moonwell_bricks_waxing_crescent", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WAXING_CRESCENT,
+    public static final Block CHISELED_MOONWELL_BRICKS_WAXING_CRESCENT_BLOCK = register(
+            "chiseled_moonwell_bricks_waxing_crescent",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WAXING_CRESCENT,settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CHISELED_MOONWELL_BRICKS_FIRST_QUARTER_BLOCK = register("chiseled_moonwell_bricks_first_quarter", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.FIRST_QUARTER,
+    public static final Block CHISELED_MOONWELL_BRICKS_FIRST_QUARTER_BLOCK = register(
+            "chiseled_moonwell_bricks_first_quarter",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.FIRST_QUARTER,settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CHISELED_MOONWELL_BRICKS_WAXING_GIBBOUS_BLOCK = register("chiseled_moonwell_bricks_waxing_gibbous", new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WANING_GIBBOUS,
+    public static final Block CHISELED_MOONWELL_BRICKS_WAXING_GIBBOUS_BLOCK = register(
+            "chiseled_moonwell_bricks_waxing_gibbous",
+            settings -> new ChiseledMoonwellBricksBlock(LunarPhasesEnum.WANING_GIBBOUS, settings),
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK)
+                    .lootTable(CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block CRACKED_MOONWELL_BRICKS_BLOCK = register("cracked_moonwell_bricks", new MoonwellBrickBlock(
+    public static final Block CRACKED_MOONWELL_BRICKS_BLOCK = register("cracked_moonwell_bricks",MoonwellBrickBlock::new,
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(CRACKED_MOONSTONE_BRICKS_BLOCK)
+                    .lootTable(CRACKED_MOONSTONE_BRICKS_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block MOONWELL_BASIN_BLOCK = register("moonwell_basin", new MoonwellBasinBlock(
+    public static final Block MOONWELL_BASIN_BLOCK = register("moonwell_basin", MoonwellBasinBlock::new,
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(Blocks.CAULDRON)
+                    .lootTable(Blocks.CAULDRON.getLootTableKey())
                     .requiresTool()
-                    .strength(2.0F, 6.0F)));
+                    .strength(2.0F, 6.0F));
 
-    public static final Block MOONWELL_BRICKS_BLOCK = register("moonwell_bricks", new MoonwellBrickBlock(
+    public static final Block MOONWELL_BRICKS_BLOCK = register("moonwell_bricks", MoonwellBrickBlock::new,
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(MOONSTONE_BRICKS_BLOCK)
+                    .lootTable(MOONSTONE_BRICKS_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block MOONWELL_BRICK_SLAB_BLOCK = register("moonwell_brick_slab", new MoonwellBrickSlabBlock(
+    public static final Block MOONWELL_BRICK_SLAB_BLOCK = register("moonwell_brick_slab", MoonwellBrickSlabBlock::new,
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(MOONSTONE_BRICK_SLAB_BLOCK)
+                    .lootTable(MOONSTONE_BRICK_SLAB_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
-    public static final Block MOONWELL_BRICK_STAIRS_BLOCK = register("moonwell_brick_stairs",
-            new MoonwellBrickStairBlock(MOONWELL_BRICKS_BLOCK.getDefaultState(),
-                    AbstractBlock.Settings.create()
-                        .mapColor(MapColor.LIGHT_BLUE)
-                        .instrument(NoteBlockInstrument.BASEDRUM)
-                        .dropsLike(MOONSTONE_BRICK_STAIRS_BLOCK)
-                        .requiresTool().
-                        strength(2.0F, 6.0F)));
+    public static final Block MOONWELL_BRICK_STAIRS_BLOCK = register(
+            "moonwell_brick_stairs",
+            settings -> new MoonwellBrickStairBlock(MOONWELL_BRICKS_BLOCK.getDefaultState(), settings),
+                AbstractBlock.Settings.create()
+                    .mapColor(MapColor.LIGHT_BLUE)
+                    .instrument(NoteBlockInstrument.BASEDRUM)
+                    .lootTable(MOONSTONE_BRICK_STAIRS_BLOCK.getLootTableKey())
+                    .requiresTool().
+                    strength(2.0F, 6.0F));
 
-    public static final Block MOONWELL_BRICK_WALL_BLOCK = register("moonwell_brick_wall", new MoonwellBrickWallBlock(
+    public static final Block MOONWELL_BRICK_WALL_BLOCK = register("moonwell_brick_wall", MoonwellBrickWallBlock::new,
             AbstractBlock.Settings.create()
                     .mapColor(MapColor.LIGHT_BLUE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .dropsLike(MOONSTONE_BRICK_WALL_BLOCK)
+                    .lootTable(MOONSTONE_BRICK_WALL_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F)));
+                    strength(2.0F, 6.0F));
 
 
     // -- Waxed Moonstone
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK = register("waxed_chiseled_moonstone_bricks_full_moon", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.FULL_MOON,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_full_moon",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.FULL_MOON,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK = register("waxed_chiseled_moonstone_bricks_waning_gibbous", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_GIBBOUS,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_waning_gibbous",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_GIBBOUS,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK = register("waxed_chiseled_moonstone_bricks_third_quarter", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.THIRD_QUARTER,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_third_quarter",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.THIRD_QUARTER,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK = register("waxed_chiseled_moonstone_bricks_waning_crescent", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_CRESCENT,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_waning_crescent",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WANING_CRESCENT,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK = register("waxed_chiseled_moonstone_bricks_new_moon", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.NEW_MOON,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_new_moon",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.NEW_MOON,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK = register("waxed_chiseled_moonstone_bricks_waxing_crescent", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_CRESCENT,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_waxing_crescent",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_CRESCENT,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK = register("waxed_chiseled_moonstone_bricks_first_quarter", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.FULL_MOON,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_first_quarter",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.FULL_MOON,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK = register("waxed_chiseled_moonstone_bricks_waxing_gibbous", new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_GIBBOUS,MOONSTONE_SETTINGS));
+    public static final Block WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK = register(
+            "waxed_chiseled_moonstone_bricks_waxing_gibbous",
+            settings -> new WaxedChiseledMoonstoneBricksBlock(LunarPhasesEnum.WAXING_GIBBOUS,settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_CRACKED_MOONSTONE_BRICKS_BLOCK = register("waxed_cracked_moonstone_bricks", new Block(MOONSTONE_SETTINGS));
+    public static final Block WAXED_CRACKED_MOONSTONE_BRICKS_BLOCK = register("waxed_cracked_moonstone_bricks", Block::new,MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_MOONSTONE_BRICKS_BLOCK = register("waxed_moonstone_bricks", new Block(MOONSTONE_SETTINGS));
+    public static final Block WAXED_MOONSTONE_BRICKS_BLOCK = register("waxed_moonstone_bricks", Block::new, MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_MOONSTONE_BRICK_SLAB_BLOCK = register("waxed_moonstone_brick_slab", new SlabBlock(MOONSTONE_SETTINGS));
+    public static final Block WAXED_MOONSTONE_BRICK_SLAB_BLOCK = register("waxed_moonstone_brick_slab", SlabBlock::new, MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_MOONSTONE_BRICK_STAIRS_BLOCK = register("waxed_moonstone_brick_stairs", new StairsBlock(WAXED_MOONSTONE_BRICKS_BLOCK.getDefaultState(),MOONSTONE_SETTINGS));
+    public static final Block WAXED_MOONSTONE_BRICK_STAIRS_BLOCK = register("waxed_moonstone_brick_stairs",
+            settings -> new StairsBlock(WAXED_MOONSTONE_BRICKS_BLOCK.getDefaultState(),settings),
+            MOONSTONE_SETTINGS);
 
-    public static final Block WAXED_MOONSTONE_BRICK_WALL_BLOCK = register("waxed_moonstone_brick_wall", new WallBlock(MOONSTONE_SETTINGS));
+    public static final Block WAXED_MOONSTONE_BRICK_WALL_BLOCK = register("waxed_moonstone_brick_wall", WallBlock::new, MOONSTONE_SETTINGS);
 
     // BlockItems
-    public static final Item BLESSED_MOON_WATER_ITEM = register("blessed_moon_water",
-            new BlockItem(BLESSED_MOON_WATER_BLOCK, new Item.Settings()));
+    public static final Item BLESSED_MOON_WATER_ITEM = register(BLESSED_MOON_WATER_BLOCK);
 
-    public static final Item MOONLIGHT_ITEM = register("moonlight",
-            new BlockItem(MOONLIGHT_BLOCK, new Item.Settings()));
+    public static final Item MOONLIGHT_ITEM = register(MOONLIGHT_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM = register("chiseled_moonstone_bricks_full_moon",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM = register(CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_ITEM = register("chiseled_moonstone_bricks_waning_gibbous",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_ITEM = register(CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_ITEM = register("chiseled_moonstone_bricks_third_quarter",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_ITEM = register(CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_ITEM = register("chiseled_moonstone_bricks_waning_crescent",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_ITEM = register(CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_NEW_MOON_ITEM = register("chiseled_moonstone_bricks_new_moon",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_NEW_MOON_ITEM = register(CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_ITEM = register("chiseled_moonstone_bricks_waxing_crescent",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_ITEM = register(CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_ITEM = register("chiseled_moonstone_bricks_first_quarter",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_ITEM = register(CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK);
 
-    public static final Item CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_ITEM = register("chiseled_moonstone_bricks_waxing_gibbous",
-            new BlockItem(CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK, new Item.Settings()));
+    public static final Item CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_ITEM = register(CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK);
 
-    public static final Item CRACKED_MOONSTONE_BRICKS_ITEM = register("cracked_moonstone_bricks",
-            new BlockItem(CRACKED_MOONSTONE_BRICKS_BLOCK, new Item.Settings()));
+    public static final Item CRACKED_MOONSTONE_BRICKS_ITEM = register(CRACKED_MOONSTONE_BRICKS_BLOCK);
 
-    public static final Item MOONSTONE_BRICKS_ITEM = register("moonstone_bricks",
-            new BlockItem(MOONSTONE_BRICKS_BLOCK, new Item.Settings()));
+    public static final Item MOONSTONE_BRICKS_ITEM = register(MOONSTONE_BRICKS_BLOCK);
 
-    public static final Item MOONSTONE_BRICK_SLAB_ITEM = register("moonstone_brick_slab",
-            new BlockItem(MOONSTONE_BRICK_SLAB_BLOCK, new Item.Settings()));
+    public static final Item MOONSTONE_BRICK_SLAB_ITEM = register(MOONSTONE_BRICK_SLAB_BLOCK);
 
-    public static final Item MOONSTONE_BRICK_STAIRS_ITEM = register("moonstone_brick_stairs",
-            new BlockItem(MOONSTONE_BRICK_STAIRS_BLOCK, new Item.Settings()));
+    public static final Item MOONSTONE_BRICK_STAIRS_ITEM = register(MOONSTONE_BRICK_STAIRS_BLOCK);
 
-    public static final Item MOONSTONE_BRICK_WALL_ITEM = register("moonstone_brick_wall",
-            new BlockItem(MOONSTONE_BRICK_WALL_BLOCK, new Item.Settings()));
+    public static final Item MOONSTONE_BRICK_WALL_ITEM = register(MOONSTONE_BRICK_WALL_BLOCK);
 
-    public static final Item MOONWELL_BRICKS_ITEM = register("moonwell_bricks",
-            new BlockItem(MOONWELL_BRICKS_BLOCK, new Item.Settings()));
+    public static final Item MOONWELL_BRICKS_ITEM = register(MOONWELL_BRICKS_BLOCK);
 
-    public static final Item MOONWELL_BRICK_SLAB_ITEM = register("moonwell_brick_slab",
-            new BlockItem(MOONWELL_BRICK_SLAB_BLOCK, new Item.Settings()));
+    public static final Item MOONWELL_BRICK_SLAB_ITEM = register(MOONWELL_BRICK_SLAB_BLOCK);
 
-    public static final Item MOONWELL_BRICK_STAIRS_ITEM = register("moonwell_brick_stairs",
-            new BlockItem(MOONWELL_BRICK_STAIRS_BLOCK, new Item.Settings()));
+    public static final Item MOONWELL_BRICK_STAIRS_ITEM = register(MOONWELL_BRICK_STAIRS_BLOCK);
 
-    public static final Item MOONWELL_BRICK_WALL_ITEM = register("moonwell_brick_wall",
-            new BlockItem(MOONWELL_BRICK_WALL_BLOCK, new Item.Settings()));
+    public static final Item MOONWELL_BRICK_WALL_ITEM = register(MOONWELL_BRICK_WALL_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM = register("waxed_chiseled_moonstone_bricks_full_moon",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_ITEM = register("waxed_chiseled_moonstone_bricks_waning_gibbous",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_ITEM = register("waxed_chiseled_moonstone_bricks_third_quarter",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_ITEM = register("waxed_chiseled_moonstone_bricks_waning_crescent",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_NEW_MOON_ITEM = register("waxed_chiseled_moonstone_bricks_new_moon",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_NEW_MOON_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_ITEM = register("waxed_chiseled_moonstone_bricks_waxing_crescent",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_ITEM = register("waxed_chiseled_moonstone_bricks_first_quarter",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK);
 
-    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_ITEM = register("waxed_chiseled_moonstone_bricks_waxing_gibbous",
-            new BlockItem(WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_ITEM = register(WAXED_CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK);
 
-    public static final Item WAXED_CRACKED_MOONSTONE_BRICKS_ITEM = register("waxed_cracked_moonstone_bricks",
-            new BlockItem(WAXED_CRACKED_MOONSTONE_BRICKS_BLOCK, new Item.Settings()));
+    public static final Item WAXED_CRACKED_MOONSTONE_BRICKS_ITEM = register(WAXED_CRACKED_MOONSTONE_BRICKS_BLOCK);
 
-    public static final Item WAXED_MOONSTONE_BRICKS_ITEM = register("waxed_moonstone_bricks",
-            new BlockItem(WAXED_MOONSTONE_BRICKS_BLOCK, new Item.Settings()));
+    public static final Item WAXED_MOONSTONE_BRICKS_ITEM = register(WAXED_MOONSTONE_BRICKS_BLOCK);
 
-    public static final Item WAXED_MOONSTONE_BRICK_SLAB_ITEM = register("waxed_moonstone_brick_slab",
-            new BlockItem(WAXED_MOONSTONE_BRICK_SLAB_BLOCK, new Item.Settings()));
+    public static final Item WAXED_MOONSTONE_BRICK_SLAB_ITEM = register(WAXED_MOONSTONE_BRICK_SLAB_BLOCK);
 
-    public static final Item WAXED_MOONSTONE_BRICK_STAIRS_ITEM = register("waxed_moonstone_brick_stairs",
-            new BlockItem(WAXED_MOONSTONE_BRICK_STAIRS_BLOCK, new Item.Settings()));
+    public static final Item WAXED_MOONSTONE_BRICK_STAIRS_ITEM = register(WAXED_MOONSTONE_BRICK_STAIRS_BLOCK);
 
-    public static final Item WAXED_MOONSTONE_BRICK_WALL_ITEM = register("waxed_moonstone_brick_wall",
-            new BlockItem(WAXED_MOONSTONE_BRICK_WALL_BLOCK, new Item.Settings()));
+    public static final Item WAXED_MOONSTONE_BRICK_WALL_ITEM = register(WAXED_MOONSTONE_BRICK_WALL_BLOCK);
 
     // Items
-    public static final Item BLESSED_MOON_WATER_BUCKET_ITEM = register("blessed_moon_water_bucket", new BucketItem(BLESSED_MOON_WATER_FLUID, new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1)));
+    public static final Item BLESSED_MOON_WATER_BUCKET_ITEM = register(
+            "blessed_moon_water_bucket",
+            settings -> new BucketItem(BLESSED_MOON_WATER_FLUID, settings),
+            new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1));
 
-    public static final Item ENCHANTED_IMPRINTING_SIGIL_ITEM = register("enchanted_imprinting_sigil", new ImprintingSigilItem(true, new Item.Settings().rarity(Rarity.EPIC).maxCount(1).fireproof()));
+    public static final Item ENCHANTED_IMPRINTING_SIGIL_ITEM = register(
+            "enchanted_imprinting_sigil",
+            settings -> new ImprintingSigilItem(true, settings),
+            new Item.Settings().rarity(Rarity.EPIC).maxCount(1).fireproof());
 
-    public static final Item IMPRINTING_SIGIL_ITEM = register("imprinting_sigil", new ImprintingSigilItem(false, new Item.Settings().rarity(Rarity.RARE).maxCount(1).fireproof()));
+    public static final Item IMPRINTING_SIGIL_ITEM = register(
+            "imprinting_sigil",
+            settings -> new ImprintingSigilItem(false, settings),
+            new Item.Settings().rarity(Rarity.RARE).maxCount(1).fireproof());
 
-    public static final Item MOONLIGHT_BUCKET_ITEM = register("moonlight_bucket", new BucketItem(MOONLIGHT_FLUID, new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1)));
+    public static final Item MOONLIGHT_BUCKET_ITEM = register(
+            "moonlight_bucket",
+            settings -> new BucketItem(MOONLIGHT_FLUID, settings),
+            new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1));
 
-    public static final Item MOON_PHIAL_ITEM = register("moon_phial",
-            new MoonPhialItem(new Item.Settings().maxCount(16).rarity(Rarity.RARE)));
+    public static final Item MOON_PHIAL_ITEM = register(
+            "moon_phial",
+            MoonPhialItem::new,
+            new Item.Settings().maxCount(16).rarity(Rarity.RARE));
 
     // Block Entities
     public static final BlockEntityType<MoonwellMultiblockMasterBlockEntity> MOONWELL_MULTIBLOCK_MASTER_BLOCK_ENTITY = register("moonwell_master",
-            BlockEntityType.Builder.create(MoonwellMultiblockMasterBlockEntity::new, MOONWELL_BASIN_BLOCK)
+            FabricBlockEntityTypeBuilder.create(MoonwellMultiblockMasterBlockEntity::new, MOONWELL_BASIN_BLOCK)
                     .build());
 
     public static final BlockEntityType<MoonwellMultiblockSlaveBlockEntity> MOONWELL_MULTIBLOCK_SLAVE_BLOCK_ENTITY = register("moonwell_slave",
-            BlockEntityType.Builder.create(MoonwellMultiblockSlaveBlockEntity::new,
+            FabricBlockEntityTypeBuilder.create(MoonwellMultiblockSlaveBlockEntity::new,
                             MOONWELL_FAKE_FLUID_BLOCK,
                             CHISELED_MOONWELL_BRICKS_FULL_MOON_BLOCK,
                             CHISELED_MOONWELL_BRICKS_WANING_GIBBOUS_BLOCK,
@@ -409,7 +459,7 @@ public class Registration {
 
 
     public static final BlockEntityType<MoonwellFakeFluidBlockEntity> MOONWELL_FAKE_FLUID_BLOCK_ENTITY = register("moonwell_fake_fluid",
-            BlockEntityType.Builder.create(MoonwellFakeFluidBlockEntity::new,
+            FabricBlockEntityTypeBuilder.create(MoonwellFakeFluidBlockEntity::new,
                             MOONWELL_FAKE_FLUID_BLOCK)
                     .build());
 
@@ -477,23 +527,105 @@ public class Registration {
             IMPRINTING_SIGIL_ITEM,
             ENCHANTED_IMPRINTING_SIGIL_ITEM);
 
+    public static final FluidData BLESSED_MOON_WATER_FLUID_DATA = new FluidData.Builder(BLESSED_MOON_WATERS_TAG)
+            .preventsBlockSpreading()
+            .canSwim()
+            .fluidMovementSpeed((entity, speed) -> 0.5f)
+            .applyWaterMovement()
+            .canCauseDrowning()
+            .shouldWitchDrinkWaterBreathing()
+            .shouldEvaporateInUltrawarm()
+            .affectsBlockBreakSpeed()
+            .canBoatsWork()
+            .build();
+
+    public static final FluidData MOONLIGHT_FLUID_DATA = new FluidData.Builder(MOONLIGHT_TAG)
+            .preventsBlockSpreading()
+            .canSwim()
+            .fluidMovementSpeed((entity, speed) -> 0.5f)
+            .applyWaterMovement()
+            .shouldEvaporateInUltrawarm()
+            .affectsBlockBreakSpeed()
+            .canBoatsWork()
+            .build();
+
     // Registration Functions
+    public static Block register(RegistryKey<Block> key, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
+        Block block = (Block)factory.apply(settings.registryKey(key));
+        return Registry.register(Registries.BLOCK, key, block);
+    }
+
+    public static Block register(RegistryKey<Block> key, AbstractBlock.Settings settings) {
+        return register(key, Block::new, settings);
+    }
+
+    private static RegistryKey<Block> keyOf(String id) {
+        return RegistryKey.of(RegistryKeys.BLOCK, Groves.id(id));
+    }
+
+    private static Block register(String id, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
+        return register(keyOf(id), factory, settings);
+    }
+
+    private static Block register(String id, AbstractBlock.Settings settings) {
+        return register(id, Block::new, settings);
+    }
+
     public static <T extends FlowableFluid> T register(String name, T fluid) {
         return Registry.register(Registries.FLUID, Groves.id(name), fluid);
     }
 
-    public static <T extends Block> T register(String name, T block) {
-        return Registry.register(Registries.BLOCK, Groves.id(name), block);
+//    public static <T extends Block> T register(String name, T block) {
+//        return Registry.register(Registries.BLOCK, Groves.id(name), block);
+//    }
+//
+//    public static <T extends Block> T registerWithItem(String name, T block, Item.Settings settings) {
+//        T registered = register(name, block);
+//        register(name, new BlockItem(registered, settings));
+//        return registered;
+//    }
+//
+//    public static <T extends Block> T registerWithItem(String name, T block) {
+//        return registerWithItem(name, block, new Item.Settings());
+//    }
+
+    public static <T extends Item> T register(String name, Function<Item.Settings, T> constructor, Function<Item.Settings, Item.Settings> settingsApplier) {
+        return register(name, constructor.apply(
+                settingsApplier.apply(new Item.Settings().registryKey(
+                        RegistryKey.of(RegistryKeys.ITEM, Groves.id(name))))));
     }
 
-    public static <T extends Block> T registerWithItem(String name, T block, Item.Settings settings) {
-        T registered = register(name, block);
-        register(name, new BlockItem(registered, settings));
-        return registered;
+    public static <T extends Item> T register(String name, Function<Item.Settings, T> constructor, Item.Settings settings) {
+        return register(name, constructor.apply(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, Groves.id(name)))));
     }
 
-    public static <T extends Block> T registerWithItem(String name, T block) {
-        return registerWithItem(name, block, new Item.Settings());
+    public static Item register(Block block) {
+        return register(block, BlockItem::new);
+    }
+
+    private static RegistryKey<Item> keyOf(RegistryKey<Block> blockKey) {
+        return RegistryKey.of(RegistryKeys.ITEM, blockKey.getValue());
+    }
+
+    public static Item register(Block block, BiFunction<Block, Item.Settings, Item> factory) {
+        return register(block, factory, new Item.Settings());
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Item register(Block block, BiFunction<Block, Item.Settings, Item> factory, Item.Settings settings) {
+        return register(
+                keyOf(block.getRegistryEntry().registryKey()),
+                itemSettings -> (Item)factory.apply(block, itemSettings), settings.useBlockPrefixedTranslationKey()
+        );
+    }
+
+    public static Item register(RegistryKey<Item> key, Function<Item.Settings, Item> factory, Item.Settings settings) {
+        Item item = (Item)factory.apply(settings.registryKey(key));
+        if (item instanceof BlockItem blockItem) {
+            blockItem.appendBlocks(Item.BLOCK_ITEMS, item);
+        }
+
+        return Registry.register(Registries.ITEM, key, item);
     }
 
     public static <T extends Item> T register(String name, T item)
@@ -555,7 +687,9 @@ public class Registration {
         BLOCK_TO_BLESSED.put(Items.CRACKED_STONE_BRICKS, Registration.CRACKED_MOONSTONE_BRICKS_ITEM);
         BLOCK_TO_BLESSED.put(Items.CHISELED_STONE_BRICKS, Registration.CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM);
 
-
-
+        FluidData.registerFluidData(BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
+        FluidData.registerFluidData(FLOWING_BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
+        FluidData.registerFluidData(MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
+        FluidData.registerFluidData(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
     }
 }

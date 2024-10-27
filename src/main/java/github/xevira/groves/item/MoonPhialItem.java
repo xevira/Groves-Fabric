@@ -5,34 +5,25 @@ import github.xevira.groves.Registration;
 import github.xevira.groves.block.multiblock.Moonwell;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsage;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
 
 import java.util.HashMap;
 import java.util.List;
@@ -90,17 +81,17 @@ public class MoonPhialItem extends Item {
                 // TODO: Check if location meets the requirement
                 if (world.getDimension().hasFixedTime())
                 {
-                    player.sendMessage(WORLD_NO_TIME_TEXT);
+                    player.sendMessage(WORLD_NO_TIME_TEXT, false);
                     return ActionResult.FAIL;
                 }
                 else if (world.isDay())
                 {
-                    player.sendMessage(WORLD_DAYTIME_TEXT);
+                    player.sendMessage(WORLD_DAYTIME_TEXT, false);
                     return ActionResult.FAIL;
                 }
                 else if (moonphaseIndex >= 4 && moonphaseIndex <= 12)
                 {
-                    player.sendMessage(WRONG_PHASE_TEXT);
+                    player.sendMessage(WRONG_PHASE_TEXT, false);
                     return ActionResult.FAIL;
                 }
                 else if (Moonwell.tryForm(player, world, pos))
@@ -117,17 +108,17 @@ public class MoonPhialItem extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
         BlockHitResult blockHitResult = raycast(world, user, RaycastContext.FluidHandling.SOURCE_ONLY);
         if (blockHitResult.getType() == HitResult.Type.MISS) {
-            return TypedActionResult.pass(itemStack);
+            return ActionResult.PASS;
         } else if (blockHitResult.getType() != HitResult.Type.BLOCK) {
-            return TypedActionResult.pass(itemStack);
+            return ActionResult.PASS;
         } else {
             BlockPos blockPos = blockHitResult.getBlockPos();
             if (!world.canPlayerModifyAt(user, blockPos)) {
-                return TypedActionResult.fail(itemStack);
+                return ActionResult.FAIL;
             } else {
                 BlockState blockState = world.getBlockState(blockPos);
                 if (blockState.isOf(Blocks.WATER)) {
@@ -135,13 +126,10 @@ public class MoonPhialItem extends Item {
                     world.setBlockState(blockPos, blessed, Block.NOTIFY_ALL_AND_REDRAW);
                     itemStack.decrementUnlessCreative(1, user);
 
-                    if (itemStack.isEmpty())
-                        return TypedActionResult.success(ItemStack.EMPTY, world.isClient());
-                    else
-                        return TypedActionResult.success(itemStack, world.isClient());
+                    return ActionResult.SUCCESS;
                 }
 
-                return TypedActionResult.pass(itemStack);
+                return ActionResult.PASS;
             }
         }
     }

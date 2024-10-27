@@ -10,6 +10,7 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -33,8 +34,12 @@ public abstract class MoonlightFluid extends FlowableFluid {
     public Item getBucketItem() { return Registration.BLESSED_MOON_WATER_BUCKET_ITEM; }
 
     // TODO: Make this a config option
+
+
     @Override
-    protected boolean isInfinite(World world) { return false; }
+    protected boolean isInfinite(ServerWorld world) {
+        return false;
+    }
 
     @Override
     protected void beforeBreakingBlock(WorldAccess world, BlockPos pos, BlockState state) {

@@ -6,17 +6,14 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.consume.UseAction;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.UseAction;
 import net.minecraft.world.World;
-
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 public class ImprintingSigilItem extends Item {
     private static final Text ALREADY_EXISTS_TEXT = Groves.text("text", "imprinting.already_exists");
@@ -46,7 +43,8 @@ public class ImprintingSigilItem extends Item {
     }
 
     @Override
-    public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+
+    public boolean onStoppedUsing(ItemStack stack, @NotNull World world, LivingEntity user, int remainingUseTicks) {
         if (!world.isClient) {
             if (user instanceof PlayerEntity player) {
                 int i = this.getMaxUseTime(stack, user) - remainingUseTicks;
@@ -71,15 +69,15 @@ public class ImprintingSigilItem extends Item {
 
                             }
                         }
-
-
-
                     }
 
                     player.incrementStat(Stats.USED.getOrCreateStat(this));
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     public static float getPullProgress(int useTicks) {
@@ -92,9 +90,9 @@ public class ImprintingSigilItem extends Item {
         return f;
     }
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
         user.setCurrentHand(hand);
-        return TypedActionResult.consume(itemStack);
+        return ActionResult.CONSUME;
     }
 }

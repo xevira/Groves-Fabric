@@ -3,7 +3,8 @@
 	"package": "github.xevira.groves.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"fluid.BucketItemMixin"
+		"fluid.BucketItemMixin",
+		"fluid.LivingEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

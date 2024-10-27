@@ -135,7 +135,7 @@ public class Moonwell {
                     BlockState state = world.getBlockState(p);
 
                     if (!state.isOf(LAYERS[l][r][c])) {
-                        player.sendMessage(Groves.text("text", "moonwell.invalid_block", p.getX(), p.getY(), p.getZ()));
+                        player.sendMessage(Groves.text("text", "moonwell.invalid_block", p.getX(), p.getY(), p.getZ()), false);
                         return false;
                     }
                 }

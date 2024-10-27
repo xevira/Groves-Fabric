@@ -7,15 +7,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class ModUseItemEvents {
-    public static TypedActionResult<ItemStack> onUseItem(PlayerEntity player, World world, Hand hand)
+    public static ActionResult onUseItem(PlayerEntity player, World world, Hand hand)
     {
         ItemStack stack = player.getStackInHand(hand);
         BlockHitResult hit = (BlockHitResult)player.raycast(player.getBlockInteractionRange(), 0, false);
@@ -25,12 +23,12 @@ public class ModUseItemEvents {
             BlockState state = world.getBlockState(pos);
 
             if (WaxHelper.applyWax(stack, state, world, pos, player, hand, hit))
-                return TypedActionResult.success(stack, world.isClient);
+                return ActionResult.SUCCESS;
 
             if (WaxHelper.stripWax(stack, state, world, pos, player, hand, hit))
-                return TypedActionResult.success(stack, world.isClient);
+                return ActionResult.SUCCESS;
         }
 
-        return TypedActionResult.pass(stack);
+        return ActionResult.PASS;
     }
 }

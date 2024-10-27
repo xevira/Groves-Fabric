@@ -46,6 +46,6 @@ public class MoonwellBrickSlabBlock extends SlabBlock implements BlockEntityProv
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         Moonwell.onUse(state, world, pos, player, hit);
 
-        return ActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     }
 }

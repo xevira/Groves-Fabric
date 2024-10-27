@@ -48,7 +48,7 @@ public class MoonwellFakeFluidBlock extends BlockWithEntity {
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         Moonwell.onUse(state, world, pos, player, hit);
 
-        return ActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     }
 
     @Override
@@ -59,11 +59,6 @@ public class MoonwellFakeFluidBlock extends BlockWithEntity {
     @Override
     protected float getAmbientOcclusionLightLevel(BlockState state, BlockView world, BlockPos pos) {
         return 1.0F;
-    }
-
-    @Override
-    protected boolean isTransparent(BlockState state, BlockView world, BlockPos pos) {
-        return true;
     }
 
     @Override

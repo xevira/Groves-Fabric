@@ -8,6 +8,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.*;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -32,7 +33,7 @@ public abstract class BlessedMoonWaterFluid extends FlowableFluid {
 
     // TODO: Make this a config option
     @Override
-    protected boolean isInfinite(World world) { return false; }
+    protected boolean isInfinite(ServerWorld world) { return false; }
 
     @Override
     protected void beforeBreakingBlock(WorldAccess world, BlockPos pos, BlockState state) {

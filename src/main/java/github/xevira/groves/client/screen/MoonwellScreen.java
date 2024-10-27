@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry
 import net.fabricmc.fabric.api.transfer.v1.fluid.base.SingleFluidStorage;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.Fluid;
@@ -15,6 +16,7 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.world.World;
 
 // 78, 33 x 64, 27 - Glow
@@ -34,31 +36,31 @@ public class MoonwellScreen extends HandledScreen<MoonwellScreenHandler> {
 
     @Override
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        context.drawTexture(BACKGROUND, this.x, this.y, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x, this.y, 0, 0, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
         // Night Sky + Moonwell
         if (this.handler.isDay())
-            context.drawTexture(BACKGROUND, this.x + 75, this.y + 48, 80, this.backgroundHeight, 80, 25);
+            context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x + 75, this.y + 48, 80, this.backgroundHeight, 80, 25, 256, 256);
         else
-            context.drawTexture(BACKGROUND, this.x + 70, this.y + 9, 0, this.backgroundHeight, 80, 64);
+            context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x + 70, this.y + 9, 0, this.backgroundHeight, 80, 64, 256, 256);
 
         int phase = this.handler.getMoonPhase();
         if (phase < 0)
         {
             // Sun
-            context.drawTexture(BACKGROUND, this.x + 96, this.y + 14, this.backgroundWidth, 128, 28, 28);
+            context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x + 96, this.y + 14, this.backgroundWidth, 128, 28, 28, 256, 256);
         }
         else
         {
             // Moon
-            context.drawTexture(BACKGROUND, this.x + 102, this.y + 16, this.backgroundWidth, phase * 16, 16, 16);
+            context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x + 102, this.y + 16, this.backgroundWidth, phase * 16, 16, 16, 256, 256);
         }
 
         // Arrow
-        context.drawTexture(BACKGROUND, this.x + 71, this.y + 36, this.backgroundWidth + 16, 18, 24, 16);
+        context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x + 71, this.y + 36, this.backgroundWidth + 16, 18, 24, 16, 256, 256);
 
         // Output slot
-        context.drawTexture(BACKGROUND, this.x + 100, this.y + 34, this.backgroundWidth + 16, 0, 18, 18);
+        context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x + 100, this.y + 34, this.backgroundWidth + 16, 0, 18, 18, 256, 256);
 
         // Draw the fluid
         SingleFluidStorage fluidStorage = this.handler.getFluidStorage();
@@ -80,7 +82,7 @@ public class MoonwellScreen extends HandledScreen<MoonwellScreenHandler> {
             float red = (tintColor >> 16 & 0xFF) / 255.0F;
             float green = (tintColor >> 8 & 0xFF) / 255.0F;
             float blue = (tintColor & 0xFF) / 255.0F;
-            context.drawSprite(this.x + 156, this.y + 17 + (52 - fluidBarHeight), 0, 16, fluidBarHeight, stillTexture, red, green, blue, 1.0F);
+            context.drawSpriteStretched(RenderLayer::getGuiTextured, stillTexture, this.x + 156, this.y + 17 + (52 - fluidBarHeight), 16, fluidBarHeight, ColorHelper.fromFloats(1.0F, red, green, blue));
         }
     }
 

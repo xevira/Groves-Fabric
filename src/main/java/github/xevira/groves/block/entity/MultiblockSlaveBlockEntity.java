@@ -84,7 +84,7 @@ public abstract class MultiblockSlaveBlockEntity extends BlockEntity {
 
         RegistryEntryLookup<Block> registryEntryLookup = (this.world != null
                 ? this.world.createCommandRegistryWrapper(RegistryKeys.BLOCK)
-                : Registries.BLOCK.getReadOnlyWrapper());
+                : Registries.BLOCK);
 
         if (nbt.contains("multiblockMaster", NbtElement.LONG_TYPE))
             this.master = BlockPos.fromLong(nbt.getLong("multiblockMaster"));

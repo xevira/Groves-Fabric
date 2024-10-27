@@ -192,7 +192,7 @@ public abstract class MultiblockMasterBlockEntity extends BlockEntity implements
 
             RegistryEntryLookup<Block> registryEntryLookup = (this.world != null
                     ? this.world.createCommandRegistryWrapper(RegistryKeys.BLOCK)
-                    : Registries.BLOCK.getReadOnlyWrapper());
+                    : Registries.BLOCK);
 
             this.slaves.clear();
             if (multiblock.contains("slaves", NbtElement.LONG_ARRAY_TYPE))
