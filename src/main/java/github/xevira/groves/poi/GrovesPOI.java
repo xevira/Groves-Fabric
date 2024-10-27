@@ -4,9 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.authlib.GameProfile;
 import github.xevira.groves.Groves;
 import github.xevira.groves.util.JSONHelper;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -16,6 +18,7 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -26,11 +29,9 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /** Manages the POIs for player-made Grove Sanctuaries **/
 public class GrovesPOI {
@@ -51,6 +52,11 @@ public class GrovesPOI {
     public static Optional<GroveSanctuary> getSanctuary(ServerWorld world, ChunkPos pos)
     {
         return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, pos)).findFirst();
+    }
+
+    public static Optional<GroveSanctuary> getSanctuary(ServerWorld world, BlockPos pos)
+    {
+        return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, new ChunkPos(pos))).findFirst();
     }
 
     public static boolean sanctuaryExists(ServerWorld world, ChunkPos pos)
@@ -191,10 +197,12 @@ public class GrovesPOI {
         private final ServerWorld world;
         private final GroveChunkData origin;
         private final List<GroveChunkData> groveChunks = new ArrayList<>();
+        private final List<GroveFriend> groveFriends = new ArrayList<>();
         private final boolean enchanted;
 
         // Variable properties
         private long storedSunlight;
+        private @Nullable BlockPos moonwell;
 
         // Transient (will never save)
         private int lastServerTick;
@@ -219,6 +227,7 @@ public class GrovesPOI {
             this.enchanted = enchanted;
 
             this.storedSunlight = 0;
+            this.moonwell = null;
 
             this.lastServerTick = 0;
             this.updatingTickChunk = -1; // -1 == Origin
@@ -247,6 +256,26 @@ public class GrovesPOI {
         public void setStoredSunlight(long sunlight)
         {
             this.storedSunlight = sunlight;
+        }
+
+        public @Nullable BlockPos getMoonwell()
+        {
+            return this.moonwell;
+        }
+
+        public boolean hasMoonwell()
+        {
+            return this.moonwell != null;
+        }
+
+        public void setMoonwell(BlockPos pos)
+        {
+            this.moonwell = pos.mutableCopy();
+        }
+
+        public void clearMoonwell()
+        {
+            this.moonwell = null;
         }
 
         /**
@@ -332,15 +361,9 @@ public class GrovesPOI {
 
         private GroveChunkData getUpdatingChunk()
         {
-            int index = this.updatingTickChunk++;   // get index before incrementing it
+            if (this.updatingTickChunk < 0) return this.origin;
 
-            // Reset back to the start once done with the list
-            if (this.updatingTickChunk >= this.groveChunks.size())
-                this.updatingTickChunk = -1;
-
-            if (index < 0) return this.origin;
-
-            return this.groveChunks.get(index);
+            return this.groveChunks.get(this.updatingTickChunk);
         }
 
         /** Server Tick event used to generate passive sunlight **/
@@ -359,7 +382,12 @@ public class GrovesPOI {
 
             // Step 1: update foliage count in currently selected chunk
             GroveChunkData data = getUpdatingChunk();
-            data.onServerTick(server);
+            if (data.onServerTick(server))
+            {
+                // Done with this chunk, move onto the next one;
+                if (++this.updatingTickChunk >= this.groveChunks.size())
+                    this.updatingTickChunk = -1;    // Reset back to the origin chunk
+            }
 
             // Step 2: total number of (cached) foliage in the grove
             int totalFoliage = groveChunks.stream().map(chunk -> chunk.foliage).reduce(this.origin.foliage, Integer::sum);
@@ -389,11 +417,16 @@ public class GrovesPOI {
 
             json.add("enchanted", new JsonPrimitive(this.enchanted));
 
+            if (this.moonwell != null)
+                json.add("moonwell", JSONHelper.BlockPosToJson(this.moonwell));
+
             JsonArray chunks = new JsonArray();
-            this.groveChunks.forEach(chunk -> {
-                chunks.add(chunk.serializeServer(server));
-            });
+            this.groveChunks.stream().map(chunk -> chunk.serializeServer(server)).forEach(chunks::add);
             json.add("chunks", chunks);
+
+            JsonArray friends = new JsonArray();
+            this.groveFriends.stream().map(GroveFriend::serialize).forEach(friends::add);
+            json.add("friends", friends);
 
             json.add("sunlight", new JsonPrimitive(this.storedSunlight));
 
@@ -424,6 +457,33 @@ public class GrovesPOI {
             }
 
             return chunks;
+        }
+
+
+        private static List<GroveFriend> deserializeFriends(JsonObject json)
+        {
+            List<GroveFriend> friends = new ArrayList<>();
+            if (json.has("friends"))
+            {
+                JsonElement element = json.get("friends");
+
+                if (element.isJsonArray())
+                {
+                    JsonArray array = element.getAsJsonArray();
+
+                    for(JsonElement item : array)
+                    {
+                        if (item.isJsonObject())
+                        {
+                            Optional<GroveFriend> friend = GroveFriend.deserialize(item.getAsJsonObject());
+
+                            friend.ifPresent(friends::add);
+                        }
+                    }
+                }
+            }
+
+            return friends;
         }
 
         public static Optional<GroveSanctuary> deserialize(JsonObject json, MinecraftServer server)
@@ -466,17 +526,21 @@ public class GrovesPOI {
             }
 
             Optional<Boolean> enchanted = JSONHelper.getBoolean(json, "enchanted");
+            Optional<BlockPos> moonwell = JSONHelper.JsonToBlockPos(json, "moonwell");
 
             // If it is empty, it will reset to 0.
             Optional<Long> storedSunlight = JSONHelper.getLong(json, "sunlight");
 
             List<GroveChunkData> chunks = deserializeChunks(json, server, world);
+            List<GroveFriend> friends = deserializeFriends(json);
 
             GroveSanctuary sanctuary = new GroveSanctuary(owner.get(), ownerName, world, origin.get(), enchanted.isPresent() && enchanted.get());
 
             sanctuary.groveChunks.addAll(chunks);
+            sanctuary.groveFriends.addAll(friends);
 
-            sanctuary.storedSunlight = storedSunlight.isPresent() ? storedSunlight.get() : 0;
+            storedSunlight.ifPresent(sunlight -> sanctuary.storedSunlight = sunlight);
+            moonwell.ifPresent(blockPos -> sanctuary.moonwell = blockPos);
 
             return Optional.of(sanctuary);
         }
@@ -487,12 +551,18 @@ public class GrovesPOI {
             public final ChunkPos chunkPos;
 
             public int foliage;
+            public final int[] foliageRows = new int[16];
+
+            private int updatingRow;
 
             public GroveChunkData(ServerWorld world, ChunkPos chunk)
             {
                 this.world = world;
                 this.chunkPos = chunk;
                 this.foliage = 0;
+                Arrays.fill(this.foliageRows, 0);
+
+                this.updatingRow = 0;
             }
 
             public int getFoliage()
@@ -505,7 +575,7 @@ public class GrovesPOI {
                 return this.chunkPos.equals(chunk);
             }
 
-            /** Finds the topmost non-air non-liquid block.  This might need to be updated if this is too slow **/
+            /** Finds the topmost non-air non-liquid non-transparent block.  This might need to be updated if this is too slow **/
             @SuppressWarnings("deprecation")
             private BlockPos.Mutable getTopMostBlock(Chunk chunk, int x, int z, int topy)
             {
@@ -515,7 +585,7 @@ public class GrovesPOI {
                     mutable.set(x, y, z);
                     BlockState state = chunk.getBlockState(mutable);
 
-                    if (!state.isAir() && !state.isLiquid())
+                    if (!state.isAir() && !state.isLiquid() && !state.isTransparent())
                         return mutable;
                 }
 
@@ -523,8 +593,23 @@ public class GrovesPOI {
                 return mutable;
             }
 
+            private boolean isValidLeaf(BlockState state)
+            {
+                // Not even considered a leaf
+                if (!state.isIn(BlockTags.LEAVES) && !(state.getBlock() instanceof LeavesBlock))
+                    return false;
+
+                // Only naturally generated leaves count.
+                return !state.contains(Properties.PERSISTENT) || !state.get(Properties.PERSISTENT);
+            }
+
+
+            /**
+             *  Scans the chunk, one row at a time, counting valid leaf blocks
+             *  {@return true if this chunk is done scanning }
+             **/
             @SuppressWarnings("removal")
-            public void onServerTick(MinecraftServer server)
+            public boolean onServerTick(MinecraftServer server)
             {
                 if (world.isChunkLoaded(chunkPos.x, chunkPos.z)) {
 
@@ -533,23 +618,30 @@ public class GrovesPOI {
 
                     Chunk chunk = world.getChunk(this.chunkPos.x, this.chunkPos.z);
 
-                    int topSection = chunk.getHighestNonEmptySection();
                     int topY = chunk.getHighestNonEmptySectionYOffset() + 16;
 
-                    this.foliage = 0;
-                    for (int x = 0; x < 16; x++) {
-                        for (int z = 0; z < 16; z++) {
+                    int leaves = 0;
+                    int x = this.updatingRow;
+                    for (int z = 0; z < 16; z++) {
+                        BlockPos pos = getTopMostBlock(chunk, bx + x, bz + z, topY);
+                        BlockState state = world.getBlockState(pos);
 
-                            //int y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, bx + x, bz + z);
+                        if (isValidLeaf(state))
+                            ++leaves;
+                    }
+                    // Subtract the old value and add the new value
+                    this.foliage -= this.foliageRows[this.updatingRow];
+                    this.foliage += leaves;
+                    this.foliageRows[this.updatingRow] = leaves;
 
-                            BlockPos pos = getTopMostBlock(chunk, bx + x, bz + z, topY);
-                            BlockState state = world.getBlockState(pos);
-
-                            if (state.isIn(BlockTags.LEAVES))
-                                ++this.foliage;
-                        }
+                    if (++this.updatingRow >= 16)
+                    {
+                        this.updatingRow = 0;
+                        return true;
                     }
                 }
+
+                return false;
             }
 
             public JsonObject serializeServer(MinecraftServer server)
@@ -559,6 +651,10 @@ public class GrovesPOI {
                 json.add("chunk", JSONHelper.ChunkPosToJson(this.chunkPos));
                 json.add("foliage", new JsonPrimitive(this.foliage));
 
+                JsonArray array = new JsonArray(16);
+                Arrays.stream(this.foliageRows).mapToObj(JsonPrimitive::new).forEachOrdered(array::add);
+                json.add("foliageRows", array);
+
                 return json;
             }
 
@@ -566,14 +662,66 @@ public class GrovesPOI {
             {
                 Optional<ChunkPos> chunk = JSONHelper.JsonToChunkPos(json, "chunk");
                 Optional<Integer> foliage = JSONHelper.getInt(json, "foliage");
+                int[] foliageRows = JSONHelper.getIntArray(json, "foliageRows", 16);
 
-                if (chunk.isPresent() && foliage.isPresent())
+                if (foliage.isPresent() && foliageRows.length == 16)
+                {
+                    int sum = Arrays.stream(foliageRows).sum();
+                    // If they don't match, use the sum of the rows.
+                    if (foliage.get() != sum) {
+                        foliage = Optional.of(sum);
+                    }
+                }
+
+                if (chunk.isPresent() && foliage.isPresent() && foliageRows.length == 16)
                 {
                     GroveChunkData data = new GroveChunkData(world, chunk.get());
                     data.foliage = foliage.get();
+                    for(int i = 0; i < foliageRows.length; i++) {
+                        data.foliageRows[i] = foliageRows[i];
+                    }
 
                     return Optional.of(data);
                 }
+
+                return Optional.empty();
+            }
+        }
+
+        public record GroveFriend(UUID id, String name) {
+
+            public GroveFriend(GameProfile profile)
+            {
+                this(profile.getId(), profile.getName());
+            }
+
+            public GroveFriend(PlayerEntity friend)
+            {
+                this(friend.getGameProfile());
+            }
+
+            public boolean isFriend(PlayerEntity friend)
+            {
+                return id.equals(friend.getUuid());
+            }
+
+            public JsonObject serialize()
+            {
+                JsonObject json = new JsonObject();
+
+                json.add("name", new JsonPrimitive(this.name));
+                json.add("id", new JsonPrimitive(this.id.toString()));
+
+                return json;
+            }
+
+            public static Optional<GroveFriend> deserialize(JsonObject json)
+            {
+                Optional<UUID> id = JSONHelper.getUUID(json, "id");
+                String name = JSONHelper.getString(json, "name");
+
+                if (id.isPresent() && name != null)
+                    return Optional.of(new GroveFriend(id.get(), name));
 
                 return Optional.empty();
             }

@@ -5,10 +5,7 @@ import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import github.xevira.groves.block.entity.MoonwellMultiblockSlaveBlockEntity;
 import github.xevira.groves.block.multiblock.Moonwell;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.ShapeContext;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
@@ -22,7 +19,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class MoonwellFakeFluidBlock extends BlockWithEntity {
+public class MoonwellFakeFluidBlock extends TransparentBlock implements BlockEntityProvider {
     public static final MapCodec<MoonwellFakeFluidBlock> CODEC = createCodec(MoonwellFakeFluidBlock::new);
 
     public MoonwellFakeFluidBlock(Settings settings) {
@@ -30,7 +27,7 @@ public class MoonwellFakeFluidBlock extends BlockWithEntity {
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
+    protected MapCodec<? extends TransparentBlock> getCodec() {
         return CODEC;
     }
 
@@ -49,16 +46,6 @@ public class MoonwellFakeFluidBlock extends BlockWithEntity {
         Moonwell.onUse(state, world, pos, player, hit);
 
         return ActionResult.SUCCESS;
-    }
-
-    @Override
-    protected VoxelShape getCameraCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return VoxelShapes.empty();
-    }
-
-    @Override
-    protected float getAmbientOcclusionLightLevel(BlockState state, BlockView world, BlockPos pos) {
-        return 1.0F;
     }
 
     @Override

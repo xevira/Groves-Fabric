@@ -13,27 +13,27 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-public record FluidData(@NotNull TagKey<Fluid> fluidTag, boolean hardensConcrete, boolean canCoralSurvive,
-                        boolean canMoisturizeFarmland, boolean canKelpSurvive, boolean affectsRespawnAnchor,
-                        boolean canSeagrassSurvive, boolean canSpongeAbsorb, boolean preventsBlockSpreading,
-                        boolean canSugarCaneUse, boolean shouldDispenseBoatsAbove, boolean canSwim,
-                        @NotNull BiFunction<Entity, Double, Float> fluidMovementSpeed, boolean applyWaterMovement,
-                        @NotNull Consumer<ItemEntity> applyBuoyancy, boolean canCauseDrowning, boolean canDrownedSpawn,
-                        boolean canEndermanTeleportInto, boolean canGuardianSpawn,
-                        boolean useSkeletonHorseSubmergedSound, boolean canWaterCreatureSpawn,
-                        boolean shouldWitchDrinkWaterBreathing, boolean willZombiesConvert,
-                        boolean canTropicalFishSpawn, boolean shouldTurtlesFavor, boolean shouldTurtleHelmetActivate,
-                        boolean affectsBlockBreakSpeed, boolean canBoatsWork, boolean shouldEvaporateInUltrawarm,
-                        @NotNull ParticleEffect bubbleParticle, @NotNull ParticleEffect splashParticle,
-                        boolean shouldBreakLanding, boolean shouldExtinguish) {
-    public static final Map<Fluid, FluidData> FLUID_DATA = new HashMap<>();
+public record FluidSystem(@NotNull TagKey<Fluid> fluidTag, boolean hardensConcrete, boolean canCoralSurvive,
+                          boolean canMoisturizeFarmland, boolean canKelpSurvive, boolean affectsRespawnAnchor,
+                          boolean canSeagrassSurvive, boolean canSpongeAbsorb, boolean preventsBlockSpreading,
+                          boolean canSugarCaneUse, boolean shouldDispenseBoatsAbove, boolean canSwim,
+                          @NotNull BiFunction<Entity, Double, Float> fluidMovementSpeed, boolean applyWaterMovement,
+                          @NotNull Consumer<ItemEntity> applyBuoyancy, boolean canCauseDrowning, boolean canDrownedSpawn,
+                          boolean canEndermanTeleportInto, boolean canGuardianSpawn,
+                          boolean useSkeletonHorseSubmergedSound, boolean canWaterCreatureSpawn,
+                          boolean shouldWitchDrinkWaterBreathing, boolean willZombiesConvert,
+                          boolean canTropicalFishSpawn, boolean shouldTurtlesFavor, boolean shouldTurtleHelmetActivate,
+                          boolean affectsBlockBreakSpeed, boolean canBoatsWork, boolean shouldEvaporateInUltrawarm,
+                          @NotNull ParticleEffect bubbleParticle, @NotNull ParticleEffect splashParticle,
+                          boolean shouldBreakLanding, boolean shouldExtinguish) {
+    public static final Map<Fluid, FluidSystem> FLUIDS = new HashMap<>();
 
-    public static void registerFluidData(@NotNull Fluid fluid, @NotNull FluidData.Builder fluidData) {
-        registerFluidData(fluid, fluidData.build());
+    public static void registerFluid(@NotNull Fluid fluid, @NotNull FluidSystem.Builder fluidData) {
+        registerFluid(fluid, fluidData.build());
     }
 
-    public static void registerFluidData(@NotNull Fluid fluid, @NotNull FluidData fluidData) {
-        FLUID_DATA.put(fluid, fluidData);
+    public static void registerFluid(@NotNull Fluid fluid, @NotNull FluidSystem fluidSystem) {
+        FLUIDS.put(fluid, fluidSystem);
     }
 
     public static class Builder {
@@ -235,8 +235,8 @@ public record FluidData(@NotNull TagKey<Fluid> fluidTag, boolean hardensConcrete
             return this;
         }
 
-        public FluidData build() {
-            return new FluidData(this.fluidTag, this.hardensConcrete, this.canCoralSurvive, this.canMoisturizeFarmland,
+        public FluidSystem build() {
+            return new FluidSystem(this.fluidTag, this.hardensConcrete, this.canCoralSurvive, this.canMoisturizeFarmland,
                     this.canKelpSurvive, this.affectsRespawnAnchor, this.canSeagrassSurvive, this.canSpongeAbsorb,
                     this.preventsBlockSpreading, this.canSugarCaneUse, this.shouldDispenseBoatsAbove, this.canSwim,
                     this.fluidMovementSpeed, this.applyWaterMovement, this.applyBuoyancy, this.canCauseDrowning,

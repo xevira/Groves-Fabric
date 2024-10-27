@@ -4,7 +4,6 @@ import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import github.xevira.groves.block.entity.MoonwellMultiblockSlaveBlockEntity;
-import github.xevira.groves.util.BlockStateHelper;
 import github.xevira.groves.util.QuintConsumer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -12,7 +11,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.property.Property;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -26,68 +24,68 @@ import java.util.Map;
 
 @SuppressWarnings("ReassignedVariable")
 public class Moonwell {
-    private static final Block[][][] LAYERS;
+    private static final MoonwellBlockType[][][] LAYERS;
 
     private static final Map<Block, Block> CONVERT = new HashMap<>();
     private static final Map<Block, Block> REVERT = new HashMap<>();
 
     static {
-        LAYERS = new Block[2][5][5];
+        LAYERS = new MoonwellBlockType[2][5][5];
 
         // Bottom Layer
-        LAYERS[0][0][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][0][1] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][0][2] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][0][3] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][0][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][1][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][1][1] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][1][2] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][1][3] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][1][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][2][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][2][1] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][2][2] = Blocks.CAULDRON;
-        LAYERS[0][2][3] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][2][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][3][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][3][1] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][3][2] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][3][3] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][3][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][4][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][4][1] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][4][2] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][4][3] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[0][4][4] = Registration.MOONSTONE_BRICKS_BLOCK;
+        LAYERS[0][0][0] = MoonwellBlockType.BRICK;
+        LAYERS[0][0][1] = MoonwellBlockType.BRICK;
+        LAYERS[0][0][2] = MoonwellBlockType.BRICK;
+        LAYERS[0][0][3] = MoonwellBlockType.BRICK;
+        LAYERS[0][0][4] = MoonwellBlockType.BRICK;
+        LAYERS[0][1][0] = MoonwellBlockType.BRICK;
+        LAYERS[0][1][1] = MoonwellBlockType.BRICK;
+        LAYERS[0][1][2] = MoonwellBlockType.BRICK;
+        LAYERS[0][1][3] = MoonwellBlockType.BRICK;
+        LAYERS[0][1][4] = MoonwellBlockType.BRICK;
+        LAYERS[0][2][0] = MoonwellBlockType.BRICK;
+        LAYERS[0][2][1] = MoonwellBlockType.BRICK;
+        LAYERS[0][2][2] = MoonwellBlockType.CAULDRON;
+        LAYERS[0][2][3] = MoonwellBlockType.BRICK;
+        LAYERS[0][2][4] = MoonwellBlockType.BRICK;
+        LAYERS[0][3][0] = MoonwellBlockType.BRICK;
+        LAYERS[0][3][1] = MoonwellBlockType.BRICK;
+        LAYERS[0][3][2] = MoonwellBlockType.BRICK;
+        LAYERS[0][3][3] = MoonwellBlockType.BRICK;
+        LAYERS[0][3][4] = MoonwellBlockType.BRICK;
+        LAYERS[0][4][0] = MoonwellBlockType.BRICK;
+        LAYERS[0][4][1] = MoonwellBlockType.BRICK;
+        LAYERS[0][4][2] = MoonwellBlockType.BRICK;
+        LAYERS[0][4][3] = MoonwellBlockType.BRICK;
+        LAYERS[0][4][4] = MoonwellBlockType.BRICK;
 
 
         // Top Layer
-        LAYERS[1][0][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][0][1] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][0][2] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][0][3] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][0][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][1][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][1][1] = Blocks.AIR;
-        LAYERS[1][1][2] = Blocks.AIR;
-        LAYERS[1][1][3] = Blocks.AIR;
-        LAYERS[1][1][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][2][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][2][1] = Blocks.AIR;
-        LAYERS[1][2][2] = Blocks.AIR;
-        LAYERS[1][2][3] = Blocks.AIR;
-        LAYERS[1][2][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][3][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][3][1] = Blocks.AIR;
-        LAYERS[1][3][2] = Blocks.AIR;
-        LAYERS[1][3][3] = Blocks.AIR;
-        LAYERS[1][3][4] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][4][0] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][4][1] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][4][2] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][4][3] = Registration.MOONSTONE_BRICKS_BLOCK;
-        LAYERS[1][4][4] = Registration.MOONSTONE_BRICKS_BLOCK;
+        LAYERS[1][0][0] = MoonwellBlockType.BRICK;
+        LAYERS[1][0][1] = MoonwellBlockType.BRICK;
+        LAYERS[1][0][2] = MoonwellBlockType.BRICK;
+        LAYERS[1][0][3] = MoonwellBlockType.BRICK;
+        LAYERS[1][0][4] = MoonwellBlockType.BRICK;
+        LAYERS[1][1][0] = MoonwellBlockType.BRICK;
+        LAYERS[1][1][1] = MoonwellBlockType.AIR;
+        LAYERS[1][1][2] = MoonwellBlockType.AIR;
+        LAYERS[1][1][3] = MoonwellBlockType.AIR;
+        LAYERS[1][1][4] = MoonwellBlockType.BRICK;
+        LAYERS[1][2][0] = MoonwellBlockType.BRICK;
+        LAYERS[1][2][1] = MoonwellBlockType.AIR;
+        LAYERS[1][2][2] = MoonwellBlockType.AIR;
+        LAYERS[1][2][3] = MoonwellBlockType.AIR;
+        LAYERS[1][2][4] = MoonwellBlockType.BRICK;
+        LAYERS[1][3][0] = MoonwellBlockType.BRICK;
+        LAYERS[1][3][1] = MoonwellBlockType.AIR;
+        LAYERS[1][3][2] = MoonwellBlockType.AIR;
+        LAYERS[1][3][3] = MoonwellBlockType.AIR;
+        LAYERS[1][3][4] = MoonwellBlockType.BRICK;
+        LAYERS[1][4][0] = MoonwellBlockType.BRICK;
+        LAYERS[1][4][1] = MoonwellBlockType.BRICK;
+        LAYERS[1][4][2] = MoonwellBlockType.BRICK;
+        LAYERS[1][4][3] = MoonwellBlockType.BRICK;
+        LAYERS[1][4][4] = MoonwellBlockType.BRICK;
 
         CONVERT.put(Blocks.AIR, Registration.MOONWELL_FAKE_FLUID_BLOCK);
         CONVERT.put(Blocks.CAULDRON, Registration.MOONWELL_BASIN_BLOCK);
@@ -122,6 +120,17 @@ public class Moonwell {
         return null;
     }
 
+    private static boolean isValidBlockState(BlockState state, MoonwellBlockType type)
+    {
+        return switch(type)
+        {
+            case IGNORE -> true;
+            case AIR -> state.isOf(Blocks.AIR);
+            case BRICK -> state.isIn(Registration.MOONWELL_CONSTRUCTION_BLOCKS);
+            case CAULDRON -> state.isOf(Blocks.CAULDRON);
+        };
+    }
+
     public static boolean tryForm(PlayerEntity player, World world, BlockPos pos) {
         BlockState[][][] states = new BlockState[2][5][5];
 
@@ -134,7 +143,7 @@ public class Moonwell {
                     BlockPos p = pos.add(c - 2, l, r - 2);
                     BlockState state = world.getBlockState(p);
 
-                    if (!state.isOf(LAYERS[l][r][c])) {
+                    if (!isValidBlockState(state, LAYERS[l][r][c])) {
                         player.sendMessage(Groves.text("text", "moonwell.invalid_block", p.getX(), p.getY(), p.getZ()), false);
                         return false;
                     }
@@ -146,7 +155,7 @@ public class Moonwell {
         for (int l = 0; l < 2; l++) {
             for (int r = 0; r < 5; r++) {
                 for (int c = 0; c < 5; c++) {
-                    if (LAYERS[l][r][c] == null) {
+                    if (LAYERS[l][r][c] == MoonwellBlockType.IGNORE) {
                         states[l][r][c] = null;
                         continue;  // Ignore this spot
                     }
@@ -172,7 +181,7 @@ public class Moonwell {
             for (int l = 0; l < 2; l++) {
                 for (int r = 0; r < 5; r++) {
                     for (int c = 0; c < 5; c++) {
-                        if (LAYERS[l][r][c] == null) continue;  // Ignore this spot
+                        if (LAYERS[l][r][c] == MoonwellBlockType.IGNORE) continue;  // Ignore this spot
 
                         BlockPos loc = pos.add(c - 2, l, r - 2);
 
@@ -183,8 +192,10 @@ public class Moonwell {
                     }
                 }
             }
-            masterBlockEntity.markFormed();
 
+            // Mark completed and set owner
+            masterBlockEntity.markFormed();
+            masterBlockEntity.setOwner(player.getUuid());
             return true;
         }
 
@@ -360,5 +371,13 @@ public class Moonwell {
                 }
             }
         }
+    }
+
+    public enum MoonwellBlockType
+    {
+        IGNORE,
+        AIR,
+        BRICK,
+        CAULDRON;
     }
 }

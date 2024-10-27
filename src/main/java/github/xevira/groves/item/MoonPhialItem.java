@@ -3,6 +3,7 @@ package github.xevira.groves.item;
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.multiblock.Moonwell;
+import github.xevira.groves.poi.GrovesPOI;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.*;
@@ -14,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -28,6 +30,7 @@ import net.minecraft.world.World;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 public class MoonPhialItem extends Item {
@@ -59,6 +62,8 @@ public class MoonPhialItem extends Item {
     public static final Text WORLD_DAYTIME_TEXT = Groves.text("text", "moon_phial.world_daytime");
     public static final Text WRONG_PHASE_TEXT = Groves.text("text", "moon_phial.wrong_phase");
     public static final Text NOT_OWNER_TEXT = Groves.text("text", "moon_phial.grove.not_owner");
+    public static final Text NOT_IN_GROVE_TEXT = Groves.text("text", "moon_phial.not_in_grove");
+    public static final Text MOONWELL_EXISTS_TEXT = Groves.text("text", "moon_phial.moonwell_exists");
 
     public MoonPhialItem(Settings settings) {
         super(settings);
@@ -94,13 +99,35 @@ public class MoonPhialItem extends Item {
                     player.sendMessage(WRONG_PHASE_TEXT, false);
                     return ActionResult.FAIL;
                 }
-                else if (Moonwell.tryForm(player, world, pos))
-                {
-                    context.getStack().decrementUnlessCreative(1, player);
-                    world.playSound(null, pos, Registration.MOONWELL_ACTIVATE_SOUND, SoundCategory.BLOCKS, 1.0f, 1.0f);
-                }
+                else {
+                    Optional<GrovesPOI.GroveSanctuary> sanc = GrovesPOI.getSanctuary((ServerWorld)world, pos);
 
-                return ActionResult.SUCCESS;
+                    if (sanc.isPresent())
+                    {
+                        GrovesPOI.GroveSanctuary sanctuary = sanc.get();
+
+                        if (!sanctuary.isOwner(player)) {
+                            player.sendMessage(NOT_OWNER_TEXT, false);
+                            return ActionResult.FAIL;
+
+                        } else if (sanctuary.hasMoonwell()) {
+                            player.sendMessage(MOONWELL_EXISTS_TEXT, false);
+                            return ActionResult.FAIL;
+
+                        } else if (Moonwell.tryForm(player, world, pos)) {
+                            sanctuary.setMoonwell(pos);
+                            context.getStack().decrementUnlessCreative(1, player);
+                            world.playSound(null, pos, Registration.MOONWELL_ACTIVATE_SOUND, SoundCategory.BLOCKS, 1.0f, 1.0f);
+                        }
+
+                        return ActionResult.SUCCESS;
+                    }
+                    else
+                    {
+                        player.sendMessage(NOT_IN_GROVE_TEXT, false);
+                        return ActionResult.FAIL;
+                    }
+                }
             }
         }
 

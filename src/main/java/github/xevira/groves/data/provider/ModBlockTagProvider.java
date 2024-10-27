@@ -113,5 +113,17 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
         getOrCreateTagBuilder(Registration.MOONWELL_INTERACTION_BLOCKS)
                 .addTag(Registration.MOONWELL_BLOCKS)
                 .add(Registration.MOONWELL_FAKE_FLUID_BLOCK);
+
+        getOrCreateTagBuilder(Registration.MOONWELL_CONSTRUCTION_BLOCKS)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_WANING_CRESCENT_BLOCK)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_NEW_MOON_BLOCK)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_WAXING_CRESCENT_BLOCK)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK)
+                .add(Registration.CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK)
+                .add(Registration.CRACKED_MOONSTONE_BRICKS_BLOCK)
+                .add(Registration.MOONSTONE_BRICKS_BLOCK);
     }
 }

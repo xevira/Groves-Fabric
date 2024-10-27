@@ -4,6 +4,7 @@ import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.network.BlockPosPayload;
 import github.xevira.groves.network.MoonwellScreenPayload;
+import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.ServerTickableBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -21,11 +22,14 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEntity implements ExtendedScreenHandlerFactory<MoonwellScreenPayload>, ServerTickableBlockEntity {
     public static final Text TITLE = Groves.text("gui", "moonwell.title");
@@ -96,8 +100,24 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
     public void breakMultiblock(boolean brokeMaster) {
         super.breakMultiblock(brokeMaster);
 
-        if (this.world != null)
-            world.playSound(null, this.pos, Registration.MOONWELL_DEACTIVATE_SOUND, SoundCategory.BLOCKS, 1.0f, 1.0f);
+        if (this.world == null) return;
+        if (this.world.isClient) return;
+
+        Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary((ServerWorld) this.world, this.pos);
+        sanctuary.ifPresent(GrovesPOI.GroveSanctuary::clearMoonwell);
+
+        this.world.playSound(null, this.pos, Registration.MOONWELL_DEACTIVATE_SOUND, SoundCategory.BLOCKS, 1.0f, 1.0f);
+    }
+
+    @Override
+    public void markFormed() {
+        super.markFormed();
+
+        if (this.world == null) return;
+        if (this.world.isClient) return;
+
+        Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary((ServerWorld) this.world, this.pos);
+        sanctuary.ifPresent(groveSanctuary -> groveSanctuary.setMoonwell(this.pos));
     }
 
     public long getMoonlightAmount()
@@ -120,7 +140,8 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
         if (this.world == null) return;
 
         if (this.world.getDimension().hasFixedTime()) return;
-        if (!this.world.isSkyVisible(this.pos.up())) return;
+        // If not at build height, check if the moonwell can even *see* the sky
+        if (this.pos.getY() < (this.world.getTopYInclusive() - 1) && !this.world.isSkyVisible(this.pos)) return;
 
         // Only do this once a second
         if (this.world.getTime() % 20 != 0) return;
@@ -148,6 +169,8 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
             markDirty();
         }
     }
+
+
 
     @Override
     protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {

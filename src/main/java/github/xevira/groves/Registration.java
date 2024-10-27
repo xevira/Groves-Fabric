@@ -3,7 +3,7 @@ package github.xevira.groves;
 import github.xevira.groves.block.*;
 import github.xevira.groves.block.entity.*;
 import github.xevira.groves.fluid.BlessedMoonWaterFluid;
-import github.xevira.groves.fluid.FluidData;
+import github.xevira.groves.fluid.FluidSystem;
 import github.xevira.groves.fluid.MoonlightFluid;
 import github.xevira.groves.item.*;
 import github.xevira.groves.network.MoonwellScreenPayload;
@@ -478,6 +478,8 @@ public class Registration {
     /** Valid blocks that compose a {@code Moonwell} **/
     public static final TagKey<Block> MOONWELL_BLOCKS = registerBlockTag("moonwell_blocks");
 
+    public static final TagKey<Block> MOONWELL_CONSTRUCTION_BLOCKS = registerBlockTag("moonwell_construction_blocks");
+
     /** Valid blocks that compose a {@code Moonwell} for interacting with the screen **/
     public static final TagKey<Block> MOONWELL_INTERACTION_BLOCKS = registerBlockTag("moonwell_interaction_blocks");
 
@@ -527,7 +529,7 @@ public class Registration {
             IMPRINTING_SIGIL_ITEM,
             ENCHANTED_IMPRINTING_SIGIL_ITEM);
 
-    public static final FluidData BLESSED_MOON_WATER_FLUID_DATA = new FluidData.Builder(BLESSED_MOON_WATERS_TAG)
+    public static final FluidSystem BLESSED_MOON_WATER_FLUID_DATA = new FluidSystem.Builder(BLESSED_MOON_WATERS_TAG)
             .preventsBlockSpreading()
             .canSwim()
             .fluidMovementSpeed((entity, speed) -> 0.5f)
@@ -539,7 +541,7 @@ public class Registration {
             .canBoatsWork()
             .build();
 
-    public static final FluidData MOONLIGHT_FLUID_DATA = new FluidData.Builder(MOONLIGHT_TAG)
+    public static final FluidSystem MOONLIGHT_FLUID_DATA = new FluidSystem.Builder(MOONLIGHT_TAG)
             .preventsBlockSpreading()
             .canSwim()
             .fluidMovementSpeed((entity, speed) -> 0.5f)
@@ -687,9 +689,9 @@ public class Registration {
         BLOCK_TO_BLESSED.put(Items.CRACKED_STONE_BRICKS, Registration.CRACKED_MOONSTONE_BRICKS_ITEM);
         BLOCK_TO_BLESSED.put(Items.CHISELED_STONE_BRICKS, Registration.CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM);
 
-        FluidData.registerFluidData(BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
-        FluidData.registerFluidData(FLOWING_BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
-        FluidData.registerFluidData(MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
-        FluidData.registerFluidData(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
+        FluidSystem.registerFluid(BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
+        FluidSystem.registerFluid(FLOWING_BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
+        FluidSystem.registerFluid(MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
+        FluidSystem.registerFluid(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
     }
 }

@@ -2,8 +2,7 @@ package github.xevira.groves.mixin.fluid;
 
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import github.xevira.groves.Registration;
-import github.xevira.groves.fluid.FluidData;
+import github.xevira.groves.fluid.FluidSystem;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.BucketItem;
 import org.spongepowered.asm.mixin.Final;
@@ -21,12 +20,12 @@ public class BucketItemMixin {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/fluid/Fluid;isIn(Lnet/minecraft/registry/tag/TagKey;)Z"))
     @SuppressWarnings("deprecation") // We're just doing what vanilla does
-    private boolean groves$placeFluid(boolean original) {
+    private boolean grovesPlaceFluid(boolean original) {
         if(original)
             return true;
 
-        return FluidData.FLUID_DATA.values().stream()
-                .filter(FluidData::shouldEvaporateInUltrawarm)
+        return FluidSystem.FLUIDS.values().stream()
+                .filter(FluidSystem::shouldEvaporateInUltrawarm)
                 .anyMatch(fluidData -> this.fluid.isIn(fluidData.fluidTag()));
     }
 }
