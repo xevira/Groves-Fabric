@@ -133,8 +133,20 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "moon_phial.moonwell_exists", "§cA Moonwell already exists for this Grove Sanctuary.§r");
         addText(translationBuilder, "text", "moonwell.invalid_block", "§cInvalid block at (%s, %s, %s).§r");
 
-        addText(translationBuilder, "label", "groves.foliage", "Foliage: %s leaf block%s");
-        addText(translationBuilder, "label", "groves.sunlight", "Sunlight: %s (%s%%)");
+        addText(translationBuilder, "label", "groves.foliage", "Foliage:");
+        addText(translationBuilder, "text", "groves.foliage", "%s leaf block%s");
+        addText(translationBuilder, "label", "groves.sunlight", "Sunlight:");
+        addText(translationBuilder, "tooltip", "groves.sunlight", "Total Sunlight: %s (%s%%)");
+
+        addText(translationBuilder, "tooltip", "groves.tab.general", "General");
+        addText(translationBuilder, "tooltip", "groves.tab.chunks", "Chunks");
+        addText(translationBuilder, "tooltip", "groves.tab.friends", "Friends");
+        addText(translationBuilder, "tooltip", "groves.tab.abilities", "Abilities");
+
+        addText(translationBuilder, "label", "groves.tab.general", " [General]");
+        addText(translationBuilder, "label", "groves.tab.chunks", " [Chunks]");
+        addText(translationBuilder, "label", "groves.tab.friends", " [Friends]");
+        addText(translationBuilder, "label", "groves.tab.abilities", " [Abilities]");
 
         addText(translationBuilder, "key.category", "groves", "Groves");
         addText(translationBuilder, "key", "open_groves_ui", "Open Groves UI");

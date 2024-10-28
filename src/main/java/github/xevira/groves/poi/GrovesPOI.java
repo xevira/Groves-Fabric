@@ -7,23 +7,25 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import github.xevira.groves.Groves;
 import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
+import github.xevira.groves.network.UpdateSunlightPayload;
+import github.xevira.groves.network.UpdateTotalFoliagePayload;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.util.JSONHelper;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeavesBlock;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -35,12 +37,9 @@ import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -222,6 +221,7 @@ public class GrovesPOI {
         // Transient (will never save)
         private int lastServerTick;
         private int updatingTickChunk;
+        private int lastTotalFoliage = -1;
 
         public GroveSanctuary(final PlayerEntity player, final ServerWorld world, final ChunkPos pos, final boolean enchanted)
         {
@@ -387,6 +387,21 @@ public class GrovesPOI {
             return this.groveChunks.get(this.updatingTickChunk);
         }
 
+        private ServerPlayerEntity getOwnerPlayer(MinecraftServer server)
+        {
+            return server.getPlayerManager().getPlayer(this.owner);
+        }
+
+        private void sendOwner(MinecraftServer server, CustomPayload payload)
+        {
+            ServerPlayerEntity player = getOwnerPlayer(server);
+
+            if (player != null)
+            {
+                ServerPlayNetworking.send(player, payload);
+            }
+        }
+
         /** Server Tick event used to generate passive sunlight **/
         public void onEndServerTick(MinecraftServer server)
         {
@@ -422,8 +437,17 @@ public class GrovesPOI {
             // Step 3: convert foliage count into solar power
             long solarPower = (long)(totalFoliage * powerRating);
 
-            if (solarPower > 0)
+            if (solarPower > 0) {
                 addSunlight(solarPower);
+
+                sendOwner(server, new UpdateSunlightPayload(this.storedSunlight));
+            }
+
+            if (totalFoliage != lastTotalFoliage)
+            {
+                lastTotalFoliage = totalFoliage;
+                sendOwner(server, new UpdateTotalFoliagePayload(totalFoliage));
+            }
         }
 
         public JsonObject serialize(MinecraftServer server)

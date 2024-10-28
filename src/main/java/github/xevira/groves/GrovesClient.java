@@ -5,6 +5,7 @@ import github.xevira.groves.client.renderer.MoonwellFluidLevelBER;
 import github.xevira.groves.client.screen.GrovesSanctuaryScreen;
 import github.xevira.groves.client.screen.MoonwellScreen;
 import github.xevira.groves.item.MoonPhialItem;
+import github.xevira.groves.network.Networking;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
@@ -41,5 +42,7 @@ public class GrovesClient implements ClientModInitializer {
 
         // Keybinds
         KeyInputHandler.load();
+
+        Networking.registerClient();
     }
 }

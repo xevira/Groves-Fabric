@@ -60,4 +60,13 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
     }
 
     // TODO: Add update methods for the screen
+    public void setSunlight(long sunlight)
+    {
+        this.sanctuary.setStoredSunlight(sunlight);
+    }
+
+    public void setFoliage(int foliage)
+    {
+        this.sanctuary.setFoliage(foliage);
+    }
 }
