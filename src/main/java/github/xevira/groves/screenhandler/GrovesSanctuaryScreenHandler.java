@@ -10,6 +10,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
 public class GrovesSanctuaryScreenHandler extends ScreenHandler {
@@ -59,6 +60,12 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         return this.sanctuary.getMaxStoredSunlight();
     }
 
+    public @Nullable BlockPos getMoonwell()
+    {
+        return this.sanctuary.getMoonwell();
+    }
+
+
     // TODO: Add update methods for the screen
     public void setSunlight(long sunlight)
     {
@@ -69,4 +76,10 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
     {
         this.sanctuary.setFoliage(foliage);
     }
+
+    public void setMoonwell(BlockPos pos)
+    {
+        this.sanctuary.setMoonwell(pos);
+    }
+
 }

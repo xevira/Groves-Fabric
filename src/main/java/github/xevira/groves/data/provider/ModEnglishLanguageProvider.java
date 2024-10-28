@@ -137,6 +137,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "groves.foliage", "%s leaf block%s");
         addText(translationBuilder, "label", "groves.sunlight", "Sunlight:");
         addText(translationBuilder, "tooltip", "groves.sunlight", "Total Sunlight: %s (%s%%)");
+        addText(translationBuilder, "label", "groves.moonwell", "Moonwell:");
+        addText(translationBuilder, "text", "groves.moonwell", "(%s, %s, %s)");
+        addText(translationBuilder, "text", "groves.no_moonwell", "None");
 
         addText(translationBuilder, "tooltip", "groves.tab.general", "General");
         addText(translationBuilder, "tooltip", "groves.tab.chunks", "Chunks");

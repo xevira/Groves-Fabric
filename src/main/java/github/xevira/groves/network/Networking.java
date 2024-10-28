@@ -31,6 +31,13 @@ public class Networking {
                 handler.setFoliage(payload.foliage());
             }
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(UpdateMoonwellPayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                handler.setMoonwell(payload.pos());
+            }
+        });
     }
 
     public static void register()
@@ -42,6 +49,7 @@ public class Networking {
         // - Server -> Client
         PayloadTypeRegistry.playS2C().register(UpdateSunlightPayload.ID, UpdateSunlightPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdateTotalFoliagePayload.ID, UpdateTotalFoliagePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(UpdateMoonwellPayload.ID, UpdateMoonwellPayload.PACKET_CODEC);
 
         // Packet Handlers
         // - Server Side

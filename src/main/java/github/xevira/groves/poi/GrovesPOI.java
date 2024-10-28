@@ -7,6 +7,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import github.xevira.groves.Groves;
 import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
+import github.xevira.groves.network.UpdateMoonwellPayload;
 import github.xevira.groves.network.UpdateSunlightPayload;
 import github.xevira.groves.network.UpdateTotalFoliagePayload;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
@@ -87,7 +88,7 @@ public class GrovesPOI {
             return ImprintSanctuaryResult.ALREADY_EXISTS;
 
         // Create the Grove Sanctuary
-        GroveSanctuary sanctuary = new GroveSanctuary(player, world, chunkPos, enchanted);
+        GroveSanctuary sanctuary = new GroveSanctuary(world.getServer(), player, world, chunkPos, enchanted);
         SANCTUARIES.add(sanctuary);
 
         return ImprintSanctuaryResult.SUCCESS;
@@ -205,6 +206,7 @@ public class GrovesPOI {
 
         public static final long MAX_SUNLIGHT_PER_CHUNK = 1000000L;
 
+        private final MinecraftServer server;
         private final UUID owner;
         private final String ownerName;
 
@@ -223,18 +225,19 @@ public class GrovesPOI {
         private int updatingTickChunk;
         private int lastTotalFoliage = -1;
 
-        public GroveSanctuary(final PlayerEntity player, final ServerWorld world, final ChunkPos pos, final boolean enchanted)
+        public GroveSanctuary(final MinecraftServer server, final PlayerEntity player, final ServerWorld world, final ChunkPos pos, final boolean enchanted)
         {
-            this(player.getUuid(), player.getName().getString(), world, pos, enchanted);
+            this(server, player.getUuid(), player.getName().getString(), world, pos, enchanted);
         }
 
-        public GroveSanctuary(final UUID owner, final String ownerName, final ServerWorld world, final ChunkPos pos, final boolean enchanted)
+        public GroveSanctuary(final MinecraftServer server, final UUID owner, final String ownerName, final ServerWorld world, final ChunkPos pos, final boolean enchanted)
         {
-            this(owner, ownerName, world, new GroveChunkData(world, pos), enchanted);
+            this(server, owner, ownerName, world, new GroveChunkData(world, pos), enchanted);
         }
 
-        public GroveSanctuary(final UUID owner, final String ownerName, final ServerWorld world, final GroveChunkData data, final boolean enchanted)
+        public GroveSanctuary(final MinecraftServer server, final UUID owner, final String ownerName, final ServerWorld world, final GroveChunkData data, final boolean enchanted)
         {
+            this.server = server;
             this.owner = owner;
             this.ownerName = ownerName;
             this.world = world;
@@ -246,6 +249,22 @@ public class GrovesPOI {
 
             this.lastServerTick = 0;
             this.updatingTickChunk = -1; // -1 == Origin
+        }
+
+        private ServerPlayerEntity getOwnerPlayer(MinecraftServer server)
+        {
+            return server.getPlayerManager().getPlayer(this.owner);
+        }
+
+        private void sendOwner(CustomPayload payload)
+        {
+            ServerPlayerEntity player = getOwnerPlayer(this.server);
+
+            // player is online and current viewing the UI
+            if (player != null && player.currentScreenHandler instanceof GrovesSanctuaryScreenHandler)
+            {
+                ServerPlayNetworking.send(player, payload);
+            }
         }
 
         public UUID getOwner()
@@ -286,11 +305,13 @@ public class GrovesPOI {
         public void setMoonwell(BlockPos pos)
         {
             this.moonwell = pos.mutableCopy();
+            sendOwner(new UpdateMoonwellPayload(this.moonwell));
         }
 
         public void clearMoonwell()
         {
             this.moonwell = null;
+            sendOwner(new UpdateMoonwellPayload(this.moonwell));
         }
 
         /**
@@ -387,21 +408,6 @@ public class GrovesPOI {
             return this.groveChunks.get(this.updatingTickChunk);
         }
 
-        private ServerPlayerEntity getOwnerPlayer(MinecraftServer server)
-        {
-            return server.getPlayerManager().getPlayer(this.owner);
-        }
-
-        private void sendOwner(MinecraftServer server, CustomPayload payload)
-        {
-            ServerPlayerEntity player = getOwnerPlayer(server);
-
-            if (player != null)
-            {
-                ServerPlayNetworking.send(player, payload);
-            }
-        }
-
         /** Server Tick event used to generate passive sunlight **/
         public void onEndServerTick(MinecraftServer server)
         {
@@ -440,13 +446,13 @@ public class GrovesPOI {
             if (solarPower > 0) {
                 addSunlight(solarPower);
 
-                sendOwner(server, new UpdateSunlightPayload(this.storedSunlight));
+                sendOwner(new UpdateSunlightPayload(this.storedSunlight));
             }
 
             if (totalFoliage != lastTotalFoliage)
             {
                 lastTotalFoliage = totalFoliage;
-                sendOwner(server, new UpdateTotalFoliagePayload(totalFoliage));
+                sendOwner(new UpdateTotalFoliagePayload(totalFoliage));
             }
         }
 
@@ -579,7 +585,7 @@ public class GrovesPOI {
             List<GroveChunkData> chunks = deserializeChunks(json, server, world);
             List<GroveFriend> friends = deserializeFriends(json);
 
-            GroveSanctuary sanctuary = new GroveSanctuary(owner.get(), ownerName, world, origin.get(), enchanted.isPresent() && enchanted.get());
+            GroveSanctuary sanctuary = new GroveSanctuary(server, owner.get(), ownerName, world, origin.get(), enchanted.isPresent() && enchanted.get());
 
             sanctuary.groveChunks.addAll(chunks);
             sanctuary.groveFriends.addAll(friends);

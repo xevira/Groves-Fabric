@@ -13,6 +13,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,8 +25,12 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 
     public static final Text SUNLIGHT_TEXT = Groves.text("label", "groves.sunlight");
     public static final Text FOLIAGE_TEXT = Groves.text("label", "groves.foliage");
+    public static final Text MOONWELL_TEXT = Groves.text("label", "groves.moonwell");
+    public static final Text NO_MOONWELL_TEXT = Groves.text("text", "groves.no_moonwell");
 
     private int sunlightLabelW;
+    private int foliageLabelW;
+    private int moonwellLabelW;
 
     private final int tabBottomY;
 
@@ -46,6 +51,9 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         super.init();
 
         this.sunlightLabelW = this.textRenderer.getWidth(SUNLIGHT_TEXT.asOrderedText());
+        this.foliageLabelW = this.textRenderer.getWidth(FOLIAGE_TEXT.asOrderedText());
+        this.moonwellLabelW = this.textRenderer.getWidth(MOONWELL_TEXT.asOrderedText());
+
     }
 
     private <T extends Drawable> T addTabDrawable(ScreenTab tab, T widget)
@@ -94,32 +102,52 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         long maxSunlight = this.handler.getMaxSunlight();
         int percent = (int)(100 * sunlight / maxSunlight);
 
-        context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, x, y, 0, this.backgroundHeight, 102, 10, 256, 256);
-        context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, x + 1, y + 1, 0, this.backgroundHeight + 10, percent, 10, 256, 256);
+        context.drawText(this.textRenderer, SUNLIGHT_TEXT, x, y + 1, 0x404040, false);
+
+        // Background of the bar
+        context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, x + sunlightLabelW + 2, y, 0, this.backgroundHeight, 102, 10, 256, 256);
+
+        // Foreground of the bar
+        context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, x + sunlightLabelW + 3, y + 1, 0, this.backgroundHeight + 10, percent, 10, 256, 256);
+    }
+
+    private void drawFoliage(DrawContext context, int x, int y) {
+        context.drawText(this.textRenderer, FOLIAGE_TEXT, x, y, 0x404040, false);
+        int foliage = this.handler.getFoliage();
+        Text foliageText = Groves.text("text", "groves.foliage", foliage, (foliage == 1) ? "" : "s");
+        context.drawText(this.textRenderer, foliageText, x + foliageLabelW + 2, 20, 0x404040, false);
+    }
+
+    private void drawMoonwell(DrawContext context, int x, int y) {
+        context.drawText(this.textRenderer, MOONWELL_TEXT, x, y, 0x404040, false);
+        BlockPos pos = this.handler.getMoonwell();
+        if (pos != null)
+        {
+            Text moonwellText = Groves.text("text", "groves.moonwell", pos.getX(), pos.getY(), pos.getZ());
+            context.drawText(this.textRenderer, moonwellText, x + moonwellLabelW + 2, y, 0x404040, false);
+        }
+        else
+            context.drawText(this.textRenderer, NO_MOONWELL_TEXT, x + moonwellLabelW + 2, y, 0x404040, false);
     }
 
     private void drawGeneralForeground(DrawContext context, int mouseX, int mouseY) {
-        context.drawText(this.textRenderer, SUNLIGHT_TEXT, 4, 5, 0x404040, false);
-        drawSunlightProgressBar(context, 6 + sunlightLabelW, 4);
-
-        context.drawText(this.textRenderer, FOLIAGE_TEXT, 4, 20, 0x404040, false);
-        int foliageLabelW = this.textRenderer.getWidth(FOLIAGE_TEXT.asOrderedText());
-        int foliage = this.handler.getFoliage();
-        Text foliageText = Groves.text("text", "groves.foliage", foliage, (foliage == 1) ? "" : "s");
-        context.drawText(this.textRenderer, foliageText, foliageLabelW + 10, 20, 0x404040, false);
+        drawSunlightProgressBar(context, 4, 4);
+        drawFoliage(context, 4, 20);
+        drawMoonwell(context, 4, 36);
     }
 
     private void drawChunksForeground(DrawContext context, int mouseX, int mouseY) {
-        // Draw Origin Chunk Pos
+        // TODO: Draw Origin Chunk Pos
 
-        // Iterator over the additional chunks
-
+        // TODO: Iterator over the additional chunks
     }
 
     private void drawFriendsForeground(DrawContext context, int mouseX, int mouseY) {
+        // TODO: Iterator over the friend list
     }
 
     private void drawAbilitiesForeground(DrawContext context, int mouseX, int mouseY) {
+        // TODO: Generate list of abilities
     }
 
     @Override
