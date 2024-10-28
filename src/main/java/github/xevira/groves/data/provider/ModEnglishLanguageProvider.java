@@ -3,6 +3,7 @@ package github.xevira.groves.data.provider;
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
+import github.xevira.groves.poi.GrovesPOI;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.registry.RegistryWrapper;
@@ -98,6 +99,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.MOON_PHIAL_ITEM, "Phial of the Moon");
 
         addText(translationBuilder, MoonwellMultiblockMasterBlockEntity.TITLE, "Moonwell");
+        addText(translationBuilder, GrovesPOI.GroveSanctuary.TITLE, "Grove Sanctuary");
 
         addText(translationBuilder, "itemgroup", "groves_items", "Groves");
 
@@ -130,5 +132,11 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "moon_phial.not_in_grove", "§cMust be in a Grove Sanctuary to form a Moonwell.§r");
         addText(translationBuilder, "text", "moon_phial.moonwell_exists", "§cA Moonwell already exists for this Grove Sanctuary.§r");
         addText(translationBuilder, "text", "moonwell.invalid_block", "§cInvalid block at (%s, %s, %s).§r");
+
+        addText(translationBuilder, "label", "groves.foliage", "Foliage: %s leaf block%s");
+        addText(translationBuilder, "label", "groves.sunlight", "Sunlight: %s (%s%%)");
+
+        addText(translationBuilder, "key.category", "groves", "Groves");
+        addText(translationBuilder, "key", "open_groves_ui", "Open Groves UI");
     }
 }

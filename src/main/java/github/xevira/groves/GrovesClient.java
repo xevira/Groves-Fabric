@@ -1,6 +1,8 @@
 package github.xevira.groves;
 
+import github.xevira.groves.client.event.KeyInputHandler;
 import github.xevira.groves.client.renderer.MoonwellFluidLevelBER;
+import github.xevira.groves.client.screen.GrovesSanctuaryScreen;
 import github.xevira.groves.client.screen.MoonwellScreen;
 import github.xevira.groves.item.MoonPhialItem;
 import net.fabricmc.api.ClientModInitializer;
@@ -35,5 +37,9 @@ public class GrovesClient implements ClientModInitializer {
 
         // ScreenHandlers
         HandledScreens.register(Registration.MOONWELL_SCREEN_HANDLER, MoonwellScreen::new);
+        HandledScreens.register(Registration.GROVES_SANCTUARY_SCREEN_HANDLER, GrovesSanctuaryScreen::new);
+
+        // Keybinds
+        KeyInputHandler.load();
     }
 }

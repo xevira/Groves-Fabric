@@ -6,7 +6,10 @@ import github.xevira.groves.fluid.BlessedMoonWaterFluid;
 import github.xevira.groves.fluid.FluidSystem;
 import github.xevira.groves.fluid.MoonlightFluid;
 import github.xevira.groves.item.*;
+import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
 import github.xevira.groves.network.MoonwellScreenPayload;
+import github.xevira.groves.network.Networking;
+import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -465,6 +468,7 @@ public class Registration {
 
     // Screen Handlers
     public static final ScreenHandlerType<MoonwellScreenHandler> MOONWELL_SCREEN_HANDLER = register("moonwell", MoonwellScreenHandler::new, MoonwellScreenPayload.PACKET_CODEC);
+    public static final ScreenHandlerType<GrovesSanctuaryScreenHandler> GROVES_SANCTUARY_SCREEN_HANDLER = register("groves_sanctuary", GrovesSanctuaryScreenHandler::new, GrovesSanctuaryScreenPayload.PACKET_CODEC);
 
     // Sound Events
     public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
@@ -693,5 +697,7 @@ public class Registration {
         FluidSystem.registerFluid(FLOWING_BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
         FluidSystem.registerFluid(MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
         FluidSystem.registerFluid(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
+
+        Networking.register();
     }
 }

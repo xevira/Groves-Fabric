@@ -6,20 +6,32 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import github.xevira.groves.Groves;
+import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
+import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.util.JSONHelper;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeavesBlock;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
@@ -28,6 +40,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
+import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -188,7 +201,9 @@ public class GrovesPOI {
         ALREADY_HAS_GROVE;
     }
 
-    public static class GroveSanctuary {
+    public static class GroveSanctuary implements ExtendedScreenHandlerFactory<GrovesSanctuaryScreenPayload> {
+        public static final Text TITLE = Groves.text("gui", "groves");
+
         public static final long MAX_SUNLIGHT_PER_CHUNK = 1000000L;
 
         private final UUID owner;
@@ -342,6 +357,12 @@ public class GrovesPOI {
             if (isOrigin(pos)) return true;
 
             return groveChunks.stream().anyMatch(chunk -> chunk.isChunk(pos));
+        }
+
+        public boolean contains(BlockPos pos)
+        {
+            ChunkPos chunkPos = new ChunkPos(pos);
+            return contains(chunkPos);
         }
 
         /** Indicates whether the Grove Sanctuary is in the specified world and contains the specified chunk **/
@@ -545,6 +566,34 @@ public class GrovesPOI {
             return Optional.of(sanctuary);
         }
 
+        public ClientGroveSanctuary createClientData()
+        {
+            ClientGroveSanctuary sanctuary = new ClientGroveSanctuary(this.origin.chunkPos, this.enchanted);
+
+            this.groveChunks.stream().map(groveChunk -> groveChunk.chunkPos).forEach(sanctuary::addChunk);
+            sanctuary.groveFriends.addAll(this.groveFriends);
+
+            sanctuary.setFoliage(groveChunks.stream().map(chunk -> chunk.foliage).reduce(this.origin.foliage, Integer::sum));
+            sanctuary.setStoredSunlight(this.storedSunlight);
+            sanctuary.setMoonwell(this.moonwell);
+
+            return sanctuary;
+        }
+
+        @Override
+        public GrovesSanctuaryScreenPayload getScreenOpeningData(ServerPlayerEntity serverPlayerEntity) {
+            return new GrovesSanctuaryScreenPayload(createClientData());
+        }
+
+        @Override
+        public Text getDisplayName() {
+            return TITLE;
+        }
+
+        @Override
+        public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+            return new GrovesSanctuaryScreenHandler(syncId, playerInventory, createClientData());
+        }
 
         public static class GroveChunkData {
             public final ServerWorld world;
@@ -687,44 +736,244 @@ public class GrovesPOI {
                 return Optional.empty();
             }
         }
+    }
 
-        public record GroveFriend(UUID id, String name) {
+    public record GroveFriend(UUID id, String name) {
+        public static final PacketCodec<RegistryByteBuf, GroveFriend> PACKET_CODEC = new PacketCodec<RegistryByteBuf, GroveFriend>() {
+            @Override
+            public GroveFriend decode(RegistryByteBuf buf) {
+                UUID id = Uuids.PACKET_CODEC.decode(buf);
+                String name = PacketCodecs.STRING.decode(buf);
 
-            public GroveFriend(GameProfile profile)
-            {
-                this(profile.getId(), profile.getName());
+                return new GroveFriend(id, name);
             }
 
-            public GroveFriend(PlayerEntity friend)
+            @Override
+            public void encode(RegistryByteBuf buf, GroveFriend value) {
+                Uuids.PACKET_CODEC.encode(buf, value.id());
+                PacketCodecs.STRING.encode(buf, value.name());
+            }
+        };
+
+
+        public GroveFriend(GameProfile profile)
+        {
+            this(profile.getId(), profile.getName());
+        }
+
+        public GroveFriend(PlayerEntity friend)
+        {
+            this(friend.getGameProfile());
+        }
+
+        public boolean isFriend(PlayerEntity friend)
+        {
+            return id.equals(friend.getUuid());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof GroveFriend friend)
             {
-                this(friend.getGameProfile());
+                if (!friend.id.equals(this.id)) return false;
+                if (!friend.name.equals(this.name)) return false;
+
+                return true;
             }
 
-            public boolean isFriend(PlayerEntity friend)
+            if (obj instanceof UUID uuid)
             {
-                return id.equals(friend.getUuid());
+                return this.id.equals(uuid);
             }
 
-            public JsonObject serialize()
-            {
-                JsonObject json = new JsonObject();
+            return false;
+        }
 
-                json.add("name", new JsonPrimitive(this.name));
-                json.add("id", new JsonPrimitive(this.id.toString()));
+        public JsonObject serialize()
+        {
+            JsonObject json = new JsonObject();
 
-                return json;
+            json.add("name", new JsonPrimitive(this.name));
+            json.add("id", new JsonPrimitive(this.id.toString()));
+
+            return json;
+        }
+
+        public static Optional<GroveFriend> deserialize(JsonObject json)
+        {
+            Optional<UUID> id = JSONHelper.getUUID(json, "id");
+            String name = JSONHelper.getString(json, "name");
+
+            if (id.isPresent() && name != null)
+                return Optional.of(new GroveFriend(id.get(), name));
+
+            return Optional.empty();
+        }
+    }
+
+    public static class ClientGroveSanctuary
+    {
+        public static final PacketCodec<RegistryByteBuf, ClientGroveSanctuary> PACKET_CODEC = new PacketCodec<RegistryByteBuf, ClientGroveSanctuary>() {
+            @Override
+            public ClientGroveSanctuary decode(RegistryByteBuf buf) {
+                ChunkPos origin = ChunkPos.PACKET_CODEC.decode(buf);
+                boolean enchanted = PacketCodecs.BOOL.decode(buf);
+
+                ClientGroveSanctuary sanctuary = new ClientGroveSanctuary(origin, enchanted);
+
+                int chunks = PacketCodecs.INTEGER.decode(buf);
+                for(int i = 0; i < chunks; i++)
+                    sanctuary.addChunk(ChunkPos.PACKET_CODEC.decode(buf));
+
+                sanctuary.setFoliage(PacketCodecs.INTEGER.decode(buf));
+                sanctuary.setStoredSunlight(PacketCodecs.LONG.decode(buf));
+
+                if (PacketCodecs.BOOL.decode(buf))
+                    sanctuary.setMoonwell(BlockPos.PACKET_CODEC.decode(buf));
+
+                int friends = PacketCodecs.INTEGER.decode(buf);
+                for(int i = 0; i < friends; i++)
+                    sanctuary.addFriend(GroveFriend.PACKET_CODEC.decode(buf));
+
+                return sanctuary;
             }
 
-            public static Optional<GroveFriend> deserialize(JsonObject json)
-            {
-                Optional<UUID> id = JSONHelper.getUUID(json, "id");
-                String name = JSONHelper.getString(json, "name");
+            @Override
+            public void encode(RegistryByteBuf buf, ClientGroveSanctuary value) {
+                ChunkPos.PACKET_CODEC.encode(buf, value.origin);
+                PacketCodecs.BOOL.encode(buf, value.enchanted);
 
-                if (id.isPresent() && name != null)
-                    return Optional.of(new GroveFriend(id.get(), name));
+                PacketCodecs.INTEGER.encode(buf, value.groveChunks.size());
+                value.groveChunks.forEach(chunk -> ChunkPos.PACKET_CODEC.encode(buf, chunk));
 
-                return Optional.empty();
+                PacketCodecs.INTEGER.encode(buf, value.foliage);
+                PacketCodecs.LONG.encode(buf, value.storedSunlight);
+
+                BlockPos well = value.getMoonwell();
+                if (well != null) {
+                    PacketCodecs.BOOL.encode(buf, true);
+                    BlockPos.PACKET_CODEC.encode(buf, well);
+                }
+                else
+                    PacketCodecs.BOOL.encode(buf, false);
+
+                PacketCodecs.INTEGER.encode(buf, value.groveFriends.size());
+                value.groveFriends.forEach(friend -> GroveFriend.PACKET_CODEC.encode(buf, friend));
+
             }
+        };
+
+        private ChunkPos origin;
+        private boolean enchanted;
+
+        private final List<ChunkPos> groveChunks = new ArrayList<>();
+        private int foliage;
+
+        private long storedSunlight;
+        private BlockPos moonwell;
+
+        private final List<GroveFriend> groveFriends = new ArrayList<>();
+
+        public ClientGroveSanctuary(ChunkPos origin, boolean enchanted)
+        {
+            this.origin = origin;
+            this.enchanted = enchanted;
+        }
+
+        public void addFriend(@NotNull UUID uuid, @NotNull String name)
+        {
+            GroveFriend friend = new GroveFriend(uuid, name);
+            addFriend(friend);
+        }
+
+        public void addFriend(GroveFriend friend)
+        {
+            if (!this.groveFriends.contains(friend))
+                this.groveFriends.add(friend);
+        }
+
+        public void removeFriend(@NotNull UUID uuid)
+        {
+            this.groveFriends.removeIf(friend -> friend.id.equals(uuid));
+        }
+
+        public void removeFriend(int index)
+        {
+            if (index >= 0 && index < this.groveFriends.size())
+                this.groveFriends.remove(index);
+        }
+
+        public @Nullable ChunkPos getChunk(int index)
+        {
+            if (index < 0) return this.origin;
+
+            if (index < this.groveChunks.size())
+                return this.groveChunks.get(index);
+
+            return null;
+        }
+
+        public void addChunk(ChunkPos pos)
+        {
+            if (!this.groveChunks.contains(pos)) {
+                this.groveChunks.add(pos);
+            }
+        }
+
+        public void removeChunk(ChunkPos pos)
+        {
+            this.groveChunks.remove(pos);
+        }
+
+        public void setMoonwell(BlockPos pos)
+        {
+            this.moonwell = pos;
+        }
+
+        public @Nullable BlockPos getMoonwell()
+        {
+            return this.moonwell;
+        }
+
+        public long getStoredSunlight()
+        {
+            return this.storedSunlight;
+        }
+
+        public long getMaxStoredSunlight()
+        {
+            return GroveSanctuary.MAX_SUNLIGHT_PER_CHUNK * (this.groveChunks.size() + 1);
+        }
+
+        public void setStoredSunlight(long value)
+        {
+            this.storedSunlight = MathHelper.clamp(value, 0, getMaxStoredSunlight());
+        }
+
+        public void addStoredSunlight(long value)
+        {
+            this.storedSunlight = MathHelper.clamp(this.storedSunlight + value, 0, getMaxStoredSunlight());
+        }
+
+        public int getFoliage()
+        {
+            return this.foliage;
+        }
+
+        public void setFoliage(int foliage)
+        {
+            this.foliage = MathHelper.clamp(foliage, 0, 256 * (this.groveChunks.size() + 1));
+        }
+
+        public boolean isEnchanted()
+        {
+            return this.enchanted;
+        }
+
+
+        public void markDirty()
+        {
+
         }
     }
 }
