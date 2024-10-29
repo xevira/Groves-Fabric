@@ -2,6 +2,7 @@ package github.xevira.groves.network;
 
 import github.xevira.groves.Groves;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -45,6 +46,7 @@ public class Networking {
         // Packet Registration
         // - Client -> Server
         PayloadTypeRegistry.playC2S().register(OpenGrovesRequestPayload.ID, OpenGrovesRequestPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(GroveAbitlityKeybindPayload.ID, GroveAbitlityKeybindPayload.PACKET_CODEC);
 
         // - Server -> Client
         PayloadTypeRegistry.playS2C().register(UpdateSunlightPayload.ID, UpdateSunlightPayload.PACKET_CODEC);
@@ -60,6 +62,12 @@ public class Networking {
             sanctuary.ifPresent(groveSanctuary -> context.player().openHandledScreen(groveSanctuary));
 
             // If they don't have a sanctuary, do nothing.
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(GroveAbitlityKeybindPayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+
+            sanctuary.ifPresent(groveSanctuary -> GroveAbilities.executeKeybind(payload.abilityId(), groveSanctuary, context.player()));
         });
 
     }

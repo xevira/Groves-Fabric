@@ -153,5 +153,12 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
 
         addText(translationBuilder, "key.category", "groves", "Groves");
         addText(translationBuilder, "key", "open_groves_ui", "Open Groves UI");
+        addText(translationBuilder, "key", "groves_ability_chunk_load", "Toggle Grove Chunk Loading");
+        addText(translationBuilder, "key", "groves_ability_regeneration", "Toggle Grove Regeneration");
+
+        addText(translationBuilder, "text", "ability.not_enough_sunlight", "Not enough sunlight.  Need %s to activate.");
+
+        addText(translationBuilder, "text", "ability.chunk_load", "Chunk Loading");
+        addText(translationBuilder, "text", "ability.regeneration", "Regeneration");
     }
 }
