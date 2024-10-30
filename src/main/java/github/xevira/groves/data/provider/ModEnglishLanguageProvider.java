@@ -110,6 +110,8 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, "Music Disc");
         addText(translationBuilder, Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, ".desc", "Druid Music - Into the Heart of the Universe");
 
+        translationBuilder.addEnchantment(Registration.SOLAR_REPAIR_ENCHANTMENT_KEY, "Solar Repair");
+
         addText(translationBuilder, MoonwellMultiblockMasterBlockEntity.TITLE, "Moonwell");
         addText(translationBuilder, GrovesPOI.GroveSanctuary.TITLE, "Grove Sanctuary");
 
@@ -168,9 +170,15 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "key", "groves_ability_chunk_load", "Toggle Grove Chunk Loading");
         addText(translationBuilder, "key", "groves_ability_regeneration", "Toggle Grove Regeneration");
 
-        addText(translationBuilder, "text", "ability.not_enough_sunlight", "Not enough sunlight.  Need %s to activate.");
+        addText(translationBuilder, "text", "ability.not_enough_sunlight.activate", "Not enough sunlight.  Need %s to activate.");
+        addText(translationBuilder, "text", "ability.not_enough_sunlight.use", "Not enough sunlight.  Need %s to use.");
+        addText(translationBuilder, "text", "ability.empty_hand", "Nothing in your main hand to restore.");
+        addText(translationBuilder, "text", "ability.no_durability", "Item in main hand has no durability.");
+        addText(translationBuilder, "text", "ability.no_damage", "Item in main hand is not damaged.");
+        addText(translationBuilder, "text", "ability.item_restored", "Item restored.");
 
         addText(translationBuilder, "text", "ability.chunk_load", "Chunk Loading");
         addText(translationBuilder, "text", "ability.regeneration", "Regeneration");
+        addText(translationBuilder, "text", "ability.restoration", "Restoration");
     }
 }

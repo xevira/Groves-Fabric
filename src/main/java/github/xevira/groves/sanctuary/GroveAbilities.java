@@ -3,6 +3,7 @@ package github.xevira.groves.sanctuary;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.sanctuary.ability.RegenerationAbility;
+import github.xevira.groves.sanctuary.ability.RestorationAbility;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,22 +12,13 @@ import java.util.Map;
 import java.util.Optional;
 
 public class GroveAbilities {
-    // ID LIST
-    // 1 - ChunkLoad
-    // 2 - Regeneration
-    // 3 - MobSpawnProtection
-    // 4 - EndermanTeleportProtection
-    // 5 - MobGriefingProtection
-    // 6 - BlockInteractionProtection
-    // 7 - Respawn
-    // 8 - Teleport
-    // 9 - Defender
 
     public static final Map<Integer, GroveAbility> ABILITIES = new HashMap<>();
 
     static {
         registerAbility(new ChunkLoadAbility());
         registerAbility(new RegenerationAbility());
+        registerAbility(new RestorationAbility());
     }
 
     private static <T extends GroveAbility> void registerAbility(T ability)

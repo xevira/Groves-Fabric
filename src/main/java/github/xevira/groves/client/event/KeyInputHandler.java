@@ -26,8 +26,9 @@ public class KeyInputHandler {
                 ClientPlayNetworking.send(new OpenGrovesRequestPayload());
                 return true;
             });
-    public static final HotKey CHUNK_LOAD_ABILITY = new HotKey("chunk_load", HotKeyType.ABILITY, "G,C");
-    public static final HotKey REGENERATION_ABILITY = new HotKey("regeneration", HotKeyType.ABILITY, "G,R");
+    public static final HotKey CHUNK_LOAD_ABILITY = new HotKey.AbilityHotKey("ability_chunk_load", "chunk_load", "G,C");
+    public static final HotKey REGENERATION_ABILITY = new HotKey.AbilityHotKey("ability_regeneration", "regeneration", "G,R");
+    public static final HotKey RESTORATION_ABILITY = new HotKey.AbilityHotKey("ability_restoration", "restoration", "G,M");
 
     public static void registerHotKey(HotKey key)
     {
@@ -41,9 +42,10 @@ public class KeyInputHandler {
 
     public static void load() {
         // Set the ABILITY hotkey callback
-        HOT_KEYS.stream().filter(hotKey -> hotKey.getType() == HotKeyType.ABILITY).forEach(hotkey -> {
+        HOT_KEYS.stream().filter(hotKey -> hotKey instanceof HotKey.AbilityHotKey).forEach(hotkey -> {
             hotkey.getKeybind().setCallback((action, key) -> {
-                ClientPlayNetworking.send(new GroveAbitlityKeybindPayload(hotkey.getName()));
+                HotKey.AbilityHotKey abilityHotKey = (HotKey.AbilityHotKey)hotkey;
+                ClientPlayNetworking.send(new GroveAbitlityKeybindPayload(abilityHotKey.getAbilityName()));
                 return true;
             });
         });

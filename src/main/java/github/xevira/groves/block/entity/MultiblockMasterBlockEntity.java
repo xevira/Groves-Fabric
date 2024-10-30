@@ -1,7 +1,5 @@
 package github.xevira.groves.block.entity;
 
-import github.xevira.groves.Groves;
-import github.xevira.groves.util.BlockStateHelper;
 import github.xevira.groves.util.OwnableBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -11,7 +9,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;

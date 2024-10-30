@@ -202,6 +202,44 @@ public class JSONHelper {
         return Optional.empty();
     }
 
+    public static Optional<Float> getFloat(JsonObject json, String key)
+    {
+        if (json.has(key))
+        {
+            JsonElement e = json.get(key);
+            if (e.isJsonPrimitive())
+            {
+                JsonPrimitive p = e.getAsJsonPrimitive();
+
+                if (p.isNumber())
+                {
+                    return Optional.of(p.getAsFloat());
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static Optional<Double> getDouble(JsonObject json, String key)
+    {
+        if (json.has(key))
+        {
+            JsonElement e = json.get(key);
+            if (e.isJsonPrimitive())
+            {
+                JsonPrimitive p = e.getAsJsonPrimitive();
+
+                if (p.isNumber())
+                {
+                    return Optional.of(p.getAsDouble());
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
     public static JsonObject ChunkPosToJson(ChunkPos pos)
     {
         JsonObject o = new JsonObject();

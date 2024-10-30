@@ -7,6 +7,9 @@ import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.util.JSONHelper;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 
@@ -17,6 +20,30 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class GroveAbility {
+    public static final PacketCodec<RegistryByteBuf, GroveAbility> PACKET_CODEC = new PacketCodec<RegistryByteBuf, GroveAbility>() {
+        @Override
+        public GroveAbility decode(RegistryByteBuf buf) {
+            String name = PacketCodecs.STRING.decode(buf);
+            boolean active = PacketCodecs.BOOL.decode(buf);
+
+            Optional<GroveAbility> template = GroveAbilities.getByName(name);
+            if (template.isPresent())
+            {
+                GroveAbility ability = template.get().getConstructor().get();
+                ability.active = active;
+                return ability;
+            }
+
+            return null;
+        }
+
+        @Override
+        public void encode(RegistryByteBuf buf, GroveAbility value) {
+            PacketCodecs.STRING.encode(buf, value.getName());
+            PacketCodecs.BOOL.encode(buf, value.isActive());
+        }
+    };
+
     private static int NextId = 0;
 
     protected final int id;
@@ -67,11 +94,11 @@ public abstract class GroveAbility {
         return true;
     }
 
-    public abstract long startCost();
+    public long startCost() { return 0L; }
 
-    public abstract long tickCost();
+    public long tickCost() { return 0L; }
 
-    public abstract long useCost();
+    public  long useCost() { return 0L; }
 
     /** Whether to automatically deactivate if the {@code onServerTick} returns {@code true} **/
     public boolean autoDeactivate() { return this.autoDeactivate; }
@@ -81,32 +108,48 @@ public abstract class GroveAbility {
     public void setActive(boolean value) { this.active = value; }
 
     /** Determines whether the sanctuary can enable the ability **/
-    public abstract boolean canActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
+    public boolean canActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        return false;
+    }
 
     public abstract void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
 
     /** Action on performed when the ability is turned on **/
-    public abstract void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
+    public void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+    }
 
     /** Action on performed when the ability is turned off **/
-    public abstract void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
+    public void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+    }
 
     /**
      *  Action performed when the sanctuary handles its server tick
      *
      *  {@return whether to disable the ability}
      ***/
-    public abstract boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary);
+    public boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary)
+    {
+        return true;
+    }
 
-    public abstract boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
+    public boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        return false;
+    }
 
-    public abstract boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
+    public boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        return true;
+    }
 
     public JsonObject serialize()
     {
         JsonObject json = new JsonObject();
 
-        json.add("id", new JsonPrimitive(this.id));
+        json.add("name", new JsonPrimitive(this.name));
         json.add("active", new JsonPrimitive(this.active));
 
         return json;
@@ -114,11 +157,11 @@ public abstract class GroveAbility {
 
     public static Optional<GroveAbility> deserialize(JsonObject json)
     {
-        Optional<Integer> id = JSONHelper.getInt(json, "id");
+        String name = JSONHelper.getString(json, "name");
         Optional<Boolean> active = JSONHelper.getBoolean(json, "active");
 
-        if (id.isPresent()) {
-            Optional<GroveAbility> ability = GroveAbilities.getById(id.get());
+        if (name != null) {
+            Optional<GroveAbility> ability = GroveAbilities.getByName(name);
 
             if (ability.isPresent()) {
                 ability.get().active = active.isPresent() && active.get();

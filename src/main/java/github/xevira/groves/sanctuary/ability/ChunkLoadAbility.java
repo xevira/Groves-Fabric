@@ -34,11 +34,6 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public long useCost() {
-        return -1;
-    }
-
-    @Override
     public boolean canActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         return sanctuary.getStoredSunlight() >= startCost();
     }
@@ -46,7 +41,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     @Override
     public void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
     {
-        player.sendMessage(Groves.text("text", "ability.not_enough_sunlight", startCost()), false);
+        player.sendMessage(Groves.text("text", "ability.not_enough_sunlight.activate", startCost()), false);
     }
 
     @Override
@@ -71,16 +66,6 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
             return true;
 
         sanctuary.useSunlight(cost);
-        return false;
-    }
-
-    @Override
-    public boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
-        return false;
-    }
-
-    @Override
-    public boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         return false;
     }
 }

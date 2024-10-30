@@ -94,4 +94,23 @@ public class HotKey {
         }
     }
 
+    public static class AbilityHotKey extends HotKey {
+        private final String abilityName;
+
+        public AbilityHotKey(String name, String abilityName, String defaultKey) {
+            this(name, abilityName, defaultKey, name + " comment");
+        }
+
+        public AbilityHotKey(String name, String abilityName, String defaultKey, String comment) {
+            this(name, abilityName, defaultKey, KeybindSettings.DEFAULT, comment);
+        }
+
+        public AbilityHotKey(String name, String abilityName, String defaultKey, KeybindSettings settings, String comment) {
+            super(name, HotKeyType.ABILITY, defaultKey, settings, comment);
+
+            this.abilityName = abilityName;
+        }
+
+        public String getAbilityName() { return this.abilityName; }
+    }
 }

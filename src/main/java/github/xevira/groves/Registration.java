@@ -1,7 +1,9 @@
 package github.xevira.groves;
 
+import com.mojang.serialization.MapCodec;
 import github.xevira.groves.block.*;
 import github.xevira.groves.block.entity.*;
+import github.xevira.groves.enchantment.effects.SolarRepairEnchantmentEffect;
 import github.xevira.groves.fluid.BlessedMoonWaterFluid;
 import github.xevira.groves.fluid.FluidSystem;
 import github.xevira.groves.fluid.MoonlightFluid;
@@ -23,6 +25,8 @@ import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.block.jukebox.JukeboxSong;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.effect.EnchantmentEntityEffect;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.*;
@@ -568,6 +572,10 @@ public class Registration {
             .canBoatsWork()
             .build();
 
+    public static final MapCodec<SolarRepairEnchantmentEffect> SOLAR_REPAIR_ENCHANTMENT_CODEC = register("solar_repair", SolarRepairEnchantmentEffect.CODEC);
+
+    public static final RegistryKey<Enchantment> SOLAR_REPAIR_ENCHANTMENT_KEY = RegistryKey.of(RegistryKeys.ENCHANTMENT, Groves.id("solar_repair"));
+
     // Registration Functions
     public static Block register(RegistryKey<Block> key, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
         Block block = (Block)factory.apply(settings.registryKey(key));
@@ -695,6 +703,11 @@ public class Registration {
                         .icon(() -> new ItemStack(icon))
                         .displayName(Text.translatable(Groves.textPath("itemgroup", display)))
                         .entries((displayContext, entries) -> Arrays.stream(items).forEach(entries::add)).build());
+    }
+
+    public static <T extends EnchantmentEntityEffect> MapCodec<T> register(String name, MapCodec<T> codec)
+    {
+        return Registry.register(Registries.ENCHANTMENT_ENTITY_EFFECT_TYPE, Groves.id(name), codec);
     }
 
     public static final Map<Item, Item> BLOCK_TO_BLESSED = new HashMap<>();

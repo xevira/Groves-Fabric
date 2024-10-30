@@ -68,6 +68,8 @@ public class Networking {
         ServerPlayNetworking.registerGlobalReceiver(GroveAbitlityKeybindPayload.ID, (payload, context) -> {
             Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
+            Groves.LOGGER.info("Grove Ability: {}", payload.name());
+
             sanctuary.ifPresent(groveSanctuary -> GroveAbilities.executeKeybind(payload.name(), groveSanctuary, context.player()));
         });
 

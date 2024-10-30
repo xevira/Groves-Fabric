@@ -24,6 +24,9 @@ public class ServerConfig {
 
     private final Map<Integer, Boolean> allowAbility = new HashMap<>();
 
+    private float solarRepairBaseChance;
+    private float solarRepairExtraChance;
+
     public static void onServerLoad(MinecraftServer server) {
         currentConfig = readConfig(server);
     }
@@ -39,8 +42,11 @@ public class ServerConfig {
     {
         for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {
-            allowAbility.put(ability.getId(), ability.getDefaultAllow());
+            this.allowAbility.put(ability.getId(), ability.getDefaultAllow());
         }
+
+        this.solarRepairBaseChance = 0.05f;
+        this.solarRepairExtraChance = 0.025f;
     }
 
     public boolean isAbilityAllowed(int id)
@@ -119,6 +125,9 @@ public class ServerConfig {
 
         json.add("allow", allow);
 
+        json.add("solarRepairBaseChance", new JsonPrimitive(this.solarRepairBaseChance));
+        json.add("solarRepairExtraChance", new JsonPrimitive(this.solarRepairExtraChance));
+
         return json;
     }
 
@@ -155,6 +164,16 @@ public class ServerConfig {
                 }
             }
         }
+
+
+        Optional<Float> solarRepairBaseChance = JSONHelper.getFloat(json, "solarRepairBaseChance");
+        solarRepairBaseChance.ifPresent(aFloat -> this.solarRepairBaseChance = aFloat);
+
+        Optional<Float> solarRepairExtraChance = JSONHelper.getFloat(json, "solarRepairExtraChance");
+        solarRepairExtraChance.ifPresent(aFloat -> this.solarRepairExtraChance = aFloat);
     }
 
+
+    public static float getSolarRepairBaseChance() { return currentConfig.solarRepairBaseChance; }
+    public static float getSolarRepairExtraChance() { return currentConfig.solarRepairExtraChance; }
 }

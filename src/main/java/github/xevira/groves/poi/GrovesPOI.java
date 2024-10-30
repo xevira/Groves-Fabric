@@ -732,6 +732,8 @@ public class GrovesPOI {
             sanctuary.setStoredSunlight(this.storedSunlight);
             sanctuary.setMoonwell(this.moonwell);
 
+            sanctuary.groveAbilities.addAll(this.groveAbilities);
+
             return sanctuary;
         }
 
@@ -1023,6 +1025,13 @@ public class GrovesPOI {
                 for(int i = 0; i < friends; i++)
                     sanctuary.addFriend(GroveFriend.PACKET_CODEC.decode(buf));
 
+                int abilities = PacketCodecs.INTEGER.decode(buf);
+                for(int i = 0; i < abilities; i++) {
+                    GroveAbility ability = GroveAbility.PACKET_CODEC.decode(buf);
+                    if (ability != null)
+                        sanctuary.addAbility(ability);
+                }
+
                 return sanctuary;
             }
 
@@ -1048,6 +1057,8 @@ public class GrovesPOI {
                 PacketCodecs.INTEGER.encode(buf, value.groveFriends.size());
                 value.groveFriends.forEach(friend -> GroveFriend.PACKET_CODEC.encode(buf, friend));
 
+                PacketCodecs.INTEGER.encode(buf, value.groveAbilities.size());
+                value.groveAbilities.forEach(ability -> GroveAbility.PACKET_CODEC.encode(buf, ability));
             }
         };
 
@@ -1061,6 +1072,7 @@ public class GrovesPOI {
         private BlockPos moonwell;
 
         private final List<GroveFriend> groveFriends = new ArrayList<>();
+        private final List<GroveAbility> groveAbilities = new ArrayList<>();
 
         public ClientGroveSanctuary(ChunkData origin, boolean enchanted)
         {
@@ -1089,6 +1101,12 @@ public class GrovesPOI {
         {
             if (index >= 0 && index < this.groveFriends.size())
                 this.groveFriends.remove(index);
+        }
+
+        public void addAbility(GroveAbility ability)
+        {
+            if(this.groveAbilities.stream().noneMatch(ab -> ab.getName().equalsIgnoreCase(ability.getName())))
+                this.groveAbilities.add(ability);
         }
 
         public @Nullable ChunkData getChunk(int index)
