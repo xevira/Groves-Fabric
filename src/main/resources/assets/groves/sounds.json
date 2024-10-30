@@ -10,5 +10,13 @@
     "sounds": [
       "groves:moonwell_deactivate"
     ]
+  },
+  "into_the_heart_of_the_universe": {
+    "sounds": [
+      {
+        "name": "groves:druid_music__into_the_heart_of_the_universe",
+        "stream" : true
+      }
+    ]
   }
 }

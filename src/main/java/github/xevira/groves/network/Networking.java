@@ -3,6 +3,7 @@ package github.xevira.groves.network;
 import github.xevira.groves.Groves;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbilities;
+import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -67,7 +68,7 @@ public class Networking {
         ServerPlayNetworking.registerGlobalReceiver(GroveAbitlityKeybindPayload.ID, (payload, context) -> {
             Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
-            sanctuary.ifPresent(groveSanctuary -> GroveAbilities.executeKeybind(payload.abilityId(), groveSanctuary, context.player()));
+            sanctuary.ifPresent(groveSanctuary -> GroveAbilities.executeKeybind(payload.name(), groveSanctuary, context.player()));
         });
 
     }

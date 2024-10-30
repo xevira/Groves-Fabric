@@ -412,10 +412,25 @@ public class GrovesPOI {
             return groveChunks.stream().anyMatch(chunk -> chunk.isChunk(pos));
         }
 
+        public boolean contains(ChunkPos pos1, ChunkPos pos2)
+        {
+            if (isOrigin(pos1)) return true;
+            if (isOrigin(pos2)) return true;
+
+            return groveChunks.stream().anyMatch(chunk -> chunk.isChunk(pos1) || chunk.isChunk(pos2));
+        }
+
         public boolean contains(BlockPos pos)
         {
             ChunkPos chunkPos = new ChunkPos(pos);
             return contains(chunkPos);
+        }
+
+        public boolean contains(BlockPos pos1, BlockPos pos2)
+        {
+            ChunkPos chunkPos1 = new ChunkPos(pos1);
+            ChunkPos chunkPos2 = new ChunkPos(pos2);
+            return contains(chunkPos1, chunkPos2);
         }
 
         /** Indicates whether the Grove Sanctuary is in the specified world and contains the specified chunk **/
@@ -429,6 +444,11 @@ public class GrovesPOI {
         public Optional<GroveAbility> getAbility(int id)
         {
             return this.groveAbilities.stream().filter(ability -> ability.getId() == id).findFirst();
+        }
+
+        public Optional<GroveAbility> getAbility(String name)
+        {
+            return this.groveAbilities.stream().filter(ability -> ability.getName().equalsIgnoreCase(name)).findFirst();
         }
 
         private boolean isOwnerOnline(MinecraftServer server)
@@ -495,10 +515,8 @@ public class GrovesPOI {
                         ability.setActive(false);
                         ability.onDeactivate(this.server, this, null);
                     }
-                    else if (ability.onServerTick(this.server, this))
-                    {
-                        if (ability.autoDeactivate())
-                        {
+                    else if (ability.onServerTick(this.server, this)) {
+                        if (ability.autoDeactivate()) {
                             ability.setActive(false);
                             ability.onDeactivate(this.server, this, null);
                         }

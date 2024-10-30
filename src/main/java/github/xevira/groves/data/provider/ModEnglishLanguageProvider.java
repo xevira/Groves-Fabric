@@ -6,6 +6,7 @@ import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import github.xevira.groves.poi.GrovesPOI;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
+import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
@@ -28,6 +29,15 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
 
     private static void addText(@NotNull TranslationBuilder builder, @NotNull String path, @NotNull String value) {
         Text text = Text.translatable(path);
+        if (text.getContent() instanceof TranslatableTextContent translatableTextContent) {
+            builder.add(translatableTextContent.getKey(), value);
+        } else {
+            Groves.LOGGER.warn("Failed to add translation for text: {}", text.getString());
+        }
+    }
+
+    private static void addText(@NotNull TranslationBuilder builder, @NotNull Item item, @NotNull String path, @NotNull String value) {
+        Text text = Text.translatable(item.getTranslationKey() + path);
         if (text.getContent() instanceof TranslatableTextContent translatableTextContent) {
             builder.add(translatableTextContent.getKey(), value);
         } else {
@@ -97,6 +107,8 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, "Enchanted Imprinting Sigil");
         translationBuilder.add(Registration.MOONLIGHT_BUCKET_ITEM, "Bucket of Moonlight");
         translationBuilder.add(Registration.MOON_PHIAL_ITEM, "Phial of the Moon");
+        translationBuilder.add(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, "Music Disc");
+        addText(translationBuilder, Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, ".desc", "Druid Music - Into the Heart of the Universe");
 
         addText(translationBuilder, MoonwellMultiblockMasterBlockEntity.TITLE, "Moonwell");
         addText(translationBuilder, GrovesPOI.GroveSanctuary.TITLE, "Grove Sanctuary");

@@ -30,6 +30,10 @@
 		"fluid.WitchEntityMixin",
 		"fluid.ZombieEntityMixin"
 	],
+	"client": [
+		"client.KeyboardMixin",
+		"client.MinecraftClientMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}

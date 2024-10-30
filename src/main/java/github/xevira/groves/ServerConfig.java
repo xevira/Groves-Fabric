@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ServerConfig {
-    private static final String CONFIG_PATH = "config/" + Groves.MOD_ID + ".json";
-    private static final String BACKUP_PATH = "config/" + Groves.MOD_ID + ".json.bak";
+    private static final String CONFIG_PATH = "config/" + Groves.MOD_ID + "-server.json";
+    private static final String BACKUP_PATH = "config/" + Groves.MOD_ID + "-server.json.bak";
 
     private static ServerConfig currentConfig;
 

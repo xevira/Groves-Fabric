@@ -1,74 +1,117 @@
 package github.xevira.groves.client.event;
 
+import com.google.gson.JsonObject;
 import github.xevira.groves.Groves;
-import github.xevira.groves.client.event.keybind.GroveAbilityKeyBind;
-import github.xevira.groves.client.event.keybind.ModKeyBinding;
-import github.xevira.groves.client.event.keybind.OpenGrovesUIKeyBind;
-import github.xevira.groves.sanctuary.GroveAbilities;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import github.xevira.groves.client.event.keybind.*;
+import github.xevira.groves.network.GroveAbitlityKeybindPayload;
+import github.xevira.groves.network.OpenGrovesRequestPayload;
+import github.xevira.groves.util.JSONHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.network.codec.PacketCodec;
-import org.lwjgl.glfw.GLFW;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class KeyInputHandler {
     public static final String KEY_CATEGORY_GROVES = Groves.textPath("key.category", "groves");
     public static final String KEY_OPEN_GROVES_UI = Groves.textPath("key", "open_groves_ui");
 
-    public static final ModKeyBinding OPEN_GROVE_UI_KEY = register(new OpenGrovesUIKeyBind(KEY_OPEN_GROVES_UI, InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_G, KEY_CATEGORY_GROVES));
-    public static final List<ModKeyBinding> GROVE_ABILITY_KEYS = new ArrayList<>();
+    public static final List<HotKey> HOT_KEYS = new ArrayList<>();
 
-    // Used to keep from opening the Groves UI when doing an ability
-    private static boolean didAbility = false;
+    public static final HotKey OPEN_GROVES_UI_KEY = new HotKey("open_groves_ui", HotKeyType.GENERAL, "G", KeybindSettings.RELEASE_EXCLUSIVE, "Opens the Groves UI")
+            .setCallback((action, key) -> {
+                ClientPlayNetworking.send(new OpenGrovesRequestPayload());
+                return true;
+            });
+    public static final HotKey CHUNK_LOAD_ABILITY = new HotKey("chunk_load", HotKeyType.ABILITY, "G,C");
+    public static final HotKey REGENERATION_ABILITY = new HotKey("regeneration", HotKeyType.ABILITY, "G,R");
 
-    public static <T extends ModKeyBinding> ModKeyBinding register(T binding)
+    public static void registerHotKey(HotKey key)
     {
-        KeyBindingHelper.registerKeyBinding(binding);
-
-        return binding;
+        HOT_KEYS.add(key);
     }
 
-    private static void handleGrovesKeybinds(MinecraftClient client)
+    public static @Nullable HotKey getHotKey(String name)
     {
-        // Groves Key + ability key
-        if (OPEN_GROVE_UI_KEY.isPressed())
-        {
-            // Groves functionality
-            for(ModKeyBinding binding : GROVE_ABILITY_KEYS)
-            {
-                if (binding.wasPressed()) {
-                    binding.onPressed(client, client.player);
-                    didAbility = true;
-                    break;
-                }
-            }
-        }
-        else if (OPEN_GROVE_UI_KEY.wasPressed())
-        {
-            if (!didAbility)
-                OPEN_GROVE_UI_KEY.onPressed(client, client.player);
-
-            didAbility = false;
-        }
-
+        return HOT_KEYS.stream().filter(hk -> hk.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 
     public static void load() {
-        GroveAbilities.ABILITIES.forEach((id, ability) -> {
-            ModKeyBinding binding = new GroveAbilityKeyBind(Groves.textPath("key", "groves_ability_" + ability.getName()), InputUtil.Type.KEYSYM, id, KEY_CATEGORY_GROVES);
-
-            register(binding);
-
-            GROVE_ABILITY_KEYS.add(binding);
+        // Set the ABILITY hotkey callback
+        HOT_KEYS.stream().filter(hotKey -> hotKey.getType() == HotKeyType.ABILITY).forEach(hotkey -> {
+            hotkey.getKeybind().setCallback((action, key) -> {
+                ClientPlayNetworking.send(new GroveAbitlityKeybindPayload(hotkey.getName()));
+                return true;
+            });
         });
 
-        ClientTickEvents.END_CLIENT_TICK.register(KeyInputHandler::handleGrovesKeybinds);
 
+        // Standard keybind
+//        ClientTickEvents.END_CLIENT_TICK.register((client) -> {
+//            if (OPEN_GROVE_UI_KEY.wasPressed())
+//            {
+//                ClientPlayNetworking.send(new OpenGrovesRequestPayload());
+//            }
+//        });
+    }
+
+    private static boolean checkKeyBindsForChanges(int keyCode)
+    {
+        boolean cancel = false;
+
+        if (!HOT_KEYS.isEmpty())
+        {
+            for (HotKey key : HOT_KEYS)
+            {
+                //Groves.LOGGER.info("Checking hotkey {},", key.getName());
+                // Note: isPressed() has to get called for key releases too, to reset the state
+                cancel |= key.getKeybind().updateIsPressed();
+            }
+        }
+
+        return cancel;
+    }
+
+    public static boolean onKeyInput(int keyCode, int scanCode, int modifiers, int action, @NotNull MinecraftClient mc)
+    {
+        // Update the pressed key states
+        Keybind.onKeyInputPre(keyCode, scanCode, modifiers, action);
+
+        return checkKeyBindsForChanges(keyCode);
+    }
+
+    public static void loadConfig(JsonObject root)
+    {
+        Optional<JsonObject> obj = JSONHelper.getObject(root, "hotkeys");
+
+        if (obj.isPresent())
+        {
+            for(HotKey hk : HOT_KEYS)
+            {
+                Optional<JsonObject> hkJson = JSONHelper.getObject(obj.get(), hk.getName());
+
+                hkJson.ifPresent(jsonObject -> hk.getKeybind().setValueFromJsonElement(jsonObject));
+            }
+        }
+    }
+
+    public static void saveConfig(JsonObject root)
+    {
+        JsonObject obj = new JsonObject();
+
+        for(HotKey hk : HOT_KEYS)
+        {
+            obj.add(hk.getName(), hk.getKeybind().getAsJsonElement());
+        }
+
+        root.add("hotkeys", obj);
+    }
+
+    public static void updateKeyBinds()
+    {
 
     }
 }

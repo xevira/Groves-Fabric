@@ -20,6 +20,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.NoteBlockInstrument;
+import net.minecraft.block.jukebox.JukeboxSong;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
 import net.minecraft.fluid.FlowableFluid;
@@ -55,6 +56,10 @@ public class Registration {
     public static final FlowableFluid FLOWING_BLESSED_MOON_WATER_FLUID = register("flowing_blessed_moon_water", new BlessedMoonWaterFluid.Flowing());
     public static final FlowableFluid FLOWING_MOONLIGHT_FLUID = register("flowing_moonlight", new MoonlightFluid.Flowing());
     public static final FlowableFluid MOONLIGHT_FLUID = register("moonlight", new MoonlightFluid.Still());
+
+    // Jukebox Songs
+    public static final RegistryKey<JukeboxSong> INTO_THE_HEART_OF_THE_UNIVERSE_KEY =
+            RegistryKey.of(RegistryKeys.JUKEBOX_SONG, Groves.id("into_the_heart_of_the_universe"));
 
     // Block Settings
     public static final AbstractBlock.Settings MOONSTONE_SETTINGS = AbstractBlock.Settings.create()
@@ -427,6 +432,12 @@ public class Registration {
             settings -> new ImprintingSigilItem(false, settings),
             new Item.Settings().rarity(Rarity.RARE).maxCount(1).fireproof());
 
+    public static final Item INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM = register(
+            "into_the_heart_of_the_universe_music_disc",
+            Item::new,
+            new Item.Settings().rarity(Rarity.EPIC).jukeboxPlayable(INTO_THE_HEART_OF_THE_UNIVERSE_KEY).maxCount(1));
+
+
     public static final Item MOONLIGHT_BUCKET_ITEM = register(
             "moonlight_bucket",
             settings -> new BucketItem(MOONLIGHT_FLUID, settings),
@@ -473,6 +484,7 @@ public class Registration {
     // Sound Events
     public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
     public static final SoundEvent MOONWELL_DEACTIVATE_SOUND = register("moonwell_deactivate");
+    public static final SoundEvent INTO_THE_HEART_OF_THE_UNIVERSE_SOUND = register("into_the_heart_of_the_universe");
 
     // Tags
     // -- Block
@@ -531,7 +543,8 @@ public class Registration {
             MOONLIGHT_BUCKET_ITEM,
             MOON_PHIAL_ITEM,
             IMPRINTING_SIGIL_ITEM,
-            ENCHANTED_IMPRINTING_SIGIL_ITEM);
+            ENCHANTED_IMPRINTING_SIGIL_ITEM,
+            INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM);
 
     public static final FluidSystem BLESSED_MOON_WATER_FLUID_DATA = new FluidSystem.Builder(BLESSED_MOON_WATERS_TAG)
             .preventsBlockSpreading()
@@ -697,6 +710,8 @@ public class Registration {
         FluidSystem.registerFluid(FLOWING_BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
         FluidSystem.registerFluid(MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
         FluidSystem.registerFluid(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
+
+        // TODO: Add to the item group where other music discs are
 
         Networking.register();
     }

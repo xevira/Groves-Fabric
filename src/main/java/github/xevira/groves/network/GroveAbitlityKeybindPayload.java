@@ -6,10 +6,10 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 
-public record GroveAbitlityKeybindPayload(int abilityId) implements CustomPayload {
+public record GroveAbitlityKeybindPayload(String name) implements CustomPayload {
     public static final Id<GroveAbitlityKeybindPayload> ID = new Id<>(Groves.id("grove_ability_keybind"));
     public static final PacketCodec<RegistryByteBuf, GroveAbitlityKeybindPayload> PACKET_CODEC =
-            PacketCodec.tuple(PacketCodecs.INTEGER, GroveAbitlityKeybindPayload::abilityId, GroveAbitlityKeybindPayload::new);
+            PacketCodec.tuple(PacketCodecs.STRING, GroveAbitlityKeybindPayload::name, GroveAbitlityKeybindPayload::new);
 
     @Override
     public Id<? extends CustomPayload> getId() {

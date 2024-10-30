@@ -1,16 +1,17 @@
 package github.xevira.groves.util;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import github.xevira.groves.Groves;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
+
+import static github.xevira.groves.Groves.GSON;
 
 public class JSONHelper {
     public static String getString(JsonObject json, String key)
@@ -81,6 +82,25 @@ public class JSONHelper {
         return Optional.empty();
     }
 
+    public static boolean getBoolean(JsonObject json, String key, boolean defaultValue)
+    {
+        if (json.has(key))
+        {
+            JsonElement e = json.get(key);
+            if (e.isJsonPrimitive())
+            {
+                JsonPrimitive p = e.getAsJsonPrimitive();
+
+                if (p.isBoolean())
+                {
+                    return p.getAsBoolean();
+                }
+            }
+        }
+
+        return defaultValue;
+    }
+
     public static Optional<Integer> getInt(JsonObject json, String key)
     {
         if (json.has(key))
@@ -98,6 +118,25 @@ public class JSONHelper {
         }
 
         return Optional.empty();
+    }
+
+    public static int getInt(JsonObject json, String key, int defaultValue)
+    {
+        if (json.has(key))
+        {
+            JsonElement e = json.get(key);
+            if (e.isJsonPrimitive())
+            {
+                JsonPrimitive p = e.getAsJsonPrimitive();
+
+                if (p.isNumber())
+                {
+                    return p.getAsInt();
+                }
+            }
+        }
+
+        return defaultValue;
     }
 
     private static Optional<Integer> getInt(JsonArray array, int index)
@@ -223,5 +262,54 @@ public class JSONHelper {
         return Optional.empty();
     }
 
+    @Nullable
+    public static JsonElement parseJsonFile(File file)
+    {
+        if (file != null && file.exists() && file.isFile() && file.canRead())
+        {
+            String fileName = file.getAbsolutePath();
 
+            try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))
+            {
+                return JsonParser.parseReader(reader);
+            }
+            catch (Exception e)
+            {
+                Groves.LOGGER.error("Failed to parse the JSON file '{}'", fileName, e);
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean writeJsonToFile(JsonObject root, File file)
+    {
+        File fileTmp = new File(file.getParentFile(), file.getName() + ".tmp");
+
+        if (fileTmp.exists())
+        {
+            fileTmp = new File(file.getParentFile(), UUID.randomUUID() + ".tmp");
+        }
+
+        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileTmp), StandardCharsets.UTF_8))
+        {
+            writer.write(GSON.toJson(root));
+            writer.close();
+
+            if (file.exists() && file.isFile() && !file.delete())
+            {
+                Groves.LOGGER.warn("Failed to delete file '{}'", file.getAbsolutePath());
+            }
+
+            return fileTmp.renameTo(file);
+        }
+        catch (Exception e)
+        {
+            Groves.LOGGER.warn("Failed to write JSON data to file '{}'", fileTmp.getAbsolutePath(), e);
+        }
+
+        return false;
+    }
 }
+
+

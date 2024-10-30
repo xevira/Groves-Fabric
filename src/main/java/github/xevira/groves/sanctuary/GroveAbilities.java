@@ -4,6 +4,7 @@ import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.sanctuary.ability.RegenerationAbility;
 import net.minecraft.entity.player.PlayerEntity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,13 +48,18 @@ public class GroveAbilities {
     /** Checks if the ability exists for the given name **/
     public static boolean exists(String name)
     {
-        return ABILITIES.values().stream().anyMatch(ability -> ability.getName().equals(name));
+        return ABILITIES.values().stream().anyMatch(ability -> ability.getName().equalsIgnoreCase(name));
     }
 
     public static int getIdByName(String name)
     {
-        return ABILITIES.values().stream().filter(ability -> ability.getName().equals(name)).findFirst().map(ability -> ability.id).orElse(-1);
+        return ABILITIES.values().stream().filter(ability -> ability.getName().equalsIgnoreCase(name)).findFirst().map(ability -> ability.id).orElse(-1);
 
+    }
+
+    public static Optional<GroveAbility> getByName(String name)
+    {
+        return ABILITIES.values().stream().filter(ability -> ability.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     public static String getNameById(int id)
@@ -64,43 +70,31 @@ public class GroveAbilities {
         return null;
     }
 
-    public static void executeKeybind(int id, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public static void executeKeybind(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
     {
-        Optional<GroveAbility> abilityOpt = sanctuary.getAbility(id);
+        Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
 
-        if (abilityOpt.isPresent())
-        {
-            GroveAbility ability = abilityOpt.get();
-            if (ability.isAutomatic())
-            {
-                if (ability.isActive())
-                {
+        if (ablityOpt.isPresent()) {
+            GroveAbility ability = ablityOpt.get();
+            if (ability.isAutomatic()) {
+                if (ability.isActive()) {
                     // Turn off
                     ability.setActive(false);
                     ability.onDeactivate(sanctuary.getServer(), sanctuary, player);
-                }
-                else if (ability.isEnabled())
-                {
+                } else if (ability.isEnabled()) {
                     // Check if it can be turned on
-                    if (ability.canActivate(sanctuary.getServer(), sanctuary, player))
-                    {
+                    if (ability.canActivate(sanctuary.getServer(), sanctuary, player)) {
                         ability.setActive(true);
                         ability.onActivate(sanctuary.getServer(), sanctuary, player);
-                    }
-                    else
-                    {
-                        // Complain
+                    } else
                         ability.sendFailure(sanctuary.getServer(), sanctuary, player);
-                    }
                 }
+            } else if (ability.isEnabled()) {
+                if (ability.canUse(sanctuary.getServer(), sanctuary, player))
+                    ability.onUse(sanctuary.getServer(), sanctuary, player);
+                else
+                    ability.sendFailure(sanctuary.getServer(), sanctuary, player);
             }
-            else if (ability.isEnabled())
-            {
-                ability.onUse(sanctuary.getServer(), sanctuary, player);
-            }
-
-            //  TODO: If it's not emabled, it won't do anything or give feedback?.
         }
-
     }
 }

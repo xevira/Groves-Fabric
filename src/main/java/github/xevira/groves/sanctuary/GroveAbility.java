@@ -2,6 +2,7 @@ package github.xevira.groves.sanctuary;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import github.xevira.groves.Groves;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.util.JSONHelper;
@@ -16,6 +17,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class GroveAbility {
+    private static int NextId = 0;
+
     protected final int id;
     protected final String name;
     protected final boolean automatic;
@@ -24,9 +27,9 @@ public abstract class GroveAbility {
 
     private boolean active;
 
-    public GroveAbility(final int id, final String name, final boolean automatic, final boolean autodeactivate, final boolean defaultAllow)
+    public GroveAbility(final String name, final boolean automatic, final boolean autodeactivate, final boolean defaultAllow)
     {
-        this.id = id;
+        this.id = ++NextId;
         this.name = name;
         this.automatic = automatic;
         this.autoDeactivate = autodeactivate;
@@ -95,6 +98,8 @@ public abstract class GroveAbility {
      ***/
     public abstract boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary);
 
+    public abstract boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
+
     public abstract boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
 
     public JsonObject serialize()
@@ -126,14 +131,14 @@ public abstract class GroveAbility {
     }
 
     public static abstract class AutomaticGroveAbility extends GroveAbility {
-        public AutomaticGroveAbility(int id, String name, boolean autodeactivate, boolean defaultAllow) {
-            super(id, name, true, autodeactivate, defaultAllow);
+        public AutomaticGroveAbility(String name, boolean autodeactivate, boolean defaultAllow) {
+            super(name, true, autodeactivate, defaultAllow);
         }
     }
 
     public static abstract class ManualGroveAbility extends GroveAbility {
-        public ManualGroveAbility(int id, String name, boolean defaultAllow) {
-            super(id, name, false, false, defaultAllow);
+        public ManualGroveAbility(String name, boolean defaultAllow) {
+            super(name, false, false, defaultAllow);
         }
     }
 }

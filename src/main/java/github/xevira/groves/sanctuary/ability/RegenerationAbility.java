@@ -8,6 +8,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
 import java.util.function.Supplier;
 
@@ -15,7 +16,7 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     public static final int DURATION = 20;
 
     public RegenerationAbility() {
-        super(2, "regeneration", true, true);
+        super("regeneration", true, true);
     }
 
     @Override
@@ -71,7 +72,11 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
 
         applyStatusEffect(sanctuary, owner);
         sanctuary.useSunlight(tickCost());
+        return false;
+    }
 
+    @Override
+    public boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         return false;
     }
 

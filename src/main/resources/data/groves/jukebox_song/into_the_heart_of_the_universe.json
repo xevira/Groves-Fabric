@@ -1,0 +1,8 @@
+{
+  "comparator_output": 15,
+  "description": {
+    "translate": "item.groves.into_the_heart_of_the_universe_music_disc.desc"
+  },
+  "length_in_seconds": 282.0,
+  "sound_event": "groves:into_the_heart_of_the_universe"
+}
