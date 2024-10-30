@@ -37,8 +37,7 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
         else if (stack.getDamage() < 1)
             player.sendMessage(Groves.text("text", "ability.no_damage"), false);
         else {
-            long cost = useCost() * stack.getDamage();
-            player.sendMessage(Groves.text("text", "ability.not_enough_sunlight.use", cost), false);
+            player.sendMessage(Groves.text("text", "ability.not_enough_sunlight.use", useCost()), false);
         }
     }
 
@@ -63,9 +62,7 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
         if (stack.getDamage() < 1)
             return false;
 
-        long cost = useCost() * stack.getDamage();
-
-        return sanctuary.getStoredSunlight() >= cost;
+        return sanctuary.getStoredSunlight() >= useCost();
     }
 
     @Override
@@ -74,13 +71,25 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
 
         if (!stack.isEmpty() && stack.getDamage() > 0)
         {
-            long cost = useCost() * stack.getDamage();
+            int damage = stack.getDamage();
+            int repair = damage;
+            long cost = useCost() * repair;
+            long sunlight = sanctuary.getStoredSunlight();
 
-            stack.setDamage(0);
+            // Handle partial repairs
+            if (cost > sunlight && useCost() > 0) {
+                repair = (int) (sunlight / useCost());
+                cost = useCost() * repair;
+            }
+
+            stack.setDamage(damage - repair);
             sanctuary.useSunlight(cost);
 
             // TODO: play sound
-            player.sendMessage(Groves.text("text", "ability.item_restored"), false);
+            if (repair < damage)
+                player.sendMessage(Groves.text("text", "ability.item_partially_restored"), false);
+            else
+                player.sendMessage(Groves.text("text", "ability.item_restored"), false);
         }
         return true;
     }

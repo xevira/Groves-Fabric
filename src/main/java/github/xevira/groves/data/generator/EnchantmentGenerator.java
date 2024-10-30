@@ -35,8 +35,7 @@ public class EnchantmentGenerator extends FabricDynamicRegistryProvider {
                     Enchantment.leveledCost(1, 19),
                     7,
                     AttributeModifierSlot.ANY))
-                .addEffect(EnchantmentEffectComponentTypes.TICK,
-                        new SolarRepairEnchantmentEffect(EnchantmentLevelBasedValue.linear(1.0f, 1.0f)))
+                //.addEffect(EnchantmentEffectComponentTypes.TICK, new SolarRepairEnchantmentEffect(EnchantmentLevelBasedValue.linear(1.0f, 1.0f)))
         );
 
     }

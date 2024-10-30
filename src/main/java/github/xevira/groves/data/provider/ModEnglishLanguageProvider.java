@@ -176,6 +176,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "ability.no_durability", "Item in main hand has no durability.");
         addText(translationBuilder, "text", "ability.no_damage", "Item in main hand is not damaged.");
         addText(translationBuilder, "text", "ability.item_restored", "Item restored.");
+        addText(translationBuilder, "text", "ability.item_partially_restored", "Item partially restored.");
 
         addText(translationBuilder, "text", "ability.chunk_load", "Chunk Loading");
         addText(translationBuilder, "text", "ability.regeneration", "Regeneration");
