@@ -1,15 +1,13 @@
 package github.xevira.groves.poi;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import github.xevira.groves.Groves;
-import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
-import github.xevira.groves.network.UpdateMoonwellPayload;
-import github.xevira.groves.network.UpdateSunlightPayload;
-import github.xevira.groves.network.UpdateTotalFoliagePayload;
+import github.xevira.groves.network.*;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
@@ -378,6 +376,37 @@ public class GrovesPOI {
             return false;
         }
 
+        public void buyChunk(ChunkPos pos)
+        {
+            Optional<GroveSanctuary> sanc = GrovesPOI.getSanctuary(this.world, pos);
+
+            // Not part of a sanctuary
+            if (sanc.isEmpty())
+            {
+                if (GrovesPOI.isChunkValidForGrove(this.world, pos, this.enchanted))
+                {
+                    long total = this.totalChunks();
+                    long cost = total * total * 50000L;
+
+                    if (getStoredSunlight() < cost)
+                    {
+                        sendOwner(new BuyChunkResponsePayload(pos, false, Text.literal("Insufficient sunlight.  Need " + cost + " to claim another chunk.")));
+                    }
+                    else {
+                        addChunk(pos);
+                        useSunlight(cost);
+                        sendOwner(new BuyChunkResponsePayload(pos, true, Text.empty()));
+                    }
+                }
+                else
+                    sendOwner(new BuyChunkResponsePayload(pos, false, Text.literal("Chunk is incapable of supporting your Grove.")));
+            }
+            else if (sanc.get() == this)
+                sendOwner(new BuyChunkResponsePayload(pos, false, Text.literal("You already own it.")));
+            else
+                sendOwner(new BuyChunkResponsePayload(pos, false, Text.literal("Chunk has already been claimed.")));
+        }
+
         /**
          *  <p>Removes the specified chunk from the Grove Sanctuary.</p>
          *
@@ -394,6 +423,13 @@ public class GrovesPOI {
             }
 
             return false;
+        }
+
+        public Optional<GroveChunkData> getChunk(ChunkPos pos)
+        {
+            if (isOrigin(pos)) return Optional.of(this.origin);
+
+            return this.groveChunks.stream().filter(chunk -> chunk.isChunk(pos)).findFirst();
         }
 
 
@@ -543,6 +579,13 @@ public class GrovesPOI {
                 this.origin.setChunkLoad(state);
 
             this.groveChunks.stream().filter(chunk -> chunk.chunkLoad).forEach(chunk -> chunk.setChunkLoad(state));
+        }
+
+        public void setChunkLoadingForChunk(ChunkPos pos, boolean state)
+        {
+            Optional<GroveChunkData> data = getChunk(pos);
+
+            data.ifPresent(chunk -> chunk.keepLoaded(state));
         }
 
         public JsonObject serialize(MinecraftServer server)
@@ -724,8 +767,9 @@ public class GrovesPOI {
         public ClientGroveSanctuary createClientData()
         {
             ClientGroveSanctuary sanctuary = new ClientGroveSanctuary(new ClientGroveSanctuary.ChunkData(this.origin.chunkPos, this.origin.chunkLoad), this.enchanted);
+            sanctuary.setChunkLoading(this.chunkLoaded);
 
-            this.groveChunks.stream().map(groveChunk -> groveChunk.chunkPos).forEach(sanctuary::addChunk);
+            this.groveChunks.stream().map(GroveChunkData::toClientData).forEach(sanctuary::addChunk);
             sanctuary.groveFriends.addAll(this.groveFriends);
 
             sanctuary.setFoliage(groveChunks.stream().map(chunk -> chunk.foliage).reduce(this.origin.foliage, Integer::sum));
@@ -781,6 +825,11 @@ public class GrovesPOI {
                 this.sanctuary = sanctuary;
             }
 
+            public ClientGroveSanctuary.ChunkData toClientData()
+            {
+                return new ClientGroveSanctuary.ChunkData(this.chunkPos, this.chunkLoad);
+            }
+
             public void setSanctuary(GroveSanctuary sanctuary)
             {
                 this.sanctuary = sanctuary;
@@ -788,10 +837,11 @@ public class GrovesPOI {
 
             public void keepLoaded(boolean enable)
             {
+                if (enable)
+                    this.world.setChunkForced(this.chunkPos.x, this.chunkPos.z, true);
+                else if (this.chunkLoad)
+                    this.world.setChunkForced(this.chunkPos.x, this.chunkPos.z, false);
                 this.chunkLoad = enable;
-
-                if (this.sanctuary.chunkLoaded)
-                    this.world.setChunkForced(this.chunkPos.x, this.chunkPos.z, enable);
             }
 
             public void setChunkLoad(boolean enable)
@@ -1008,8 +1058,11 @@ public class GrovesPOI {
             public ClientGroveSanctuary decode(RegistryByteBuf buf) {
                 ChunkData origin = ChunkData.PACKET_CODEC.decode(buf);
                 boolean enchanted = PacketCodecs.BOOL.decode(buf);
+                boolean chunkLoading = PacketCodecs.BOOL.decode(buf);
 
                 ClientGroveSanctuary sanctuary = new ClientGroveSanctuary(origin, enchanted);
+
+                sanctuary.setChunkLoading(chunkLoading);
 
                 int chunks = PacketCodecs.INTEGER.decode(buf);
                 for(int i = 0; i < chunks; i++)
@@ -1039,6 +1092,7 @@ public class GrovesPOI {
             public void encode(RegistryByteBuf buf, ClientGroveSanctuary value) {
                 ChunkData.PACKET_CODEC.encode(buf, value.origin);
                 PacketCodecs.BOOL.encode(buf, value.enchanted);
+                PacketCodecs.BOOL.encode(buf, value.chunkLoading);
 
                 PacketCodecs.INTEGER.encode(buf, value.groveChunks.size());
                 value.groveChunks.forEach(chunk -> ChunkData.PACKET_CODEC.encode(buf, chunk));
@@ -1064,6 +1118,7 @@ public class GrovesPOI {
 
         private ChunkData origin;
         private boolean enchanted;
+        private boolean chunkLoading;
 
         private final List<ChunkData> groveChunks = new ArrayList<>();
         private int foliage;
@@ -1078,6 +1133,12 @@ public class GrovesPOI {
         {
             this.origin = origin;
             this.enchanted = enchanted;
+            this.chunkLoading = false;
+        }
+
+        public void setChunkLoading(boolean loading)
+        {
+            this.chunkLoading = loading;
         }
 
         public void addFriend(@NotNull UUID uuid, @NotNull String name)
@@ -1109,6 +1170,21 @@ public class GrovesPOI {
                 this.groveAbilities.add(ability);
         }
 
+        public boolean isChunkLoading()
+        {
+            return this.chunkLoading;
+        }
+
+        public List<ChunkData> getChunks()
+        {
+            return this.groveChunks;
+        }
+
+        public ChunkData getOrigin()
+        {
+            return this.origin;
+        }
+
         public @Nullable ChunkData getChunk(int index)
         {
             if (index < 0) return this.origin;
@@ -1119,10 +1195,14 @@ public class GrovesPOI {
             return null;
         }
 
-        public void addChunk(ChunkData data)
+        public boolean addChunk(ChunkData data)
         {
-            if (this.groveChunks.stream().noneMatch(gc -> gc.pos().equals(data.pos())))
+            if (this.groveChunks.stream().noneMatch(gc -> gc.pos().equals(data.pos()))) {
                 this.groveChunks.add(data);
+                return true;
+            }
+
+            return false;
         }
 
         public void addChunk(ChunkPos pos)
@@ -1187,7 +1267,10 @@ public class GrovesPOI {
 
         }
 
-        public record ChunkData(ChunkPos pos, boolean chunkLoad) {
+        public static class ChunkData {
+            private final ChunkPos pos;
+            private boolean loaded;
+
             public static final PacketCodec<RegistryByteBuf, ChunkData> PACKET_CODEC = new PacketCodec<RegistryByteBuf, ChunkData>() {
                 @Override
                 public ChunkData decode(RegistryByteBuf buf) {
@@ -1204,6 +1287,19 @@ public class GrovesPOI {
                 }
             };
 
+            public ChunkData(ChunkPos pos, boolean loaded)
+            {
+                this.pos = pos;
+                this.loaded = loaded;
+            }
+
+            public ChunkPos pos() { return this.pos; }
+            public boolean chunkLoad() { return this.loaded; }
+
+            public void setLoaded(boolean state)
+            {
+                this.loaded = state;
+            }
         }
     }
 }

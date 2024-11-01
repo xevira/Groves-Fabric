@@ -31,6 +31,7 @@
 		"fluid.ZombieEntityMixin"
 	],
 	"client": [
+		"client.HandledScreenMixin",
 		"client.KeyboardMixin",
 		"client.MinecraftClientMixin"
 	],

@@ -159,11 +159,16 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "tooltip", "groves.tab.chunks", "Chunks");
         addText(translationBuilder, "tooltip", "groves.tab.friends", "Friends");
         addText(translationBuilder, "tooltip", "groves.tab.abilities", "Abilities");
+        addText(translationBuilder, "tooltip", "groves.tab.keybinds", "Keybinds");
 
-        addText(translationBuilder, "label", "groves.tab.general", " [General]");
-        addText(translationBuilder, "label", "groves.tab.chunks", " [Chunks]");
-        addText(translationBuilder, "label", "groves.tab.friends", " [Friends]");
-        addText(translationBuilder, "label", "groves.tab.abilities", " [Abilities]");
+        addText(translationBuilder, "label", "groves.tab.general", "General");
+        addText(translationBuilder, "label", "groves.tab.chunks", "Chunks");
+        addText(translationBuilder, "label", "groves.tab.friends", "Friends");
+        addText(translationBuilder, "label", "groves.tab.abilities", "Abilities");
+        addText(translationBuilder, "label", "groves.tab.keybinds", "Keybinds");
+
+        addText(translationBuilder,"tooltip", "groves.chunks.keep_loaded.on", "Click to disable chunk loading for chunk X = %s, Z = %s.");
+        addText(translationBuilder,"tooltip", "groves.chunks.keep_loaded.off", "Click to enable chunk loading for chunk X = %s, Z = %s.");
 
         addText(translationBuilder, "key.category", "groves", "Groves");
         addText(translationBuilder, "key", "open_groves_ui", "Open Groves UI");
