@@ -3,6 +3,8 @@ package github.xevira.groves.client.screen;
 import github.xevira.groves.Groves;
 import github.xevira.groves.client.screen.widget.*;
 import github.xevira.groves.network.SetChunkLoadingPayload;
+import github.xevira.groves.network.SetGroveNamePayload;
+import github.xevira.groves.network.SetSpawnPointPayload;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.util.ScreenTab;
@@ -12,7 +14,9 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.MutableText;
@@ -21,6 +25,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
@@ -61,28 +66,48 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
     protected void init() {
         super.init();
 
+//        TextFieldWidget test = new TextFieldWidget(this.textRenderer, this.x + this.backgroundWidth - 70, this.y + 21, 50, 12, Text.empty());
+//        test.setFocusUnlocked(false);
+//        test.setEditableColor(-1);
+//        test.setUneditableColor(-1);
+//        test.setDrawsBackground(true);
+//        test.setMaxLength(50);
+//        this.addDrawableChild(test);
+
         Tabs.put(ScreenTab.GENERAL, new TabGeneralWidget(this.x + 7, this.y + 41, this.handler));
-        Tabs.put(ScreenTab.CHUNKS, new TabChunksWidget(this.x + 7, this.y + 41, this.handler).addChunks(this.handler.getChunks()));
+        Tabs.put(ScreenTab.CHUNKS, new TabChunksWidget(this.x + 7, this.y + 41, this.handler));
         Tabs.put(ScreenTab.FRIENDS, new TabFriendsWidget(this.x + 7, this.y + 41, this.handler));
         Tabs.put(ScreenTab.ABILITIES, new TabAbilitiesWidget(this.x + 7, this.y + 41, this.handler));
         Tabs.put(ScreenTab.KEYBINDS, new TabKeybindsWidget(this.x + 7, this.y + 41, this.handler));
 
         for(TabControlWidget widget : Tabs.values())
         {
-            this.addDrawableChild(widget);
-            widget.visible = false;
+            //this.addDrawable(widget);
+            widget.setScreen(this);
+
+            for(ClickableWidget clickable : widget.getChildren())
+                this.addDrawableChild(clickable);
+
+            widget.setVisible(false);
         }
 
         handler.setCurrentTab(ScreenTab.GENERAL);
         this.currentTab = Tabs.get(ScreenTab.GENERAL);
-        this.currentTab.visible = true;
+        this.currentTab.setVisible(true);
     }
+
+//    @Override
+//    protected void handledScreenTick() {
+//        super.handledScreenTick();
+//
+//        this.handler.tick();
+//    }
 
     private void selectTab(TabControlWidget tab) {
         if (!this.handler.isSelectedTab(tab.getTab())) {
             this.handler.setCurrentTab(tab.getTab());
-            tab.visible = true;
-            this.currentTab.visible = false;
+            tab.setVisible(true);
+            this.currentTab.setVisible(false);
             this.currentTab = tab;
         }
     }
@@ -92,7 +117,11 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         context.getMatrices().push();
         context.getMatrices().translate(0, this.tabBottomY, 0);
 
-        context.drawText(this.textRenderer, this.title, this.titleX, this.titleY, 0x404040, false);
+        String groveName = this.handler.getSanctuary().getGroveName();
+        if (groveName.isBlank() || groveName.isEmpty())
+            context.drawText(this.textRenderer, this.title, this.titleX, this.titleY, 0x404040, false);
+        else
+            context.drawText(this.textRenderer, Text.literal(groveName), this.titleX, this.titleY, 0x404040, false);
         context.drawText(this.textRenderer, this.currentTab.getLabelText(), this.titleX, this.titleY + this.textRenderer.fontHeight + 2, 0x404040, false);
 
         context.getMatrices().pop();
@@ -108,17 +137,13 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             }
         }
 
-  //      if (this.currentTab.mouseClicked(mouseX, mouseY, button)) return true;
-
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-//        if (this.currentTab.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
-
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-    }
+//    @Override
+//    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+//        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+//    }
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
@@ -129,6 +154,37 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             }
         }
     }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && this.client != null && this.client.player != null) {
+            this.client.player.closeHandledScreen();
+            return true;
+        }
+
+        if (this.currentTab.keyPressed(keyCode, scanCode, modifiers))
+            return true;
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+//
+//    @Override
+//    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+//        if (this.currentTab.keyReleased(keyCode, scanCode, modifiers))
+//            return true;
+//
+//        return super.keyReleased(keyCode, scanCode, modifiers);
+//    }
+
+//    @Override
+//    public boolean charTyped(char chr, int modifiers) {
+//        Groves.LOGGER.info("charTyped: {}, {}", chr, modifiers);
+//
+//        if (this.currentTab.charTyped(chr, modifiers))
+//            return true;
+//
+//        return super.charTyped(chr, modifiers);
+//    }
 
     public void drawTab(DrawContext context, TabControlWidget tab, boolean selected) {
         int index = tab.getTab().ordinal();
@@ -150,6 +206,45 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         {
             drawTab(context, tab, this.currentTab == tab);
         }
+
+        this.currentTab.render(context, mouseX, mouseY, delta);
+
+        // Render status ribbon
+    }
+
+    private void drawErrorMessage(DrawContext context)
+    {
+        int errorTicks = this.handler.getErrorMessageTicks();
+        if (errorTicks > 0 && this.handler.getErrorMessage() != null)
+        {
+            int alpha = 255;
+            if (errorTicks > 90)
+            {
+                alpha = (int)(25.5F * (100 - errorTicks));
+            }
+            else if (errorTicks < 20)
+            {
+                alpha = (int)(255.0f * errorTicks / 20);
+            }
+            int color = (alpha << 24) | 0xFF0000;
+            int backcolor = (alpha << 24) | 0x400000;
+            int bordercolor = (alpha << 24);
+
+            int w = this.textRenderer.getWidth(this.handler.getErrorMessage()) + 20;
+            int h = this.textRenderer.fontHeight + 10;
+            int x = (this.width - w) / 2;
+            int y = (this.height - h) / 2 + 5;
+
+            context.fill(x + 1, y + 1, x + w - 1, y + h - 1, backcolor);
+            context.drawVerticalLine(x, y, y + h, bordercolor);
+            context.drawVerticalLine(x + w, y, y + h, bordercolor);
+            context.drawHorizontalLine(x, x + w, y, bordercolor);
+            context.drawHorizontalLine(x, x + w, y + h, bordercolor);
+
+            context.drawCenteredTextWithShadow(this.textRenderer, this.handler.getErrorMessage(), this.width / 2, this.height / 2, color);
+        }
+
+        this.handler.tick();
     }
 
     @Override
@@ -162,13 +257,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 
         this.currentTab.renderTooltips(context, mouseX, mouseY, delta);
 
-        int errorTicks = this.handler.getBuyChunkTicks();
-        if (errorTicks > 0)
-        {
-            int color = ((255 * errorTicks / 100) << 24) | 0xFF0000;
-
-            context.drawCenteredTextWithShadow(this.textRenderer, this.handler.getBuyChunkReason(), this.width / 2, this.height / 2, color);
-        }
+        drawErrorMessage(context);
     }
 
     static abstract class TabControl {
@@ -587,18 +676,34 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
     }
 
     static class TabGeneralWidget extends TabControlWidget {
+        public static final Text NAME_TEXT = Groves.text("label", "groves.name");
+        public static final Text NAME_SET_TEXT = Groves.text("button", "groves.name.set");
         public static final Text SUNLIGHT_TEXT = Groves.text("label", "groves.sunlight");
         public static final Text FOLIAGE_TEXT = Groves.text("label", "groves.foliage");
         public static final Text MOONWELL_TEXT = Groves.text("label", "groves.moonwell");
         public static final Text NO_MOONWELL_TEXT = Groves.text("text", "groves.no_moonwell");
 
+        public static final Text SPAWN_TEXT = Groves.text("label", "groves.spawn");
+        public static final Text SPAWN_SET_TEXT = Groves.text("button", "groves.spawn.set");
+
+        private final int nameLabelW;
         private final int sunlightLabelW;
         private final int foliageLabelW;
         private final int moonwellLabelW;
+        private final int spawnLabelW;
+        private final int spawnButtonW;
 
         private final TextRenderer textRenderer;
 
         private final GrovesSanctuaryScreenHandler handler;
+
+        private final TextFieldWidget groveNameField;
+        private final ButtonWidget setGroveNameButton;
+        private final ButtonWidget setSpawnPointButton;
+
+        private boolean groveNameFieldFocused = false;
+
+        private String groveName;
 
         public TabGeneralWidget(int x, int y, GrovesSanctuaryScreenHandler handler) {
             super(ScreenTab.GENERAL, x, y);
@@ -606,10 +711,37 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             this.textRenderer = MinecraftClient.getInstance().textRenderer;
 
             this.handler = handler;
+            this.groveName = handler.getSanctuary().getGroveName();
 
+            this.nameLabelW = this.textRenderer.getWidth(NAME_TEXT.asOrderedText());
             this.sunlightLabelW = this.textRenderer.getWidth(SUNLIGHT_TEXT.asOrderedText());
             this.foliageLabelW = this.textRenderer.getWidth(FOLIAGE_TEXT.asOrderedText());
             this.moonwellLabelW = this.textRenderer.getWidth(MOONWELL_TEXT.asOrderedText());
+            this.spawnLabelW = this.textRenderer.getWidth(SPAWN_TEXT.asOrderedText());
+            this.spawnButtonW = this.textRenderer.getWidth(SPAWN_SET_TEXT.asOrderedText());
+
+
+            this.groveNameField = new TextFieldWidget(this.textRenderer,x + nameLabelW + 10, y + 5, 50, 12, Text.empty());
+            this.groveNameField.setFocusUnlocked(false);
+            this.groveNameField.setEditableColor(-1);
+            this.groveNameField.setUneditableColor(-1);
+            this.groveNameField.setDrawsBackground(true);
+            this.groveNameField.setMaxLength(50);
+            this.groveNameField.active = true;
+            this.groveNameField.setText(this.handler.getSanctuary().getGroveName());
+
+            this.setGroveNameButton = ButtonWidget.builder(NAME_SET_TEXT, (button) -> {
+                ClientPlayNetworking.send(new SetGroveNamePayload(this.groveNameField.getText()));
+            }).dimensions(x + nameLabelW + 60, y + 5, 50, 12).build();
+
+            this.setSpawnPointButton = ButtonWidget.builder(SPAWN_SET_TEXT, (button) -> {
+                if (MinecraftClient.getInstance().player != null)
+                    ClientPlayNetworking.send(new SetSpawnPointPayload(MinecraftClient.getInstance().player.getBlockPos()));
+            }).dimensions(x + 5, y + 80, spawnButtonW + 10, 16).build();
+
+            this.addChildElement(this.groveNameField);
+            this.addChildElement(this.setGroveNameButton);
+            this.addChildElement(this.setSpawnPointButton);
         }
 
         private void drawSunlightProgressBar(DrawContext context, int x, int y) {
@@ -643,18 +775,31 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
                 context.drawText(this.textRenderer, NO_MOONWELL_TEXT, x + moonwellLabelW + 2, y, 0x404040, false);
         }
 
+        private void drawSpawnPoint(DrawContext context, int x, int y) {
+            context.drawText(this.textRenderer, SPAWN_TEXT, x, y, 0x404040, false);
+            BlockPos pos = this.handler.getSanctuary().getSpawnPoint();
+            Text spawnText = Groves.text("text", "groves.spawn", pos.getX(), pos.getY(), pos.getZ());
+            context.drawText(this.textRenderer, spawnText, x + spawnLabelW + 2, y, 0x404040, false);
+        }
+
         @Override
         protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
             super.renderWidget(context, mouseX, mouseY, delta);
 
-            drawSunlightProgressBar(context, this.getX() + 5, this.getY() + 5);
-            drawFoliage(context, this.getX() + 5, this.getY() + 21);
-            drawMoonwell(context, this.getX() + 5, this.getY() + 37);
+            context.drawText(this.textRenderer, NAME_TEXT, this.getX() + 5, this.getY() + 5, 0x404040, false);
+            drawSunlightProgressBar(context, this.getX() + 5, this.getY() + 21);
+            drawFoliage(context, this.getX() + 5, this.getY() + 37);
+            drawMoonwell(context, this.getX() + 5, this.getY() + 53);
+            drawSpawnPoint(context, this.getX() + 5, this.getY() + 69);
+
+//            this.setSpawnPointButton.render(context, mouseX, mouseY, delta);
+//            this.groveNameField.render(context, mouseX, mouseY, delta);
+//            this.setGroveNameButton.render(context, mouseX, mouseY, delta);
         }
 
         @Override
         public void renderTooltips(DrawContext context, int mouseX, int mouseY, float delta) {
-            if (isPointInBounds(sunlightLabelW + 1, 5, 100, 8, mouseX, mouseY)) {
+            if (isPointInBounds(sunlightLabelW + 6, 21, 100, 8, mouseX, mouseY)) {
                 long sunlight = this.handler.getSunlight();
                 long maxSunlight = this.handler.getMaxSunlight();
                 int percent = (int) (100 * sunlight / maxSunlight);
@@ -664,111 +809,84 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         }
 
         @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+//            this.groveNameFieldFocused = false;
+//            if (isPointInControl(this.setSpawnPointButton, mouseX, mouseY))
+//            {
+//                this.screen.setFocused(null);
+//                return this.setSpawnPointButton.mouseClicked(mouseX, mouseY, button);
+//            }
+//            else if (isPointInControl(this.setGroveNameButton, mouseX, mouseY))
+//            {
+//                this.screen.setFocused(null);
+//                return this.setGroveNameButton.mouseClicked(mouseX, mouseY, button);
+//            }
+//            else if (isPointInControl(this.groveNameField, mouseX, mouseY))
+//            {
+//                Groves.LOGGER.info("Clicked on name field");
+//                this.screen.setFocused(this.groveNameField);
+//                this.groveNameFieldFocused = true;
+//                return this.groveNameField.mouseClicked(mouseX, mouseY, button);
+//            }
+//            else {
+//                this.screen.setFocused(null);
+//                return super.mouseClicked(mouseX, mouseY, button);
+//            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+            return this.groveNameField.keyPressed(keyCode, scanCode, modifiers) || this.groveNameField.isActive() || super.keyPressed(keyCode, scanCode, modifiers);
+        }
+//
+//        @Override
+//        public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+//            if (this.groveNameFieldFocused)
+//                return this.groveNameField.keyReleased(keyCode, scanCode, modifiers);
+//
+//            return false;
+//        }
+//
+//        @Override
+//        public boolean charTyped(char chr, int modifiers) {
+//            if (this.groveNameFieldFocused)
+//                return this.groveNameField.charTyped(chr, modifiers);
+//
+//            return super.charTyped(chr, modifiers);
+//        }
+
+        @Override
         protected void appendClickableNarrations(NarrationMessageBuilder builder) {
 
         }
     }
 
     static class TabChunksWidget extends TabControlWidget {
-        private static int COLOR_OFF = 0x400000;
-        private static int COLOR_ON = 0x004000;
-
-        private static final Text TOOLTIP_ON = Groves.text("tooltip", "groves.chunks.keep_loaded.on");
-        private static final Text TOOLTIP_OFF = Groves.text("tooltip", "groves.chunks.keep_loaded.off");
-
-        private static final int ROW_HEIGHT = 12;
-
         private final GrovesSanctuaryScreenHandler handler;
 
-//        private final ToggleButtonWidget originToggleWidget;
-//        private final ChunkDataListControlWidget listControlWidget;
         private final ChunkGridWidget mapWidget;
-
-        // Scrollbar data
-        private boolean hasTooManyChunks;
-        private int scrollBarY;
-        private float scrollPosition;
-        private boolean scrollbarClicked;
-        private int visibleTopRow;
 
         public TabChunksWidget(int x, int y, GrovesSanctuaryScreenHandler handler) {
             super(ScreenTab.CHUNKS, x, y);
             this.handler = handler;
 
-            mapWidget = new ChunkGridWidget(x + 1, y + 1, TAB_WIDTH - 2, TAB_HEIGHT - 2, this.handler.getChunkMap())
+            this.mapWidget = new ChunkGridWidget(x + 1, y + 1, TAB_WIDTH - 2, TAB_HEIGHT - 2, this.handler.getChunkMap(), this.handler.getAvailableChunks())
                     .setOrigin(this.handler.getOrigin());
 
-//            GrovesPOI.ClientGroveSanctuary.ChunkData origin = this.handler.getOrigin();
-//            this.originToggleWidget = new ToggleButtonWidget(x + 2, y + 1, Text.empty(),
-//                    Groves.text("tooltip", "groves.chunks.keep_loaded.on", origin.pos().x, origin.pos().z),
-//                    Groves.text("tooltip", "groves.chunks.keep_loaded.off", origin.pos().x, origin.pos().z),
-//                    (button) -> {
-//                        Groves.LOGGER.info("chunkLoadingToggled: ORIGIN -> {}", button.isDisabled());
-//                        ClientPlayNetworking.send(new SetChunkLoadingPayload(origin.pos(), button.isFocused()));
-//                    });
-//            this.originToggleWidget.setDisabled(this.handler.getOrigin().chunkLoad());
-//
-//            this.listControlWidget = new ChunkDataListControlWidget(x + 1, y + 13, 145, 97);
-//
-//            this.scrollbarClicked = false;
-//            this.scrollPosition = 0.0f;
-        }
-
-        public TabChunksWidget addChunks(Collection<GrovesPOI.ClientGroveSanctuary.ChunkData> chunks)
-        {
-//            this.listControlWidget.addEntries(chunks.stream().map(chunk -> new ChunkDataWidget(this.listControlWidget.getX(), 0, this.listControlWidget.getWidth(), ROW_HEIGHT, chunk, this::chunkLoadingToggled)).toList());
-
-            return this;
+            this.addChildElement(this.mapWidget);
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            return this.mapWidget.mouseClicked(mouseX, mouseY, button);
-
-//            this.scrollbarClicked = false;
-//
-//            // Check Scrollbar
-//            if (listControlWidget.needsScrollbar() && isPointInBounds(149, 13, 12, 97, mouseX, mouseY))
-//            {
-//                this.scrollbarClicked = true;
-//                return true;
-//            }
-//
-//            // Handle clicks for the origin toggle button
-//            if (isPointInControl(this.originToggleWidget, mouseX, mouseY))
-//            {
-//                if (this.originToggleWidget.mouseClicked(mouseX, mouseY, button))
-//                    return true;
-//            }
-//
-//            // Handle mouse clicks down into the list control
-//            if (isPointInControl(listControlWidget, mouseX, mouseY))
-//            {
-//                if (listControlWidget.mouseClicked(mouseX, mouseY, button))
-//                    return true;
-//            }
-
-//            return false;
+//            return this.mapWidget.mouseClicked(mouseX, mouseY, button);
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
         @Override
         public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-            return this.mapWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-
-//            if (this.scrollbarClicked)
-//            {
-//                this.scrollPosition = ((float)mouseY - (float)this.listControlWidget.getY() - 7.5F) / (82.0F);
-//                this.scrollPosition = MathHelper.clamp(this.scrollPosition, 0.0F, 1.0F);
-//                this.scrollBarY = (int)MathHelper.map(this.scrollPosition, 0.0f, 1.0f, this.listControlWidget.getY(), this.listControlWidget.getBottom() - 15.0f);
-//
-//                // SCROLLBAR% * HEIGHT_OF_DATA_EXCLUDING_SCROLLBAR_BUTTON
-//                int p = (int)(this.scrollPosition * this.listControlWidget.getDataHeight() * (this.listControlWidget.getHeight() - 15.0f) / this.listControlWidget.getHeight());
-//                this.listControlWidget.setYOffset(p % ROW_HEIGHT);
-//                return true;
-//            }
-
-
-//            return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+//            return this.mapWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+            return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
         }
 
         @Override
@@ -786,65 +904,10 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             super.renderWidget(context, mouseX, mouseY, delta);
 
             this.mapWidget.render(context, mouseX, mouseY, delta);
-
-//            // Origin
-//            this.originToggleWidget.renderWidget(context, mouseX, mouseY, delta);
-//            GrovesPOI.ClientGroveSanctuary.ChunkData origin = this.handler.getSanctuary().getOrigin();
-//            context.drawText(MinecraftClient.getInstance().textRenderer, String.format("X = %d, Z = %d", origin.pos().x, origin.pos().z), this.originToggleWidget.getRight() + 2, this.originToggleWidget.getY() + 1, origin.chunkLoad() ? COLOR_ON : COLOR_OFF, false);
-//
-//            // Additional chunks
-//            this.listControlWidget.render(context, mouseX, mouseY, delta);
-//
-//            // Scrollbar button
-//            Identifier bar = this.listControlWidget.needsScrollbar() ? GrovesSanctuaryScreen.SCROLLBAR : GrovesSanctuaryScreen.SCROLLBAR_DISABLED;
-//            context.drawGuiTexture(RenderLayer::getGuiTextured, bar, this.getX() + 149, this.getY() + 13 + scrollBarY, 12, 15);
         }
 
         @Override
         public void renderTooltips(DrawContext context, int mouseX, int mouseY, float delta) {
-//            if (isPointInControl(this.originToggleWidget, mouseX, mouseY))
-//            {
-//                Tooltip tooltip = this.originToggleWidget.getTooltip();
-//                if (tooltip != null)
-//                    context.drawOrderedTooltip(MinecraftClient.getInstance().textRenderer, tooltip.getLines(MinecraftClient.getInstance()), mouseX, mouseY);
-//                return;
-//            }
-//
-//            // Render tooltips all the way down
-//            if (isPointInControl(this.listControlWidget, mouseX, mouseY)) {
-//                this.listControlWidget.renderTooltips(context, mouseX, mouseY, delta);
-//                return;
-//            }
-        }
-
-        private void chunkLoadingToggled(GrovesPOI.ClientGroveSanctuary.ChunkData chunk, boolean state)
-        {
-            // Handle the client packet to update the server
-            Groves.LOGGER.info("chunkLoadingToggled: {} -> {}", chunk.pos(), state);
-            ClientPlayNetworking.send(new SetChunkLoadingPayload(chunk.pos(), state));
-        }
-
-        // Called when the handler receives a packet from the server to update the chunk loading status for this chunk.
-        public void updateChunkLoading(ChunkPos pos, boolean state)
-        {
-//            Optional<GrovesPOI.ClientGroveSanctuary.ChunkData> data = this.handler.getChunks().stream().filter(chunk -> chunk.pos().equals(pos)).findFirst();
-//
-//            data.ifPresent(chunkData -> {
-//                chunkData.setLoaded(state);
-//                this.listControlWidget.updateChunkLoading(chunkData);
-//            });
-        }
-
-        public void addChunkData(GrovesPOI.ClientGroveSanctuary.ChunkData chunk)
-        {
-//            ChunkDataWidget widget = new ChunkDataWidget(this.listControlWidget.getX(), 0, this.listControlWidget.getWidth(), ROW_HEIGHT, chunk, this::chunkLoadingToggled);
-//
-//            this.listControlWidget.addEntry(widget);
-        }
-
-        public void removeChunkData(GrovesPOI.ClientGroveSanctuary.ChunkData chunk)
-        {
-//            this.listControlWidget.removeEntry(chunk);
         }
 
         @Override

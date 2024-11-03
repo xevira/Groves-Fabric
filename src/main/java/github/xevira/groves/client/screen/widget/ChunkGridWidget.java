@@ -1,16 +1,19 @@
 package github.xevira.groves.client.screen.widget;
 
+import github.xevira.groves.ClientConfig;
 import github.xevira.groves.Groves;
-import github.xevira.groves.network.BuyChunkPayload;
+import github.xevira.groves.network.ClaimChunkPayload;
 import github.xevira.groves.network.SetChunkLoadingPayload;
 import github.xevira.groves.poi.GrovesPOI;
-import github.xevira.groves.util.ScreenTab;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.ScreenRect;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.sound.SoundManager;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
@@ -18,10 +21,19 @@ import net.minecraft.util.math.MathHelper;
 import java.util.*;
 
 public class ChunkGridWidget extends ClickableTooltipWidget{
+
+    public static final Text AVAILABLE_TOOLTIP = Groves.text("tooltip", "groves.chunk.available");
+    public static final Text CLAIMED_TOOLTIP = Groves.text( "tooltip", "groves.chunk.claimed");
+    public static final Text ORIGIN_TOOLTIP = Groves.text( "tooltip", "groves.chunk.origin");
+    public static final Text KEEP_LOADED_TOOLTIP = Groves.text( "tooltip", "groves.chunk.keep_loaded");
+    public static final Text TOGGLE_TOOLTIP = Groves.text( "tooltip", "groves.chunk.toggle");
+    public static final Text CLAIM_TOOLTIP = Groves.text( "tooltip", "groves.chunk.claim");
+
     private static final int GRID_SIZE = 16;
 
     private GrovesPOI.ClientGroveSanctuary.ChunkData origin;
     private final Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> chunks;
+    private final Set<ChunkPos> available;
 
     private int centerX;
     private int centerY;
@@ -40,7 +52,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
     private ChunkPos mouseOverPos;
     private ScreenRect navigationFocus;
 
-    public ChunkGridWidget(int x, int y, int width, int height, Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> chunks) {
+    public ChunkGridWidget(int x, int y, int width, int height, Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> chunks, Set<ChunkPos> available) {
         super(x, y, width, height, Text.empty());
 
         this.navigationFocus = new ScreenRect(x, y, width, height);
@@ -51,6 +63,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
         this.yOffset = 0;
 
         this.chunks = chunks;
+        this.available = available;
 
         calculateNEWS();
     }
@@ -61,8 +74,6 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
         this.east = MathHelper.floor((getRight() - (this.centerX + (float)this.xOffset)) / (float)GRID_SIZE + 1);
         this.north = -MathHelper.floor(((this.centerY + (float)this.yOffset) - getY()) / (float)GRID_SIZE + 1);
         this.south = MathHelper.floor((getBottom() - (this.centerY + (float)this.yOffset)) / (float)GRID_SIZE + 1);
-
-        Groves.LOGGER.info("NEWS: {}, {}, {}, {}", west, east, north, south);
     }
 
     public ChunkGridWidget setOrigin(GrovesPOI.ClientGroveSanctuary.ChunkData origin)
@@ -89,6 +100,40 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
         return this.navigationFocus;
     }
 
+    private void updateTooltip()
+    {
+        if (this.mouseOverPos == null) return;
+
+        GrovesPOI.ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
+
+        MutableText tooltipText = Groves.text("tooltip", "groves.chunk.location", this.mouseOverPos.x, this.mouseOverPos.z);
+        if (data != null)
+        {
+            tooltipText.append("\n");
+            if (data.pos().equals(this.origin.pos()))
+                tooltipText.append(ORIGIN_TOOLTIP);
+            else
+                tooltipText.append(CLAIMED_TOOLTIP);
+
+            if (data.chunkLoad()) {
+                tooltipText.append("\n");
+                tooltipText.append(KEEP_LOADED_TOOLTIP);
+            }
+
+            tooltipText.append("\n\n");
+            tooltipText.append(TOGGLE_TOOLTIP);
+        }
+        else if (this.available.contains(this.mouseOverPos))
+        {
+            tooltipText.append("\n");
+            tooltipText.append(AVAILABLE_TOOLTIP);
+            tooltipText.append("\n\n");
+            tooltipText.append(CLAIM_TOOLTIP);
+        }
+
+        setTooltip(Tooltip.of(tooltipText));
+    }
+
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
         double ox = this.centerX + this.xOffset;
@@ -97,36 +142,8 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
         int x = MathHelper.floor(this.origin.pos().x + (float)((mouseX - ox) / (float)GRID_SIZE));
         int z = MathHelper.floor(this.origin.pos().z + (float)((mouseY - oy) / (float)GRID_SIZE));
 
-        ChunkPos pos = new ChunkPos(x, z);
-        this.mouseOverPos = pos;
+        this.mouseOverPos = new ChunkPos(x, z);
         setNavigationFocus();
-
-        GrovesPOI.ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(pos, null);
-
-        List<String> lines = new ArrayList<>();
-        lines.add(String.format("X = %d, Z = %d", x, z));
-
-        if (data != null)
-        {
-            if (data.pos().equals(this.origin.pos()))
-                lines.add("Origin");
-            else
-                lines.add("Claimed");
-
-            if (data.chunkLoad())
-                lines.add("Keep Loaded");
-
-            lines.add("");
-            lines.add("Shift + Left-Click to toggle loading.");
-        }
-        else if (canObtainChunk(pos))
-        {
-            lines.add("Available");
-            lines.add("");
-            lines.add("Ctrl + Left-Click to claim chunk.");
-        }
-
-        setTooltip(Tooltip.of(Text.literal(String.join("\n", lines))));
     }
 
     private boolean isMapMoving = false;
@@ -147,6 +164,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
                         if (data != null) {
                             data.setLoaded(!data.chunkLoad());
                             ClientPlayNetworking.send(new SetChunkLoadingPayload(data.pos(), data.chunkLoad()));
+                            playClickSound(MinecraftClient.getInstance().getSoundManager());
                         }
                     }
                 }
@@ -156,8 +174,9 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
                     if (this.mouseOverPos != null) {
                         GrovesPOI.ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
 
-                        if (data == null && canObtainChunk(this.mouseOverPos)) {
-                            ClientPlayNetworking.send(new BuyChunkPayload(this.mouseOverPos));
+                        if (data == null && this.available.contains(this.mouseOverPos)) {
+                            ClientPlayNetworking.send(new ClaimChunkPayload(this.mouseOverPos));
+                            playClickSound(MinecraftClient.getInstance().getSoundManager());
                         }
                     }
                 }
@@ -188,21 +207,6 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
         return false;
     }
 
-    private boolean canObtainChunk(ChunkPos pos)
-    {
-        ChunkPos west = new ChunkPos(pos.x - 1, pos.z);
-        ChunkPos east = new ChunkPos(pos.x + 1, pos.z);
-        ChunkPos north = new ChunkPos(pos.x, pos.z - 1);
-        ChunkPos south = new ChunkPos(pos.x, pos.z + 1);
-
-        if (this.chunks.containsKey(west)) return true;
-        if (this.chunks.containsKey(east)) return true;
-        if (this.chunks.containsKey(north)) return true;
-        if (this.chunks.containsKey(south)) return true;
-
-        return false;
-    }
-
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         context.enableScissor(getX(), getY(), getRight(), getBottom());
@@ -229,17 +233,17 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
                     {
                         // #E36363
                         if (data.chunkLoad())
-                            color = 0xFFFF0000;
+                            color = ClientConfig.colorOriginLoaded();
                         else
-                            color = 0xFF00FF00;
+                            color = ClientConfig.colorOrigin();
                     }
                     else if (data.chunkLoad())
                     {
-                        color = 0xFFE36363;
+                        color = ClientConfig.colorChunkLoaded();
                     }
                     else
                     {
-                        color = 0xFF63E363;
+                        color = ClientConfig.colorChunkClaimed();
                     }
 
                     context.fill(x, y, x + GRID_SIZE - 1, y + GRID_SIZE - 1, color);
@@ -250,9 +254,9 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
                         context.fill(x + 3, y + 3, x + GRID_SIZE - 3, y + GRID_SIZE - 3, color);
                     }
                 }
-                else if (canObtainChunk(pos))
+                else if (this.available.contains(pos))
                 {
-                    context.fill(x, y, x + GRID_SIZE - 1, y + GRID_SIZE - 1, 0xFFE3E363);
+                    context.fill(x, y, x + GRID_SIZE - 1, y + GRID_SIZE - 1, ClientConfig.colorChunkAvailable());
                 }
             }
         }
@@ -276,6 +280,8 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
 
         context.getMatrices().pop();
         context.disableScissor();
+
+        updateTooltip();
     }
 
     @Override

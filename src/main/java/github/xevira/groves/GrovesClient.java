@@ -4,12 +4,14 @@ import github.xevira.groves.client.event.KeyInputHandler;
 import github.xevira.groves.client.renderer.MoonwellFluidLevelBER;
 import github.xevira.groves.client.screen.GrovesSanctuaryScreen;
 import github.xevira.groves.client.screen.MoonwellScreen;
+import github.xevira.groves.events.client.HudRenderEvents;
 import github.xevira.groves.item.MoonPhialItem;
 import github.xevira.groves.network.Networking;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
@@ -39,6 +41,9 @@ public class GrovesClient implements ClientModInitializer {
         // ScreenHandlers
         HandledScreens.register(Registration.MOONWELL_SCREEN_HANDLER, MoonwellScreen::new);
         HandledScreens.register(Registration.GROVES_SANCTUARY_SCREEN_HANDLER, GrovesSanctuaryScreen::new);
+
+        // HudRenderers
+        HudRenderCallback.EVENT.register(HudRenderEvents::renderSanctuaryEntry);
 
         // Keybinds
         KeyInputHandler.load();

@@ -1,8 +1,8 @@
 package github.xevira.groves.mixin.client;
 
 import github.xevira.groves.ClientConfig;
-import github.xevira.groves.client.event.KeyInputHandler;
 import github.xevira.groves.client.event.keybind.Keybind;
+import net.minecraft.block.entity.VaultBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
@@ -38,6 +39,12 @@ public abstract class MinecraftClientMixin {
         }
     }
 
+    @Inject(method = "shouldFilterText()Z", at = @At("HEAD"), cancellable = true)
+    private void shouldFilterTextMixin(CallbackInfoReturnable<Boolean> cb)
+    {
+        if (ClientConfig.DEBUG_FILTER_PROFANITY)
+            cb.setReturnValue(true);
+    }
 
     @Inject(method = "<init>(Lnet/minecraft/client/RunArgs;)V", at = @At("RETURN"))
     private void onInitComplete(RunArgs args, CallbackInfo ci)

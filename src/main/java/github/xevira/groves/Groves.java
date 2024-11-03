@@ -27,7 +27,8 @@ public class Groves implements ModInitializer {
 		Registration.load();
 
 		ServerLifecycleEvents.SERVER_STARTED.register(ServerConfig::onServerLoad);
-		ServerLifecycleEvents.SERVER_STARTED.register(POIManager::onServerStared);
+		ServerLifecycleEvents.SERVER_STARTED.register(POIManager::onServerStarted);
+		ServerLifecycleEvents.SERVER_STARTED.register(ModServerTickEvents::onServerStarted);
 		ServerLifecycleEvents.SERVER_STOPPED.register(POIManager::onServerStopped);
 		ServerLifecycleEvents.SERVER_STOPPED.register(ServerConfig::onServerSave);
 		ServerLifecycleEvents.AFTER_SAVE.register(POIManager::onAfterSave);

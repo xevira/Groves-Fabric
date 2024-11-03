@@ -1,20 +1,15 @@
 package github.xevira.groves.screenhandler;
 
-import com.google.common.collect.ImmutableList;
 import github.xevira.groves.Registration;
-import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
-import github.xevira.groves.network.MoonwellScreenPayload;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.util.ISlotVisibility;
 import github.xevira.groves.util.ScreenTab;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -24,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class GrovesSanctuaryScreenHandler extends ScreenHandler {
     private final GrovesPOI.ClientGroveSanctuary sanctuary;
@@ -31,8 +27,8 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
 
     private Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> chunks = new HashMap<>();
 
-    private Text buyChunkReason = Text.empty();
-    private int buyChunkTicks = 0;
+    private Text errorMessage = Text.empty();
+    private int errorMessageTicks = 0;
 
     public GrovesSanctuaryScreenHandler(int syncId, PlayerInventory playerInventory, GrovesSanctuaryScreenPayload payload)
     {
@@ -60,12 +56,25 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
     @Override
     public boolean canUse(PlayerEntity player) {
         // Only way to get to this is if you are the owner of the sanctuary
-        return true;
+        // OR
+        // Sanctuary is abandoned and the player is Creative Op2
+        return !getSanctuary().isAbandoned() || player.isCreativeLevelTwoOp();
     }
 
     public GrovesPOI.ClientGroveSanctuary getSanctuary()
     {
         return this.sanctuary;
+    }
+
+    public void tick()
+    {
+        if (this.errorMessageTicks > 0) {
+            --this.errorMessageTicks;
+            if (this.errorMessageTicks <= 0)
+            {
+                this.errorMessage = null;
+            }
+        }
     }
 
     /////////////////////////
@@ -144,18 +153,21 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         this.chunks.put(chunk.pos(), chunk);
     }
 
-    public void setBuyChunkReason(Text reason)
+    public void setErrorMessage(Text reason)
     {
-        this.buyChunkReason = reason.copy();
-        this.buyChunkTicks = 100;   // 5 seconds;
+        this.errorMessage = reason.copy();
+        this.errorMessageTicks = 100;
     }
 
-    public Text getBuyChunkReason() { return this.buyChunkReason; }
+    public @Nullable Text getErrorMessage() { return this.errorMessage; }
 
-    public int getBuyChunkTicks() {
-        int ticks = this.buyChunkTicks--;
-        if (this.buyChunkTicks < 0) this.buyChunkTicks = 0;
-        return ticks;
+    public int getErrorMessageTicks() {
+        return this.errorMessageTicks;
+    }
+
+    public Set<ChunkPos> getAvailableChunks()
+    {
+        return this.sanctuary.getAvailableChunks();
     }
 
     //

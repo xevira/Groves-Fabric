@@ -1,16 +1,27 @@
 package github.xevira.groves.item;
 
+import com.mojang.datafixers.util.Either;
 import github.xevira.groves.Groves;
+import github.xevira.groves.client.event.KeyInputHandler;
+import github.xevira.groves.network.ImprintPayload;
 import github.xevira.groves.poi.GrovesPOI;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.consume.UseAction;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -42,33 +53,51 @@ public class ImprintingSigilItem extends Item {
         return UseAction.BOW;
     }
 
-    @Override
+    public static final Text EXISTS_ERROR = Groves.text("error", "imprint.exists");
+    public static final Text HAS_ERROR = Groves.text("error", "imprint.has");
+    public static final Text OWN_ERROR = Groves.text("error", "imprint.own");
+    public static final Text ABANDONED_ERROR = Groves.text("error", "imprint.abandoned");
 
+    @Override
     public boolean onStoppedUsing(ItemStack stack, @NotNull World world, LivingEntity user, int remainingUseTicks) {
         if (!world.isClient) {
-            if (user instanceof PlayerEntity player) {
+            if (user instanceof ServerPlayerEntity player) {
                 int i = this.getMaxUseTime(stack, user) - remainingUseTicks;
                 float f = getPullProgress(i);
                 if (f > 0.9f) {
                     if (GrovesPOI.isValidGroveLocation((ServerWorld)world, player.getBlockPos(), this.enchanted)) {
-                        GrovesPOI.ImprintSanctuaryResult result = GrovesPOI.imprintSanctuary(player, (ServerWorld)world, player.getBlockPos(), this.enchanted);
+                        Either<GrovesPOI.GroveSanctuary, GrovesPOI.ImprintSanctuaryResult> result = GrovesPOI.imprintSanctuary(player, (ServerWorld)world, player.getBlockPos(), this.enchanted);
 
-                        switch(result)
-                        {
-                            case SUCCESS -> {
-                                // TODO: Play Sound
-                                // TODO: Give them an item?  A guide book, perhaps?
-                                stack.decrementUnlessCreative(1, player);
-                            }
+                        if (result.left().isPresent()) {
 
-                            case ALREADY_EXISTS -> {
+                            GrovesPOI.GroveSanctuary sanctuary = result.left().get();
+                            // TODO: Play Sound
+                            // TODO: Give them an item?  A guide book, perhaps?
+                            stack.decrementUnlessCreative(1, player);
+                            ServerPlayNetworking.send(player, new ImprintPayload());
+                            sanctuary.openUI(player);
+                        }
+                        else if (result.right().isPresent()) {
+                            switch(result.right().get())
+                            {
+                                case ALREADY_EXISTS -> {
+                                    player.sendMessage(EXISTS_ERROR, false);
+                                }
 
-                            }
+                                case ALREADY_HAS_GROVE -> {
+                                    player.sendMessage(HAS_ERROR, false);
+                                }
 
-                            case ALREADY_HAS_GROVE -> {
+                                case ALREADY_OWN_GROVE -> {
+                                    player.sendMessage(OWN_ERROR, false);
+                                }
 
+                                case ABANDONED -> {
+                                    player.sendMessage(ABANDONED_ERROR, false);
+                                }
                             }
                         }
+
                     }
 
                     player.incrementStat(Stats.USED.getOrCreateStat(this));
@@ -94,5 +123,19 @@ public class ImprintingSigilItem extends Item {
         ItemStack itemStack = user.getStackInHand(hand);
         user.setCurrentHand(hand);
         return ActionResult.CONSUME;
+    }
+
+    public static final MutableText IMPRINT_PREFIX = Groves.text("text", "imprint.successful.prefix");
+    public static final MutableText IMPRINT_SUFFIX = Groves.text("text", "imprint.successful.suffix");
+
+    /** Informs the player they have successfully imprinted.  Called this way to access client-only data, namely the player's keybind. **/
+    @Environment(EnvType.CLIENT)
+    public static void clientImprintSuccessful(ClientPlayerEntity player)
+    {
+        MutableText msg = IMPRINT_PREFIX;
+        msg.append(Text.literal("[" + KeyInputHandler.OPEN_GROVES_UI_KEY.getKeybind().getKeysDisplayString() + "]").formatted(Formatting.GREEN));
+        msg.append(IMPRINT_SUFFIX);
+
+        player.sendMessage(msg, false);
     }
 }

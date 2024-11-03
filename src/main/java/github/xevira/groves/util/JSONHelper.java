@@ -33,6 +33,25 @@ public class JSONHelper {
         return null;
     }
 
+    public static String getString(JsonObject json, String key, String defaultStr)
+    {
+        if (json.has(key))
+        {
+            JsonElement e = json.get(key);
+            if (e.isJsonPrimitive())
+            {
+                JsonPrimitive p = e.getAsJsonPrimitive();
+
+                if (p.isString())
+                {
+                    return p.getAsString();
+                }
+            }
+        }
+
+        return defaultStr;
+    }
+
     public static Optional<JsonObject> getObject(JsonObject json, String key)
     {
         if (json.has(key))
@@ -238,6 +257,46 @@ public class JSONHelper {
         }
 
         return Optional.empty();
+    }
+
+    public static Optional<Integer> JsonToColor(JsonObject json, String key)
+    {
+        if (json.has(key))
+        {
+            JsonElement e = json.get(key);
+            if (e.isJsonPrimitive())
+            {
+                JsonPrimitive p = e.getAsJsonPrimitive();
+
+                if (p.isString())
+                {
+                    String str = p.getAsString();
+
+                    if (str.startsWith("#"))
+                    {
+                        try {
+                            int color = Integer.parseInt(str.substring(1), 16);
+                            return Optional.of(color);
+                        } catch(NumberFormatException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static int JsonToColor(JsonObject json, String key, int defaultColor)
+    {
+        Optional<Integer> color = JsonToColor(json, key);
+
+        return color.orElse(defaultColor);
+    }
+
+    public static JsonPrimitive ColorToJson(int color)
+    {
+        return new JsonPrimitive("#" + Integer.toHexString(color).toUpperCase());
     }
 
     public static JsonObject ChunkPosToJson(ChunkPos pos)

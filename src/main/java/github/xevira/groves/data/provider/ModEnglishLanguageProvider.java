@@ -147,6 +147,8 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "moon_phial.moonwell_exists", "§cA Moonwell already exists for this Grove Sanctuary.§r");
         addText(translationBuilder, "text", "moonwell.invalid_block", "§cInvalid block at (%s, %s, %s).§r");
 
+        addText(translationBuilder, "label", "groves.name", "Name:");
+        addText(translationBuilder, "button", "groves.name.set", "Set");
         addText(translationBuilder, "label", "groves.foliage", "Foliage:");
         addText(translationBuilder, "text", "groves.foliage", "%s leaf block%s");
         addText(translationBuilder, "label", "groves.sunlight", "Sunlight:");
@@ -154,6 +156,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "label", "groves.moonwell", "Moonwell:");
         addText(translationBuilder, "text", "groves.moonwell", "(%s, %s, %s)");
         addText(translationBuilder, "text", "groves.no_moonwell", "None");
+        addText(translationBuilder, "label", "groves.spawn", "Spawn Point:");
+        addText(translationBuilder, "text", "groves.spawn", "(%s, %s, %s)");
+        addText(translationBuilder, "button", "groves.spawn.set", "Set to Current Location");
 
         addText(translationBuilder, "tooltip", "groves.tab.general", "General");
         addText(translationBuilder, "tooltip", "groves.tab.chunks", "Chunks");
@@ -186,5 +191,41 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "ability.chunk_load", "Chunk Loading");
         addText(translationBuilder, "text", "ability.regeneration", "Regeneration");
         addText(translationBuilder, "text", "ability.restoration", "Restoration");
+
+        addText(translationBuilder, "tooltip", "groves.chunk.location", "X = %s, Z = %s");
+        addText(translationBuilder, "tooltip", "groves.chunk.available", "Available");
+        addText(translationBuilder, "tooltip", "groves.chunk.claimed", "Claimed");
+        addText(translationBuilder, "tooltip", "groves.chunk.origin", "Origin");
+        addText(translationBuilder, "tooltip", "groves.chunk.keep_loaded", "Keep Loaded");
+        addText(translationBuilder, "tooltip", "groves.chunk.toggle", "Shift + Left-Click to toggle loading.");
+        addText(translationBuilder, "tooltip", "groves.chunk.claim", "Ctrl + Left-Click to claim chunk.");
+
+        addText(translationBuilder, "error", "groves.claim_chunk.cost", "Insufficient sunlight.  Need %s to claim another chunk.");
+        addText(translationBuilder, "error", "groves.claim_chunk.invalid", "Chunk is incapable of supporting a Sanctuary.");
+        addText(translationBuilder, "error", "groves.claim_chunk.own", "You already oan it.");
+        addText(translationBuilder, "error", "groves.claim_chunk.claimed", "Chunk has already been claimed by someone else.");
+        addText(translationBuilder, "error", "location.not_grove", "Spawn point must be inside the Sanctuary.");
+        addText(translationBuilder, "error", "location.air", "Spawn point not on a valid block.");
+
+        addText(translationBuilder, "text", "imprint.successful.prefix", "Imprint successful.  You can use ");
+        addText(translationBuilder, "text", "imprint.successful.suffix", " to open the Grove Sanctuary UI.");
+        addText(translationBuilder, "error", "imprint.exists", "There is already a Sanctuary here.");
+        addText(translationBuilder, "error", "imprint.has", "You already own a Sanctuary.");
+        addText(translationBuilder, "error", "imprint.own", "You already own this Sanctuary.");
+        addText(translationBuilder, "error", "imprint.abandoned", "The abandoned Sanctuary did not accept your imprint.");
+
+        addText(translationBuilder, "gui", "sanctuary.abandoned", "Abandoned Sanctuary");
+        addText(translationBuilder, "gui", "sanctuary.abandoned.named", "Abandoned %s");
+        addText(translationBuilder, "gui", "sanctuary.claimed", "%s's Sanctuary");
+        addText(translationBuilder, "gui", "sanctuary.claimed.named", "%s's %s");
+        addText(translationBuilder, "gui", "sanctuary.yours", "Your Sanctuary");
+        // Yours.named is just the literal of your grove name in the code
+
+        addText(translationBuilder, "gui", "sanctuary.entered.abandoned", "Entering Abandoned Sanctuary");
+        addText(translationBuilder, "gui", "sanctuary.entered.abandoned.named", "Entering Abandoned %s");
+        addText(translationBuilder, "gui", "sanctuary.entered.claimed", "Entering %s's Sanctuary");
+        addText(translationBuilder, "gui", "sanctuary.entered.claimed.named", "Entering %s's %s");
+        addText(translationBuilder, "gui", "sanctuary.entered.yours", "Entering Your Sanctuary");
+        addText(translationBuilder, "gui", "sanctuary.entered.yours.named", "Entering %s");
     }
 }

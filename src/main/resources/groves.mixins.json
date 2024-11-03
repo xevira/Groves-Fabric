@@ -31,9 +31,12 @@
 		"fluid.ZombieEntityMixin"
 	],
 	"client": [
+		"client.ClientPlayerEntityMixin",
 		"client.HandledScreenMixin",
+		"client.InGameHudMixin",
 		"client.KeyboardMixin",
-		"client.MinecraftClientMixin"
+		"client.MinecraftClientMixin",
+		"client.TextFieldWidgetMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

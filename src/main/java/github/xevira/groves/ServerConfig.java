@@ -27,6 +27,8 @@ public class ServerConfig {
     private float solarRepairBaseChance;
     private float solarRepairExtraChance;
 
+    private long costClaimChunkBase;
+
     public static void onServerLoad(MinecraftServer server) {
         currentConfig = readConfig(server);
     }
@@ -47,6 +49,8 @@ public class ServerConfig {
 
         this.solarRepairBaseChance = 0.05f;
         this.solarRepairExtraChance = 0.025f;
+
+        this.costClaimChunkBase = 50000L;
     }
 
     public boolean isAbilityAllowed(int id)
@@ -165,6 +169,27 @@ public class ServerConfig {
             }
         }
 
+        Optional<JsonObject> costs = JSONHelper.getObject(json, "costs");
+
+        if (costs.isPresent())
+        {
+            Map<String, JsonElement> costMap = costs.get().asMap();
+
+            if (costMap.containsKey("baseClaimChunk"))
+            {
+                JsonElement element = costMap.get("baseClaimChunk");
+
+                if (element.isJsonPrimitive())
+                {
+                    JsonPrimitive p = element.getAsJsonPrimitive();
+
+                    if (p.isNumber())
+                        this.costClaimChunkBase = p.getAsLong();
+                }
+            }
+        }
+
+
 
         Optional<Float> solarRepairBaseChance = JSONHelper.getFloat(json, "solarRepairBaseChance");
         solarRepairBaseChance.ifPresent(aFloat -> this.solarRepairBaseChance = aFloat);
@@ -176,4 +201,6 @@ public class ServerConfig {
 
     public static float getSolarRepairBaseChance() { return currentConfig.solarRepairBaseChance; }
     public static float getSolarRepairExtraChance() { return currentConfig.solarRepairExtraChance; }
+
+    public static long getBaseCostClaimChunk() { return currentConfig.costClaimChunkBase; }
 }

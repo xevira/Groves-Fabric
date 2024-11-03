@@ -1,5 +1,8 @@
 package github.xevira.groves.network;
 
+import github.xevira.groves.Groves;
+import github.xevira.groves.events.client.HudRenderEvents;
+import github.xevira.groves.item.ImprintingSigilItem;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
@@ -8,6 +11,8 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 
 import java.util.Optional;
 
@@ -17,6 +22,10 @@ public class Networking {
     public static void registerClient()
     {
         // - Client Side
+        ClientPlayNetworking.registerGlobalReceiver(ImprintPayload.ID, (payload, context) -> {
+            ImprintingSigilItem.clientImprintSuccessful(context.player());
+        });
+
         ClientPlayNetworking.registerGlobalReceiver(UpdateSunlightPayload.ID, (payload, context) -> {
             if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
             {
@@ -38,13 +47,54 @@ public class Networking {
             }
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(BuyChunkResponsePayload.ID, (payload, context) -> {
+        ClientPlayNetworking.registerGlobalReceiver(ClaimChunkResponsePayload.ID, (payload, context) -> {
             if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
             {
                 if (payload.success())
                     handler.addChunk(payload.pos());
                 else
-                    handler.setBuyChunkReason(payload.reason());
+                    handler.setErrorMessage(payload.reason());
+            }
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(UpdateAvailableChunkPayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                if (payload.add())
+                    handler.getSanctuary().addAvailable(payload.pos());
+                else
+                    handler.getSanctuary().removeAvailable(payload.pos());
+            }
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(ResetAvailableChunksPayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                handler.getSanctuary().setAvailableChunks(payload.chunks());
+            }
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(SetSpawnPointResponsePayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                if (payload.success())
+                    handler.getSanctuary().setSpawnPoint(payload.pos());
+                else
+                    handler.setErrorMessage(payload.reason());
+            }
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(SanctuaryEnterPayload.ID, (payload, context) -> {
+            HudRenderEvents.setSanctuaryEntry(payload.uuid(), payload.name(), payload.groveName(), payload.abandoned(), payload.entry());
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(SetGroveNameResponsePayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                if (payload.success())
+                    handler.getSanctuary().setGroveName(payload.name());
+                else
+                    handler.setErrorMessage(payload.reason());
             }
         });
     }
@@ -56,13 +106,21 @@ public class Networking {
         PayloadTypeRegistry.playC2S().register(OpenGrovesRequestPayload.ID, OpenGrovesRequestPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(GroveAbitlityKeybindPayload.ID, GroveAbitlityKeybindPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(SetChunkLoadingPayload.ID, SetChunkLoadingPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(BuyChunkPayload.ID, BuyChunkPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(ClaimChunkPayload.ID, ClaimChunkPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(SetSpawnPointPayload.ID, SetSpawnPointPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(SetGroveNamePayload.ID, SetGroveNamePayload.PACKET_CODEC);
 
         // - Server -> Client
         PayloadTypeRegistry.playS2C().register(UpdateSunlightPayload.ID, UpdateSunlightPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdateTotalFoliagePayload.ID, UpdateTotalFoliagePayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdateMoonwellPayload.ID, UpdateMoonwellPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(BuyChunkResponsePayload.ID, BuyChunkResponsePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(ClaimChunkResponsePayload.ID, ClaimChunkResponsePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(UpdateAvailableChunkPayload.ID, UpdateAvailableChunkPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(ResetAvailableChunksPayload.ID, ResetAvailableChunksPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SetSpawnPointResponsePayload.ID, SetSpawnPointResponsePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(ImprintPayload.ID, ImprintPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SanctuaryEnterPayload.ID, SanctuaryEnterPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SetGroveNameResponsePayload.ID, SetGroveNameResponsePayload.PACKET_CODEC);
 
         // Packet Handlers
         // - Server Side
@@ -72,9 +130,15 @@ public class Networking {
             Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             // Open Screen (if present)
-            sanctuary.ifPresent(groveSanctuary -> context.player().openHandledScreen(groveSanctuary));
+            if(sanctuary.isPresent())
+                sanctuary.get().openUI(context.player());
+            else if(context.player().isCreativeLevelTwoOp())
+            {
+                sanctuary = GrovesPOI.getSanctuaryAbandoned(context.player().getServerWorld(), context.player().getBlockPos());
+                sanctuary.ifPresent(groveSanctuary -> groveSanctuary.openUI(context.player()));
+            }
 
-            // If they don't have a sanctuary, do nothing.
+            // If they don't have a sanctuary or not creative inside an abandoned grove, do nothing.
         });
 
         // Execute the specified grove ability
@@ -91,10 +155,34 @@ public class Networking {
             sanctuary.ifPresent(groveSanctuary -> groveSanctuary.setChunkLoadingForChunk(payload.pos(), payload.loaded()));
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(BuyChunkPayload.ID, (payload, context) -> {
+        ServerPlayNetworking.registerGlobalReceiver(ClaimChunkPayload.ID, (payload, context) -> {
             Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
-            sanctuary.ifPresent(groveSanctuary -> groveSanctuary.buyChunk(payload.pos()));
+            sanctuary.ifPresent(groveSanctuary -> groveSanctuary.claimChunk(context.player(), payload.pos()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(SetSpawnPointPayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+
+            sanctuary.ifPresent(groveSanctuary -> {
+                switch(groveSanctuary.setSpawnPoint(payload.pos()))
+                {
+                    case SUCCESS -> groveSanctuary.sendListeners(new SetSpawnPointResponsePayload(payload.pos(), true, Text.empty()));
+                    case NOT_GROVE -> ServerPlayNetworking.send(context.player(), new SetSpawnPointResponsePayload(payload.pos(), false, Groves.text("error", "location.not_grove")));
+                    case AIR -> ServerPlayNetworking.send(context.player(), new SetSpawnPointResponsePayload(payload.pos(), false, Groves.text("error", "location.air")));
+                }
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(SetGroveNamePayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+
+            sanctuary.ifPresent(groveSanctuary -> {
+                // TODO: Validate name
+
+                groveSanctuary.setGroveName(payload.name());
+                ServerPlayNetworking.send(context.player(), new SetGroveNameResponsePayload(payload.name(), true, Text.empty()));
+            });
         });
 
 

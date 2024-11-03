@@ -21,7 +21,7 @@ public class POIManager {
     }
 
     /** Called when the {@link net.minecraft.server.MinecraftServer} is loaded. **/
-    public static void onServerStared(MinecraftServer server)
+    public static void onServerStarted(MinecraftServer server)
     {
         Path path = getServerPath(server);
 
