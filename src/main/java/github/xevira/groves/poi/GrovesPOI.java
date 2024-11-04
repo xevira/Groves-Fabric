@@ -9,6 +9,7 @@ import com.mojang.datafixers.util.Either;
 import github.xevira.groves.Groves;
 import github.xevira.groves.ServerConfig;
 import github.xevira.groves.network.*;
+import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.util.ChunkHelper;
@@ -35,6 +36,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.UserCache;
 import net.minecraft.util.Uuids;
@@ -819,6 +821,16 @@ public class GrovesPOI {
         public Optional<GroveAbility> getAbility(String name)
         {
             return this.groveAbilities.stream().filter(ability -> ability.getName().equalsIgnoreCase(name)).findFirst();
+        }
+
+        public boolean hasAbility(String name)
+        {
+            return this.groveAbilities.stream().anyMatch(ability -> ability.getName().equalsIgnoreCase(name));
+        }
+
+        public void installAbility(GroveAbility prototype)
+        {
+            this.groveAbilities.add(prototype.getConstructor().get());
         }
 
         private boolean isOwnerOnline(MinecraftServer server)

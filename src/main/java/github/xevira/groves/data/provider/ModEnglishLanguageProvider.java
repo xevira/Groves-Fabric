@@ -3,7 +3,10 @@ package github.xevira.groves.data.provider;
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
+import github.xevira.groves.item.UnlockScrollItem;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.GroveAbilities;
+import github.xevira.groves.sanctuary.GroveAbility;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.item.Item;
@@ -19,7 +22,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         super(dataOutput, "en_us", registryLookup);
     }
 
-    private static void addText(@NotNull TranslationBuilder builder, @NotNull Text text, @NotNull String value) {
+    private static void addText(@NotNull TranslationBuilder builder, @NotNull Text text, String value) {
+        if (value == null) return;
+
         if (text.getContent() instanceof TranslatableTextContent translatableTextContent) {
             builder.add(translatableTextContent.getKey(), value);
         } else {
@@ -27,7 +32,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         }
     }
 
-    private static void addText(@NotNull TranslationBuilder builder, @NotNull String path, @NotNull String value) {
+    private static void addText(@NotNull TranslationBuilder builder, @NotNull String path, String value) {
+        if (value == null) return;
+
         Text text = Text.translatable(path);
         if (text.getContent() instanceof TranslatableTextContent translatableTextContent) {
             builder.add(translatableTextContent.getKey(), value);
@@ -36,7 +43,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         }
     }
 
-    private static void addText(@NotNull TranslationBuilder builder, @NotNull Item item, @NotNull String path, @NotNull String value) {
+    private static void addText(@NotNull TranslationBuilder builder, @NotNull Item item, @NotNull String path, String value) {
+        if (value == null) return;
+
         Text text = Text.translatable(item.getTranslationKey() + path);
         if (text.getContent() instanceof TranslatableTextContent translatableTextContent) {
             builder.add(translatableTextContent.getKey(), value);
@@ -45,7 +54,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         }
     }
 
-    private static void addText(@NotNull TranslationBuilder builder, @NotNull String prefix, @NotNull String path, @NotNull String value) {
+    private static void addText(@NotNull TranslationBuilder builder, @NotNull String prefix, @NotNull String path, String value) {
+        if (value == null) return;
+
         Text text = Text.translatable(prefix + "." + Groves.MOD_ID + "." + path);
         if (text.getContent() instanceof TranslatableTextContent translatableTextContent) {
             builder.add(translatableTextContent.getKey(), value);
@@ -109,6 +120,26 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.MOON_PHIAL_ITEM, "Phial of the Moon");
         translationBuilder.add(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, "Music Disc");
         addText(translationBuilder, Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, ".desc", "Druid Music - Into the Heart of the Universe");
+
+        translationBuilder.add(Registration.UNLOCK_SCROLL_ITEM, "Blank Unlock Scroll");
+        addText(translationBuilder, Registration.UNLOCK_SCROLL_ITEM, ".lore", "Craft with the required ingredients to make Grove Sanctuary unlock scrolls.");
+
+        addText(translationBuilder, "tooltip", "ability.cost.start", "Start Cost:");
+        addText(translationBuilder, "tooltip", "ability.cost.tick", "Maintenance Cost:");
+        addText(translationBuilder, "tooltip", "ability.cost.use", "Use Cost:");
+
+        for(GroveAbility ability : GroveAbilities.ABILITIES.values())
+        {
+            UnlockScrollItem scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
+
+            addText(translationBuilder, "name", "ability." + ability.getName(), ability.getEnglishTranslation());
+            translationBuilder.add(scroll, "Unlock Scroll (" + ability.getEnglishTranslation() + ")");
+            addText(translationBuilder, scroll, ".lore", ability.getEnglishLoreTranslation());
+
+            addText(translationBuilder, scroll, ".cost.start", ability.getEnglishStartCostTranslation());
+            addText(translationBuilder, scroll, ".cost.tick", ability.getEnglishTickCostTranslation());
+            addText(translationBuilder, scroll, ".cost.use", ability.getEnglishUseCostTranslation());
+        }
 
         translationBuilder.addEnchantment(Registration.SOLAR_REPAIR_ENCHANTMENT_KEY, "Solar Repair");
 

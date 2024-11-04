@@ -1,10 +1,12 @@
 package github.xevira.groves.data.provider;
 
 import github.xevira.groves.Registration;
+import github.xevira.groves.sanctuary.GroveAbilities;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
 import net.minecraft.block.Block;
 import net.minecraft.data.client.*;
+import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 
 public class ModBlockModelProvider extends FabricModelProvider {
@@ -114,5 +116,10 @@ public class ModBlockModelProvider extends FabricModelProvider {
         itemModelGenerator.register(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.MOONLIGHT_BUCKET_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+        for(Item item : GroveAbilities.UNLOCK_SCROLLS.values())
+        {
+            itemModelGenerator.register(item, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+        }
     }
 }

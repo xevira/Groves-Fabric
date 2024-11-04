@@ -11,10 +11,13 @@ import github.xevira.groves.item.*;
 import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
 import github.xevira.groves.network.MoonwellScreenPayload;
 import github.xevira.groves.network.Networking;
+import github.xevira.groves.sanctuary.GroveAbilities;
+import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
@@ -64,6 +67,10 @@ public class Registration {
     // Jukebox Songs
     public static final RegistryKey<JukeboxSong> INTO_THE_HEART_OF_THE_UNIVERSE_KEY =
             RegistryKey.of(RegistryKeys.JUKEBOX_SONG, Groves.id("into_the_heart_of_the_universe"));
+
+    // Component Types
+    public static final ComponentType<GroveAbility> GROVE_ABILITY =
+            registerComponent("grove_ability", builder -> builder.codec(GroveAbility.CODEC));
 
     // Block Settings
     public static final AbstractBlock.Settings MOONSTONE_SETTINGS = AbstractBlock.Settings.create()
@@ -441,7 +448,6 @@ public class Registration {
             Item::new,
             new Item.Settings().rarity(Rarity.EPIC).jukeboxPlayable(INTO_THE_HEART_OF_THE_UNIVERSE_KEY).maxCount(1));
 
-
     public static final Item MOONLIGHT_BUCKET_ITEM = register(
             "moonlight_bucket",
             settings -> new BucketItem(MOONLIGHT_FLUID, settings),
@@ -451,6 +457,11 @@ public class Registration {
             "moon_phial",
             MoonPhialItem::new,
             new Item.Settings().maxCount(16).rarity(Rarity.RARE));
+
+    public static final Item UNLOCK_SCROLL_ITEM = register(
+            "unlock_scroll",
+            settings -> new UnlockScrollItem(null, settings),
+            new Item.Settings().maxCount(64));
 
     // Block Entities
     public static final BlockEntityType<MoonwellMultiblockMasterBlockEntity> MOONWELL_MULTIBLOCK_MASTER_BLOCK_ENTITY = register("moonwell_master",
@@ -548,7 +559,8 @@ public class Registration {
             MOON_PHIAL_ITEM,
             IMPRINTING_SIGIL_ITEM,
             ENCHANTED_IMPRINTING_SIGIL_ITEM,
-            INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM);
+            INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM,
+            UNLOCK_SCROLL_ITEM);
 
     public static final FluidSystem BLESSED_MOON_WATER_FLUID_DATA = new FluidSystem.Builder(BLESSED_MOON_WATERS_TAG)
             .preventsBlockSpreading()
@@ -724,7 +736,10 @@ public class Registration {
         FluidSystem.registerFluid(MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
         FluidSystem.registerFluid(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
 
+        GroveAbilities.register();
+
         // TODO: Add to the item group where other music discs are
+
 
         Networking.register();
     }

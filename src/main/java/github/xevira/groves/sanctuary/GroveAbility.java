@@ -2,16 +2,20 @@ package github.xevira.groves.sanctuary;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import github.xevira.groves.Groves;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.util.JSONHelper;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +48,8 @@ public abstract class GroveAbility {
         }
     };
 
+    public static final Codec<GroveAbility> CODEC = Codec.STRING.<GroveAbility>comapFlatMap(GroveAbility::validate, GroveAbility::getName).stable();
+
     private static int NextId = 0;
 
     protected final int id;
@@ -66,6 +72,18 @@ public abstract class GroveAbility {
     }
 
     public abstract Supplier<? extends GroveAbility> getConstructor();
+
+    public abstract @Nullable Item getRecipeIngredient();
+
+    public abstract String getEnglishTranslation();
+
+    public abstract String getEnglishLoreTranslation();
+
+    public abstract String getEnglishStartCostTranslation();
+
+    public abstract String getEnglishTickCostTranslation();
+
+    public abstract String getEnglishUseCostTranslation();
 
     public boolean isAutomatic()
     {
@@ -183,5 +201,13 @@ public abstract class GroveAbility {
         public ManualGroveAbility(String name, boolean defaultAllow) {
             super(name, false, false, defaultAllow);
         }
+    }
+
+
+    public static DataResult<GroveAbility> validate(String name)
+    {
+        Optional<GroveAbility> ability = GroveAbilities.getByName(name);
+
+        return ability.map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Not a valid Grove Ability: " + name));
     }
 }

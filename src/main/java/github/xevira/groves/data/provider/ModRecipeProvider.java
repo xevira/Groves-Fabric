@@ -1,22 +1,19 @@
 package github.xevira.groves.data.provider;
 
 import github.xevira.groves.Registration;
+import github.xevira.groves.sanctuary.GroveAbilities;
+import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.util.WaxHelper;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.block.Block;
 import net.minecraft.data.server.recipe.RecipeExporter;
 import net.minecraft.data.server.recipe.RecipeGenerator;
-import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
-import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.book.RecipeCategory;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.resource.featuretoggle.FeatureSet;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +28,28 @@ public class ModRecipeProvider extends FabricRecipeProvider {
     @Override
     protected RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup wrapperLookup, RecipeExporter exporter) {
         return new RecipeGenerator(wrapperLookup, exporter) {
+            private void generateUnlockScrollRecipes()
+            {
+                for(GroveAbility ability : GroveAbilities.ABILITIES.values())
+                {
+                    Item ingredient = ability.getRecipeIngredient();
+                    if (ingredient != null) {
+                        Item scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
+                        createShaped(RecipeCategory.MISC, scroll)
+                                .input('#', ingredient)
+                                .input('S', Registration.UNLOCK_SCROLL_ITEM)
+                                .input('I', Items.INK_SAC)
+                                .pattern(" # ")
+                                .pattern("ISI")
+                                .pattern(" I ")
+                                .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
+                                .criterion(hasItem(Registration.UNLOCK_SCROLL_ITEM), conditionsFromItem(Registration.UNLOCK_SCROLL_ITEM))
+                                .criterion(hasItem(Items.INK_SAC), conditionsFromItem(Items.INK_SAC))
+                                .offerTo(exporter);
+                    }
+                }
+            }
+
             private void generateLunarCycleShapeless(RecipeExporter exporter, RecipeCategory category, List<Block> phases)
             {
                 for(int i = 0; i < phases.size(); i++)
@@ -123,6 +142,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 //                RegistryEntryLookup<Item> itemLookup = wrapperLookup.getOrThrow(RegistryKeys.ITEM);
 
                 generateMoonstoneRecipes();
+                generateUnlockScrollRecipes();
             }
         };
     }
