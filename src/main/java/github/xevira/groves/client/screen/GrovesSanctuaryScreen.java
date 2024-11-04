@@ -1,8 +1,11 @@
 package github.xevira.groves.client.screen;
 
+import com.mojang.authlib.GameProfile;
+import github.xevira.groves.ClientConfig;
 import github.xevira.groves.Groves;
 import github.xevira.groves.client.screen.widget.*;
-import github.xevira.groves.network.SetChunkLoadingPayload;
+import github.xevira.groves.network.AddFriendPayload;
+import github.xevira.groves.network.RemoveFriendPayload;
 import github.xevira.groves.network.SetGroveNamePayload;
 import github.xevira.groves.network.SetSpawnPointPayload;
 import github.xevira.groves.poi.GrovesPOI;
@@ -17,13 +20,14 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -42,7 +46,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 
 //    private final Map<ScreenTab, List<Drawable>> tabControls = new HashMap<>();
 
-    private final Map<ScreenTab, TabControlWidget> Tabs = new HashMap<>();
+    private final List<TabControlWidget> Tabs = new ArrayList<>();
     private TabControlWidget currentTab;
 
     public GrovesSanctuaryScreen(GrovesSanctuaryScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -74,13 +78,17 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 //        test.setMaxLength(50);
 //        this.addDrawableChild(test);
 
-        Tabs.put(ScreenTab.GENERAL, new TabGeneralWidget(this.x + 7, this.y + 41, this.handler));
-        Tabs.put(ScreenTab.CHUNKS, new TabChunksWidget(this.x + 7, this.y + 41, this.handler));
-        Tabs.put(ScreenTab.FRIENDS, new TabFriendsWidget(this.x + 7, this.y + 41, this.handler));
-        Tabs.put(ScreenTab.ABILITIES, new TabAbilitiesWidget(this.x + 7, this.y + 41, this.handler));
-        Tabs.put(ScreenTab.KEYBINDS, new TabKeybindsWidget(this.x + 7, this.y + 41, this.handler));
+        Tabs.add(new TabGeneralWidget(this.x + 7, this.y + 41, this.handler));
+        Tabs.add(new TabChunksWidget(this.x + 7, this.y + 41, this.handler));
+        if (!this.handler.getSanctuary().isAbandoned()) {
+            if (isMultiplayer()) {
+                Tabs.add(new TabFriendsWidget(this.x + 7, this.y + 41, this.handler));
+            }
+            Tabs.add(new TabAbilitiesWidget(this.x + 7, this.y + 41, this.handler));
+        }
+        Tabs.add(new TabKeybindsWidget(this.x + 7, this.y + 41, this.handler));
 
-        for(TabControlWidget widget : Tabs.values())
+        for(TabControlWidget widget : Tabs)
         {
             //this.addDrawable(widget);
             widget.setScreen(this);
@@ -91,10 +99,12 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             widget.setVisible(false);
         }
 
-        handler.setCurrentTab(ScreenTab.GENERAL);
-        this.currentTab = Tabs.get(ScreenTab.GENERAL);
+        this.currentTab = Tabs.getFirst();
+        handler.setCurrentTab(this.currentTab.getTab());
         this.currentTab.setVisible(true);
     }
+
+
 
 //    @Override
 //    protected void handledScreenTick() {
@@ -102,6 +112,30 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 //
 //        this.handler.tick();
 //    }
+
+    private boolean isMultiplayer()
+    {
+        MinecraftServer server = MinecraftClient.getInstance().getServer();
+        ServerInfo serverInfo = MinecraftClient.getInstance().getCurrentServerEntry();
+
+        if (ClientConfig.isDevMode())
+            return true;
+
+        // Singleplayer
+        if (server != null && !server.isRemote())
+            return false;
+
+        // Realm
+        if (serverInfo != null && serverInfo.isRealm())
+            return true;
+
+        // External Multiplayer
+        if (server == null && (serverInfo == null || !serverInfo.isLocal()))
+            return true;
+
+        // LAN
+        return true;
+    }
 
     private void selectTab(TabControlWidget tab) {
         if (!this.handler.isSelectedTab(tab.getTab())) {
@@ -129,21 +163,29 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for(TabControlWidget tab : Tabs.values()) {
-            if (isPointWithinBounds(tab.getTab().ordinal() * 26 + 3, 0, 26, 13, mouseX, mouseY))
+        int x = 3;
+        for(TabControlWidget tab : Tabs) {
+            if (isPointWithinBounds(x, 0, 26, 13, mouseX, mouseY))
             {
                 selectTab(tab);
                 return true;
             }
+            x += 26;
         }
+
+        if (this.currentTab.mouseClicked(mouseX, mouseY, button))
+            return true;
 
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-//    @Override
-//    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-//        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-//    }
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (this.currentTab.mouseDragged(mouseX, mouseY, button, deltaX, deltaY))
+            return true;
+
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
@@ -153,6 +195,8 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
                 this.currentTab.mouseMoved(mouseX, mouseY);
             }
         }
+        else
+            this.currentTab.mouseMoved(mouseX, mouseY);
     }
 
     @Override
@@ -186,9 +230,8 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 //        return super.charTyped(chr, modifiers);
 //    }
 
-    public void drawTab(DrawContext context, TabControlWidget tab, boolean selected) {
+    public void drawTab(DrawContext context, TabControlWidget tab, int x, boolean selected) {
         int index = tab.getTab().ordinal();
-        int x = index * 26 + 3;
 
         // Tab background
         context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x + x, this.y, this.backgroundWidth, selected ? 0 : 16, 26, 16, 256, 256);
@@ -202,9 +245,12 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, this.x, this.y, 0, 0, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
         // Render tab .. tabs
-        for(TabControlWidget tab : Tabs.values())
+        int tabX = 3;
+        for(TabControlWidget tab : Tabs)
         {
-            drawTab(context, tab, this.currentTab == tab);
+            drawTab(context, tab, tabX, this.currentTab == tab);
+
+            tabX += 26;
         }
 
         this.currentTab.render(context, mouseX, mouseY, delta);
@@ -226,6 +272,8 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             {
                 alpha = (int)(255.0f * errorTicks / 20);
             }
+
+            alpha = Math.max(alpha, 16);
             int color = (alpha << 24) | 0xFF0000;
             int backcolor = (alpha << 24) | 0x400000;
             int bordercolor = (alpha << 24);
@@ -896,7 +944,8 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 
         @Override
         public void mouseMoved(double mouseX, double mouseY) {
-            this.mapWidget.mouseMoved(mouseX, mouseY);
+            if (isPointInControl(this.mapWidget, mouseX, mouseY))
+                this.mapWidget.mouseMoved(mouseX, mouseY);
         }
 
         @Override
@@ -919,14 +968,126 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
     static class TabFriendsWidget extends TabControlWidget {
         private final GrovesSanctuaryScreenHandler handler;
 
+        private final PlayerListWidget playerListWidget;
+        private final ButtonWidget addFriendWidget;
+        private final TextFieldWidget addFriendNameWidget;
+        private final ButtonWidget removeFriendWidget;
+
+        private boolean scrollbarClicked = false;
+        private int scrollbarY = 0;
+        private double scrollbarYClicked = 0.0D;
+
         public TabFriendsWidget(int x, int y, GrovesSanctuaryScreenHandler handler) {
             super(ScreenTab.FRIENDS, x, y);
             this.handler = handler;
+
+            this.playerListWidget = new PlayerListWidget(x + 1, y + 1, 145, 89, this.handler.getSanctuary().getFriends(), this::onSelectionChanged);
+
+            this.addFriendWidget = ButtonWidget.builder(Text.literal("Add"), this::onAddFriendClicked)
+                    .dimensions(x + 1, this.playerListWidget.getBottom() + 2, 50, 12).build();
+
+            this.removeFriendWidget = ButtonWidget.builder(Text.literal("Remove"), this::onRemoveFriendClicked)
+                    .dimensions(x + 1, this.addFriendWidget.getBottom() + 2, 50, 12).build();
+
+            this.addFriendNameWidget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, this.addFriendWidget.getRight() + 2, this.addFriendWidget.getY(), 75, 12, Text.empty());
+            this.addFriendNameWidget.setFocusUnlocked(false);
+            this.addFriendNameWidget.setEditableColor(-1);
+            this.addFriendNameWidget.setUneditableColor(-1);
+            this.addFriendNameWidget.setDrawsBackground(true);
+            this.addFriendNameWidget.setMaxLength(50);
+            this.addFriendNameWidget.active = true;
+            this.addFriendNameWidget.setChangedListener(s -> {
+                this.addFriendWidget.active = !(s.isEmpty() || s.isBlank());
+            });
+            this.addFriendNameWidget.setText("");
+
+            this.addChildElement(this.playerListWidget);
+            this.addChildElement(this.addFriendWidget);
+            this.addChildElement(this.addFriendNameWidget);
+            this.addChildElement(this.removeFriendWidget);
+        }
+
+        @Override
+        public void setVisible(boolean visible) {
+            super.setVisible(visible);
+
+            this.addFriendNameWidget.setText("");
+            this.addFriendNameWidget.active = true;
+            this.addFriendWidget.active = false;
+            this.playerListWidget.clearSelection();
+            this.removeFriendWidget.active = false;
+        }
+
+        private void onSelectionChanged()
+        {
+            this.removeFriendWidget.active = (this.playerListWidget.getSelected() != null);
+        }
+
+        private void onAddFriendClicked(ButtonWidget button)
+        {
+            String name = this.addFriendNameWidget.getText();
+            this.addFriendNameWidget.setText("");
+
+            ClientPlayNetworking.send(new AddFriendPayload(name));
+        }
+
+        private void onRemoveFriendClicked(ButtonWidget button)
+        {
+            GameProfile removal = this.playerListWidget.getSelected();
+
+            if (removal != null)
+            {
+                Groves.LOGGER.info("REMOVE: {} -> {}", removal.getId(), removal.getName());
+                ClientPlayNetworking.send(new RemoveFriendPayload(removal.getId()));
+                this.playerListWidget.clearSelection();
+            }
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            this.scrollbarClicked = false;
+            int pixels = this.playerListWidget.getListHeight();
+            if (pixels > this.playerListWidget.getHeight() && isPointInBounds(149, scrollbarY + 1, 15, 12, mouseX, mouseY))
+            {
+                Groves.LOGGER.info("scroll bar clicked");
+                this.scrollbarYClicked = mouseY;
+                this.scrollbarClicked = true;
+                return true;
+            }
+
+            if (isPointInControl(this.playerListWidget, mouseX, mouseY))
+            {
+                this.playerListWidget.mouseClicked(mouseX, mouseY, button);
+                return true;
+            }
+
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public void mouseMoved(double mouseX, double mouseY) {
+
+            if (isPointInControl(this.playerListWidget, mouseX, mouseY))
+            {
+                this.playerListWidget.mouseMoved(mouseX, mouseY);
+                return;
+            }
+
+            super.mouseMoved(mouseX, mouseY);
+        }
+
+        @Override
+        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+            return this.addFriendNameWidget.keyPressed(keyCode, scanCode, modifiers) || this.addFriendNameWidget.isActive() || super.keyPressed(keyCode, scanCode, modifiers);
         }
 
         @Override
         protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
             super.renderWidget(context, mouseX, mouseY, delta);
+
+            // Draw scrollbar
+
+            this.playerListWidget.render(context, mouseX, mouseY, delta);
         }
 
         @Override

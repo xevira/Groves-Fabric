@@ -36,6 +36,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.UserCache;
 import net.minecraft.util.Uuids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -765,6 +766,51 @@ public class GrovesPOI {
             return contains(pos);
         }
 
+        public void addFriend(ServerPlayerEntity player, String name)
+        {
+            UserCache users = this.server.getUserCache();
+
+            if (users != null)
+            {
+                GameProfile profile = users.findByName(name).orElse(null);
+
+                if (profile != null)
+                {
+                    if (this.groveFriends.stream().anyMatch(friend -> friend.id().equals(profile.getId())))
+                    {
+                        ServerPlayNetworking.send(player, new AddFriendResponsePayload(name, Text.literal("Player is already a friend.")));
+                    }
+                    else
+                    {
+                        this.groveFriends.add(new GroveFriend(profile));
+                        // Send to everyone looking at the UI, not just whoever is adding the friend
+                        sendListeners(new AddFriendResponsePayload(profile.getId(), profile.getName()));
+                    }
+                }
+                else
+                {
+                    ServerPlayNetworking.send(player, new AddFriendResponsePayload(name, Text.literal("Player not found.")));
+                }
+
+            }
+        }
+
+        public void removeFriend(ServerPlayerEntity player, UUID uuid)
+        {
+            Groves.LOGGER.info("SERVER.removeFriend: {}", uuid);
+
+            if (this.groveFriends.removeIf(friend -> friend.id().equals(uuid)))
+            {
+                Groves.LOGGER.info("SERVER.removeFriend: {} removed", uuid);
+                sendListeners(new RemoveFriendResponsePayload(uuid));
+            }
+            else
+            {
+                ServerPlayNetworking.send(player, new RemoveFriendResponsePayload(Text.literal("Player not in friend list.")));
+            }
+        }
+
+
         public Optional<GroveAbility> getAbility(int id)
         {
             return this.groveAbilities.stream().filter(ability -> ability.getId() == id).findFirst();
@@ -1127,7 +1173,7 @@ public class GrovesPOI {
             sanctuary.setChunkLoading(this.chunkLoaded);
 
             this.groveChunks.stream().map(GroveChunkData::toClientData).forEach(sanctuary::addChunk);
-            sanctuary.groveFriends.addAll(this.groveFriends);
+            this.groveFriends.stream().map(GroveFriend::toGameProfile).forEach(sanctuary.groveFriends::add);
 
             sanctuary.setFoliage(groveChunks.stream().map(chunk -> chunk.foliage).reduce(this.origin.foliage, Integer::sum));
             sanctuary.setStoredSunlight(this.storedSunlight);
@@ -1336,6 +1382,7 @@ public class GrovesPOI {
         }
     }
 
+
     public record GroveFriend(UUID id, String name) {
         public static final PacketCodec<RegistryByteBuf, GroveFriend> PACKET_CODEC = new PacketCodec<RegistryByteBuf, GroveFriend>() {
             @Override
@@ -1367,6 +1414,11 @@ public class GrovesPOI {
         public boolean isFriend(PlayerEntity friend)
         {
             return id.equals(friend.getUuid());
+        }
+
+        public GameProfile toGameProfile()
+        {
+            return new GameProfile(this.id, this.name);
         }
 
         @Override
@@ -1443,8 +1495,11 @@ public class GrovesPOI {
                     sanctuary.setMoonwell(BlockPos.PACKET_CODEC.decode(buf));
 
                 int friends = PacketCodecs.INTEGER.decode(buf);
-                for(int i = 0; i < friends; i++)
-                    sanctuary.addFriend(GroveFriend.PACKET_CODEC.decode(buf));
+                for(int i = 0; i < friends; i++) {
+                    UUID friendID = Uuids.PACKET_CODEC.decode(buf);
+                    String friendName = PacketCodecs.STRING.decode(buf);
+                    sanctuary.addFriend(new GameProfile(friendID, friendName));
+                }
 
                 int abilities = PacketCodecs.INTEGER.decode(buf);
                 for(int i = 0; i < abilities; i++) {
@@ -1484,7 +1539,13 @@ public class GrovesPOI {
                     PacketCodecs.BOOL.encode(buf, false);
 
                 PacketCodecs.INTEGER.encode(buf, value.groveFriends.size());
-                value.groveFriends.forEach(friend -> GroveFriend.PACKET_CODEC.encode(buf, friend));
+                value.groveFriends.forEach(friend -> {
+                    if (friend.getId() != null && friend.getName() != null)
+                    {
+                        Uuids.PACKET_CODEC.encode(buf, friend.getId());
+                        PacketCodecs.STRING.encode(buf, friend.getName());
+                    }
+                });
 
                 PacketCodecs.INTEGER.encode(buf, value.groveAbilities.size());
                 value.groveAbilities.forEach(ability -> GroveAbility.PACKET_CODEC.encode(buf, ability));
@@ -1506,7 +1567,7 @@ public class GrovesPOI {
         private long storedSunlight;
         private BlockPos moonwell;
 
-        private final List<GroveFriend> groveFriends = new ArrayList<>();
+        private final List<GameProfile> groveFriends = new ArrayList<>();
         private final List<GroveAbility> groveAbilities = new ArrayList<>();
         private final Set<ChunkPos> availableChunks = new HashSet<>();
 
@@ -1563,6 +1624,11 @@ public class GrovesPOI {
             this.chunkLoading = loading;
         }
 
+        public List<GameProfile> getFriends()
+        {
+            return this.groveFriends;
+        }
+
         public void addFriend(@NotNull UUID uuid, @NotNull String name)
         {
             GroveFriend friend = new GroveFriend(uuid, name);
@@ -1571,13 +1637,23 @@ public class GrovesPOI {
 
         public void addFriend(GroveFriend friend)
         {
-            if (!this.groveFriends.contains(friend))
-                this.groveFriends.add(friend);
+            if (this.groveFriends.stream().noneMatch(f -> friend.id().equals(f.getId())))
+                this.groveFriends.add(friend.toGameProfile());
+        }
+
+        public void addFriend(GameProfile profile)
+        {
+            if (profile.getId() == null) return;
+
+            if (this.groveFriends.stream().noneMatch(f -> profile.getId().equals(f.getId())))
+                this.groveFriends.add(profile);
         }
 
         public void removeFriend(@NotNull UUID uuid)
         {
-            this.groveFriends.removeIf(friend -> friend.id.equals(uuid));
+            Groves.LOGGER.info("CLIENT: Removing Friend: {}", uuid);
+            if (this.groveFriends.removeIf(friend -> uuid.equals(friend.getId())))
+                Groves.LOGGER.info("CLIENT: Friend removed");
         }
 
         public void removeFriend(int index)

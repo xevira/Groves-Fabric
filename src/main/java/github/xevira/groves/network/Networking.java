@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 
 import java.util.Optional;
@@ -97,6 +98,26 @@ public class Networking {
                     handler.setErrorMessage(payload.reason());
             }
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(AddFriendResponsePayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                if (payload.success())
+                    handler.getSanctuary().addFriend(payload.uuid(), payload.name());
+                else
+                    handler.setErrorMessage(payload.reason());
+            }
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(RemoveFriendResponsePayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                if (payload.success())
+                    handler.getSanctuary().removeFriend(payload.uuid());
+                else
+                    handler.setErrorMessage(payload.reason());
+            }
+        });
     }
 
     public static void register()
@@ -109,6 +130,8 @@ public class Networking {
         PayloadTypeRegistry.playC2S().register(ClaimChunkPayload.ID, ClaimChunkPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(SetSpawnPointPayload.ID, SetSpawnPointPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(SetGroveNamePayload.ID, SetGroveNamePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(AddFriendPayload.ID, AddFriendPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(RemoveFriendPayload.ID, RemoveFriendPayload.PACKET_CODEC);
 
         // - Server -> Client
         PayloadTypeRegistry.playS2C().register(UpdateSunlightPayload.ID, UpdateSunlightPayload.PACKET_CODEC);
@@ -121,6 +144,8 @@ public class Networking {
         PayloadTypeRegistry.playS2C().register(ImprintPayload.ID, ImprintPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(SanctuaryEnterPayload.ID, SanctuaryEnterPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(SetGroveNameResponsePayload.ID, SetGroveNameResponsePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(AddFriendResponsePayload.ID, AddFriendResponsePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(RemoveFriendResponsePayload.ID, RemoveFriendResponsePayload.PACKET_CODEC);
 
         // Packet Handlers
         // - Server Side
@@ -185,6 +210,16 @@ public class Networking {
             });
         });
 
+        ServerPlayNetworking.registerGlobalReceiver(AddFriendPayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
+            sanctuary.ifPresent(groveSanctuary -> groveSanctuary.addFriend(context.player(), payload.name()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(RemoveFriendPayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+
+            sanctuary.ifPresent(groveSanctuary -> groveSanctuary.removeFriend(context.player(), payload.uuid()));
+        });
     }
 }

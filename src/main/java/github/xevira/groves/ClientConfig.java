@@ -22,6 +22,7 @@ public class ClientConfig {
 
     private static ClientConfig currentConfig;
 
+    private boolean devMode;
     private int colorChunkClaimed;
     private int colorOrigin;
     private int colorChunkLoaded;
@@ -30,6 +31,7 @@ public class ClientConfig {
 
     ClientConfig()
     {
+        this.devMode = false;
         this.colorChunkClaimed = 0xFF63E363;
         this.colorChunkAvailable = 0xFFE3E363;
         this.colorOrigin = 0xFF00FF00;
@@ -58,6 +60,7 @@ public class ClientConfig {
                 currentConfig = new ClientConfig();
 
                 Optional<JsonObject> colorsObj = JSONHelper.getObject(root, "colors");
+                currentConfig.devMode = JSONHelper.getBoolean(root, "dev", false);
 
                 colorsObj.ifPresent(colors -> {
                     currentConfig.colorOrigin = JSONHelper.JsonToColor(colors, "origin", 0xFF00FF00);
@@ -81,9 +84,15 @@ public class ClientConfig {
 
             JsonObject root = new JsonObject();
 
+            if (currentConfig == null)
+                currentConfig = new ClientConfig();
+
             KeyInputHandler.saveConfig(root);
 
             root.add("config_version", new JsonPrimitive(CONFIG_VERSION));
+
+            if(currentConfig.devMode)
+                root.add("dev", new JsonPrimitive(currentConfig.devMode));
 
             JsonObject colors = new JsonObject();
 
@@ -98,6 +107,8 @@ public class ClientConfig {
             JSONHelper.writeJsonToFile(root, new File(dir, CONFIG_FILE_NAME));
         }
     }
+
+    public static boolean isDevMode() { return currentConfig != null && currentConfig.devMode; }
 
     public static int colorChunkClaimed() { return currentConfig.colorChunkClaimed; }
     public static int colorChunkLoaded() { return currentConfig.colorChunkLoaded; }

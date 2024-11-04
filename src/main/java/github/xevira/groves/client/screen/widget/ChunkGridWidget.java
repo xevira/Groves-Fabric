@@ -195,8 +195,6 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
             this.xOffset += deltaX;
             this.yOffset += deltaY;
             calculateNEWS();
-
-            Groves.LOGGER.info("mouseDragged: {}, {}", this.xOffset, this.yOffset);
         }
 
         return false;

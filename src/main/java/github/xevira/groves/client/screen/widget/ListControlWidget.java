@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.world.BlockLocating;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +19,8 @@ public class ListControlWidget<T extends ClickableTooltipWidget> extends Clickab
     private int yOffset;
     private int dataHeight;
 
+    private T selectedEntry = null;
+
     public ListControlWidget(int x, int y, int width, int height) {
         super(x, y, width, height, Text.empty());
 
@@ -26,6 +29,38 @@ public class ListControlWidget<T extends ClickableTooltipWidget> extends Clickab
     public int size()
     {
         return this.entries.size();
+    }
+
+    private void select(T entry)
+    {
+        if(this.selectedEntry != null)
+            this.selectedEntry.setSelected(false);
+
+        this.selectedEntry = entry;
+
+        if(this.selectedEntry != null)
+            this.selectedEntry.setSelected(true);
+    }
+
+    public void select(int index)
+    {
+        if (index >= 0 && index < this.entries.size())
+        {
+            select(this.entries.get(index));
+        }
+    }
+
+    public void clearSelection()
+    {
+        if(this.selectedEntry != null)
+            this.selectedEntry.setSelected(false);
+
+        this.selectedEntry = null;
+    }
+
+    public @Nullable T getSelection()
+    {
+        return this.selectedEntry;
     }
 
     public int getDataHeight()
@@ -111,11 +146,14 @@ public class ListControlWidget<T extends ClickableTooltipWidget> extends Clickab
         for(T entry : entries)
         {
             if (isPointInControl(entry, mouseX, mouseY)) {
-                if (entry.mouseClicked(mouseX, mouseY, button))
+                if (entry.mouseClicked(mouseX, mouseY, button)) {
+                    select(entry);
                     return true;
+                }
             }
         }
 
+        clearSelection();
         return super.mouseClicked(mouseX, mouseY, button);
     }
 

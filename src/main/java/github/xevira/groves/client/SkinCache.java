@@ -2,6 +2,7 @@ package github.xevira.groves.client;
 
 import com.google.common.base.Suppliers;
 import com.mojang.authlib.GameProfile;
+import github.xevira.groves.Groves;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

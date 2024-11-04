@@ -6,10 +6,21 @@ import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 
 public abstract class ClickableTooltipWidget extends ClickableWidget {
+    protected boolean selected;
+
     public ClickableTooltipWidget(int x, int y, int width, int height, Text message) {
         super(x, y, width, height, message);
     }
 
+    public void setSelected(boolean selected)
+    {
+        this.selected = selected;
+    }
+
+    public boolean isSelected()
+    {
+        return this.selected;
+    }
 
     protected boolean isPointInBounds(int x, int y, int width, int height, double pointX, double pointY)
     {

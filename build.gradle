@@ -65,7 +65,7 @@ jar {
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
+			artifactId = "${project.archives_base_name}-fabric"
 			from components.java
 		}
 	}
@@ -76,5 +76,8 @@ publishing {
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
+		maven {
+			url "file://${project.projectDir}/repo"
+		}
 	}
 }

@@ -66,6 +66,7 @@ public abstract class TabControlWidget extends ClickableWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        Groves.LOGGER.info("mouseClicked: {}, {}, {}", mouseX, mouseY, button);
         for(ClickableWidget widget : getChildren())
         {
             if (isPointInControl(widget, mouseX, mouseY))
