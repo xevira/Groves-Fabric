@@ -67,6 +67,10 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(RegistryWrapper.WrapperLookup wrapperLookup, TranslationBuilder translationBuilder) {
+        translationBuilder.add(Registration.AQUAMARINE_ORE_BLOCK, "Aquamarine Ore");
+        translationBuilder.add(Registration.DEEPSLATE_AQUAMARINE_ORE_BLOCK, "Deepslate Aquamarine Ore");
+        translationBuilder.add(Registration.AQUAMARINE_BLOCK_BLOCK, "Block of Aquamarine");
+
         translationBuilder.add(Registration.CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK, "Chiseled Moonstone Bricks");
         translationBuilder.add(Registration.CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK, "Chiseled Moonstone Bricks");
         translationBuilder.add(Registration.CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK, "Chiseled Moonstone Bricks");
@@ -113,6 +117,8 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.BLESSED_MOON_WATER_BLOCK, "Blessed Moon Water");
         translationBuilder.add(Registration.MOONLIGHT_BLOCK, "Moonlight");
 
+        translationBuilder.add(Registration.AQUAMARINE_ITEM, "Aquamarine");
+        translationBuilder.add(Registration.AQUAMARINE_DUST_ITEM, "Aquamarine Dust");
         translationBuilder.add(Registration.BLESSED_MOON_WATER_BUCKET_ITEM, "Bucket of Blessed Moon Water");
         translationBuilder.add(Registration.IMPRINTING_SIGIL_ITEM, "Imprinting Sigil");
         translationBuilder.add(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, "Enchanted Imprinting Sigil");
@@ -123,6 +129,8 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
 
         translationBuilder.add(Registration.UNLOCK_SCROLL_ITEM, "Blank Unlock Scroll");
         addText(translationBuilder, Registration.UNLOCK_SCROLL_ITEM, ".lore", "Craft with the required ingredients to make Grove Sanctuary unlock scrolls.");
+
+        addText(translationBuilder, "tooltip", "hold.shift", "Hold Shift for more information.");
 
         addText(translationBuilder, "tooltip", "ability.cost.start", "Start Cost:");
         addText(translationBuilder, "tooltip", "ability.cost.tick", "Maintenance Cost:");

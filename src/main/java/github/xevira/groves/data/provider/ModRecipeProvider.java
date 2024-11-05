@@ -1,5 +1,6 @@
 package github.xevira.groves.data.provider;
 
+import com.google.common.collect.ImmutableList;
 import github.xevira.groves.Registration;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
@@ -10,8 +11,10 @@ import net.minecraft.block.Block;
 import net.minecraft.data.server.recipe.RecipeExporter;
 import net.minecraft.data.server.recipe.RecipeGenerator;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.SmeltingRecipe;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.RegistryWrapper;
 
@@ -30,6 +33,16 @@ public class ModRecipeProvider extends FabricRecipeProvider {
         return new RecipeGenerator(wrapperLookup, exporter) {
             private void generateUnlockScrollRecipes()
             {
+                createShaped(RecipeCategory.MISC, Registration.UNLOCK_SCROLL_ITEM)
+                        .input('p', Items.PAPER)
+                        .input('a', Registration.AQUAMARINE_DUST_ITEM)
+                        .pattern(" a ")
+                        .pattern("apa")
+                        .pattern(" a ")
+                        .criterion(hasItem(Items.PAPER), conditionsFromItem(Items.PAPER))
+                        .criterion(hasItem(Registration.AQUAMARINE_DUST_ITEM), conditionsFromItem(Registration.AQUAMARINE_DUST_ITEM))
+                        .offerTo(exporter);
+
                 for(GroveAbility ability : GroveAbilities.ABILITIES.values())
                 {
                     Item ingredient = ability.getRecipeIngredient();
@@ -143,6 +156,15 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 
                 generateMoonstoneRecipes();
                 generateUnlockScrollRecipes();
+
+                createShapeless(RecipeCategory.MISC, Registration.AQUAMARINE_DUST_ITEM, 2)
+                        .input(Registration.AQUAMARINE_ITEM)
+                        .criterion(hasItem(Registration.AQUAMARINE_ITEM), conditionsFromItem(Registration.AQUAMARINE_ITEM))
+                        .offerTo(exporter);
+
+                ImmutableList<ItemConvertible> AQUAMARINE_ORES = ImmutableList.of(Registration.AQUAMARINE_ORE_ITEM, Registration.DEEPSLATE_AQUAMARINE_ORE_ITEM);
+                offerSmelting(AQUAMARINE_ORES, RecipeCategory.MISC, Registration.AQUAMARINE_ITEM, 1.0F, 200, "aquamarine");
+                offerReversibleCompactingRecipesWithReverseRecipeGroup(RecipeCategory.MISC, Registration.AQUAMARINE_ITEM, RecipeCategory.BUILDING_BLOCKS, Registration.AQUAMARINE_BLOCK_ITEM, "aquamarine_from_aquamarine_block", "aquamarine");
             }
         };
     }

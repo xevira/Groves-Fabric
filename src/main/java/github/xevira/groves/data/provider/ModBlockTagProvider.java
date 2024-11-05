@@ -18,6 +18,8 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
     protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
         // Minecraft block tags
         getOrCreateTagBuilder(BlockTags.PICKAXE_MINEABLE)
+                .add(Registration.AQUAMARINE_BLOCK_BLOCK)
+                .add(Registration.AQUAMARINE_ORE_BLOCK)
                 .add(Registration.CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK)
                 .add(Registration.CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK)
                 .add(Registration.CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK)
@@ -27,6 +29,7 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Registration.CHISELED_MOONSTONE_BRICKS_FIRST_QUARTER_BLOCK)
                 .add(Registration.CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK)
                 .add(Registration.CRACKED_MOONSTONE_BRICKS_BLOCK)
+                .add(Registration.DEEPSLATE_AQUAMARINE_ORE_BLOCK)
                 .add(Registration.MOONSTONE_BRICKS_BLOCK)
                 .add(Registration.MOONSTONE_BRICK_SLAB_BLOCK)
                 .add(Registration.MOONSTONE_BRICK_STAIRS_BLOCK)
@@ -59,6 +62,14 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Registration.WAXED_MOONSTONE_BRICK_STAIRS_BLOCK)
                 .add(Registration.WAXED_MOONSTONE_BRICK_WALL_BLOCK)
         ;
+
+        getOrCreateTagBuilder(BlockTags.NEEDS_IRON_TOOL)
+                .add(Registration.AQUAMARINE_BLOCK_BLOCK)
+                .add(Registration.AQUAMARINE_ORE_BLOCK)
+                .add(Registration.DEEPSLATE_AQUAMARINE_ORE_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.BEACON_BASE_BLOCKS)
+                .add(Registration.AQUAMARINE_BLOCK_BLOCK);
 
         getOrCreateTagBuilder(BlockTags.SLABS)
                 .add(Registration.MOONSTONE_BRICK_SLAB_BLOCK)

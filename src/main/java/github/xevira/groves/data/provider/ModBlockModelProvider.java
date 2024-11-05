@@ -107,16 +107,23 @@ public class ModBlockModelProvider extends FabricModelProvider {
 
         blockStateModelGenerator.registerSimpleState(Registration.BLESSED_MOON_WATER_BLOCK);
         blockStateModelGenerator.registerSimpleState(Registration.MOONLIGHT_BLOCK);
+
+        blockStateModelGenerator.registerSimpleCubeAll(Registration.AQUAMARINE_ORE_BLOCK);
+        blockStateModelGenerator.registerSimpleCubeAll(Registration.DEEPSLATE_AQUAMARINE_ORE_BLOCK);
+        blockStateModelGenerator.registerSimpleCubeAll(Registration.AQUAMARINE_BLOCK_BLOCK);
     }
 
     @Override
     public void generateItemModels(ItemModelGenerator itemModelGenerator) {
+        itemModelGenerator.register(Registration.AQUAMARINE_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.AQUAMARINE_DUST_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.BLESSED_MOON_WATER_BUCKET_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.MOONLIGHT_BUCKET_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+
         for(Item item : GroveAbilities.UNLOCK_SCROLLS.values())
         {
             itemModelGenerator.register(item, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);

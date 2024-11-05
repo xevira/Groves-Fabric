@@ -17,7 +17,6 @@ import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
@@ -49,6 +48,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
+import net.minecraft.util.math.intprovider.UniformIntProvider;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,6 +80,26 @@ public class Registration {
             .strength(1.5F, 6.0F);
 
     // Blocks
+    public static final Block AQUAMARINE_BLOCK_BLOCK = register(
+            "aquamarine_block",
+            Block::new,
+            AbstractBlock.Settings.create().mapColor(MapColor.BRIGHT_TEAL).instrument(NoteBlockInstrument.BIT).requiresTool().strength(5.0F, 6.0F).sounds(BlockSoundGroup.METAL)
+    );
+
+    // -- Ores
+    public static final Block AQUAMARINE_ORE_BLOCK = register(
+            "aquamarine_ore",
+            settings -> new ExperienceDroppingBlock(UniformIntProvider.create(3, 7), settings),
+            AbstractBlock.Settings.create().mapColor(MapColor.STONE_GRAY).instrument(NoteBlockInstrument.BASEDRUM).requiresTool().strength(3.0F, 3.0F)
+    );
+
+    @SuppressWarnings("deprecation")        // Vanilla uses copyShallow.
+    public static final Block DEEPSLATE_AQUAMARINE_ORE_BLOCK = register(
+            "deepslate_aquamarine_ore",
+            settings -> new ExperienceDroppingBlock(UniformIntProvider.create(3, 7), settings),
+            AbstractBlock.Settings.copyShallow(AQUAMARINE_ORE_BLOCK).mapColor(MapColor.DEEPSLATE_GRAY).strength(4.5F, 3.0F).sounds(BlockSoundGroup.DEEPSLATE)
+    );
+
     // -- Fluid Blocks
     public static final Block BLESSED_MOON_WATER_BLOCK = register(
             "blessed_moon_water",
@@ -363,7 +383,13 @@ public class Registration {
     public static final Block WAXED_MOONSTONE_BRICK_WALL_BLOCK = register("waxed_moonstone_brick_wall", WallBlock::new, MOONSTONE_SETTINGS);
 
     // BlockItems
+    public static final Item AQUAMARINE_ORE_ITEM = register(AQUAMARINE_ORE_BLOCK);
+
+    public static final Item AQUAMARINE_BLOCK_ITEM = register(AQUAMARINE_BLOCK_BLOCK);
+
     public static final Item BLESSED_MOON_WATER_ITEM = register(BLESSED_MOON_WATER_BLOCK);
+
+    public static final Item DEEPSLATE_AQUAMARINE_ORE_ITEM = register(DEEPSLATE_AQUAMARINE_ORE_BLOCK);
 
     public static final Item MOONLIGHT_ITEM = register(MOONLIGHT_BLOCK);
 
@@ -428,6 +454,16 @@ public class Registration {
     public static final Item WAXED_MOONSTONE_BRICK_WALL_ITEM = register(WAXED_MOONSTONE_BRICK_WALL_BLOCK);
 
     // Items
+    public static final Item AQUAMARINE_ITEM = register(
+            "aquamarine",
+            Item::new,
+            new Item.Settings().maxCount(64));
+
+    public static final Item AQUAMARINE_DUST_ITEM = register(
+            "aquamarine_dust",
+            Item::new,
+            new Item.Settings().maxCount(64));
+
     public static final Item BLESSED_MOON_WATER_BUCKET_ITEM = register(
             "blessed_moon_water_bucket",
             settings -> new BucketItem(BLESSED_MOON_WATER_FLUID, settings),
@@ -522,6 +558,9 @@ public class Registration {
 
     // Item Groups
     public static final ItemGroup GROVES_ITEM_GROUP = registerItemGroup("groves_items", MOONSTONE_BRICKS_ITEM, "groves_items",
+            // Ores
+            AQUAMARINE_ORE_ITEM,
+            DEEPSLATE_AQUAMARINE_ORE_ITEM,
 
             // Moonstone blocks
             MOONSTONE_BRICKS_ITEM,
@@ -554,6 +593,9 @@ public class Registration {
             WAXED_MOONSTONE_BRICK_WALL_ITEM,
 
             // Items
+            AQUAMARINE_ITEM,
+            AQUAMARINE_DUST_ITEM,
+            AQUAMARINE_BLOCK_ITEM,
             BLESSED_MOON_WATER_BUCKET_ITEM,
             MOONLIGHT_BUCKET_ITEM,
             MOON_PHIAL_ITEM,

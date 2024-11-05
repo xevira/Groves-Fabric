@@ -7,6 +7,7 @@ import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -114,24 +115,31 @@ public class UnlockScrollItem extends Item {
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
         if (this.ability != null)
         {
-            tooltip.add(Text.translatable(this.translationKey + ".lore"));
-            if (ability.startCost() > 0 || ability.tickCost() > 0 || ability.useCost() > 0) {
-                tooltip.add(Text.empty());
+            if (Screen.hasShiftDown()) {
 
-                if (ability.startCost() > 0)
-                    tooltip.add(Groves.text("tooltip", "ability.cost.start").formatted(Formatting.YELLOW)
-                            .append(" ")
-                            .append(Text.translatable(this.translationKey + ".cost.start", ability.startCost())));
+                tooltip.add(Text.translatable(this.translationKey + ".lore"));
+                if (ability.startCost() > 0 || ability.tickCost() > 0 || ability.useCost() > 0) {
+                    tooltip.add(Text.empty());
 
-                if (ability.tickCost() > 0)
-                    tooltip.add(Groves.text("tooltip", "ability.cost.tick").formatted(Formatting.YELLOW)
-                            .append(" ")
-                            .append(Text.translatable(this.translationKey + ".cost.tick", ability.tickCost())));
+                    if (ability.startCost() > 0)
+                        tooltip.add(Groves.text("tooltip", "ability.cost.start").formatted(Formatting.YELLOW)
+                                .append(" ")
+                                .append(Text.translatable(this.translationKey + ".cost.start", ability.startCost())));
 
-                if (ability.useCost() > 0)
-                    tooltip.add(Groves.text("tooltip", "ability.cost.use").formatted(Formatting.YELLOW)
-                            .append(" ")
-                            .append(Text.translatable(this.translationKey + ".cost.use", ability.useCost())));
+                    if (ability.tickCost() > 0)
+                        tooltip.add(Groves.text("tooltip", "ability.cost.tick").formatted(Formatting.YELLOW)
+                                .append(" ")
+                                .append(Text.translatable(this.translationKey + ".cost.tick", ability.tickCost())));
+
+                    if (ability.useCost() > 0)
+                        tooltip.add(Groves.text("tooltip", "ability.cost.use").formatted(Formatting.YELLOW)
+                                .append(" ")
+                                .append(Text.translatable(this.translationKey + ".cost.use", ability.useCost())));
+                }
+            }
+            else
+            {
+                tooltip.add(Groves.text("tooltip", "hold.shift"));
             }
         }
 
