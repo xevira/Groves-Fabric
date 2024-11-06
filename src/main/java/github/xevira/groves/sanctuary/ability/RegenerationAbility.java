@@ -19,7 +19,7 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     public static final int DURATION = 20;
 
     public RegenerationAbility() {
-        super("regeneration", true, true);
+        super("regeneration", true, true, false, false);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         // TODO: play a sound on the client
         ServerPlayerEntity owner = sanctuary.getOwnerPlayer();
 
@@ -87,7 +87,7 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         // TODO: play a sound on the client
     }
 

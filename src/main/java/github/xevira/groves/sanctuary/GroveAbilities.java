@@ -7,6 +7,7 @@ import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.sanctuary.ability.RegenerationAbility;
 import github.xevira.groves.sanctuary.ability.RestorationAbility;
+import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,6 +16,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.util.Rarity;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -26,17 +28,34 @@ public class GroveAbilities {
     public static final Map<String, GroveAbility> ABILITIES = new HashMap<>();
     public static final Map<String, UnlockScrollItem> UNLOCK_SCROLLS = new HashMap<>();
 
-
     private static <T extends GroveAbility> void registerAbility(T ability)
     {
         ABILITIES.put(ability.getName(), ability);
 
-        UnlockScrollItem scroll = Registration.register(
-                "unlock_scroll_" + ability.getName(),
-                settings -> new UnlockScrollItem(ability, settings),
-                new Item.Settings().maxCount(1));
+        // Only create scrolls for abilities that are not automatically installed with imprinting
+        if (!ability.isAutoInstalled()) {
 
-        UNLOCK_SCROLLS.put(ability.getName(), scroll);
+            String name;
+            Item.Settings settings;
+
+            if (ability.isForbidden())
+            {
+                name = "forbidden_scroll_" + ability.getName();
+                settings = new Item.Settings().maxCount(1).rarity(Rarity.EPIC).fireproof();
+            }
+            else
+            {
+                name = "unlock_scroll_" + ability.getName();
+                settings = new Item.Settings().maxCount(1).rarity(Rarity.RARE);
+            }
+
+            UnlockScrollItem scroll = Registration.register(
+                    name,
+                    s -> new UnlockScrollItem(ability, s),
+                    settings);
+
+            UNLOCK_SCROLLS.put(ability.getName(), scroll);
+        }
     }
 
     public static Optional<GroveAbility> getById(int id)
@@ -90,13 +109,13 @@ public class GroveAbilities {
                     // Check if it can be turned on
                     if (ability.canActivate(sanctuary.getServer(), sanctuary, player)) {
                         ability.setActive(true);
-                        ability.onActivate(sanctuary.getServer(), sanctuary, player);
+                        ability.activate(sanctuary.getServer(), sanctuary, player);
                     } else
                         ability.sendFailure(sanctuary.getServer(), sanctuary, player);
                 }
             } else if (ability.isEnabled()) {
                 if (ability.canUse(sanctuary.getServer(), sanctuary, player))
-                    ability.onUse(sanctuary.getServer(), sanctuary, player);
+                    ability.use(sanctuary.getServer(), sanctuary, player);
                 else
                     ability.sendFailure(sanctuary.getServer(), sanctuary, player);
             }
@@ -117,5 +136,10 @@ public class GroveAbilities {
     public static void addScrollsToItemGroup(FabricItemGroupEntries entries)
     {
         entries.addAfter(Registration.UNLOCK_SCROLL_ITEM, UNLOCK_SCROLLS.values().toArray(new UnlockScrollItem[0]));
+    }
+
+    public static void autoInstallAbilities(GrovesPOI.GroveSanctuary sanctuary)
+    {
+        ABILITIES.values().stream().filter(GroveAbility::isAutoInstalled).forEach(sanctuary::installAbility);
     }
 }

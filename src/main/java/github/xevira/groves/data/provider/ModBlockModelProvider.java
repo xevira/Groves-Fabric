@@ -1,7 +1,9 @@
 package github.xevira.groves.data.provider;
 
+import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.sanctuary.GroveAbilities;
+import github.xevira.groves.sanctuary.GroveAbility;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
 import net.minecraft.block.Block;
@@ -123,10 +125,18 @@ public class ModBlockModelProvider extends FabricModelProvider {
         itemModelGenerator.register(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.MOONLIGHT_BUCKET_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
 
-        for(Item item : GroveAbilities.UNLOCK_SCROLLS.values())
+        for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {
-            itemModelGenerator.register(item, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+            Item scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
+            if (scroll != null)
+            {
+                if (ability.isForbidden())
+                    itemModelGenerator.register(scroll, Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
+                else
+                    itemModelGenerator.register(scroll, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+            }
         }
     }
 }

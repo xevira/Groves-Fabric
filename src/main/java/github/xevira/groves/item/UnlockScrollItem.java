@@ -1,12 +1,8 @@
 package github.xevira.groves.item;
 
-import com.mojang.datafixers.util.Either;
 import github.xevira.groves.Groves;
-import github.xevira.groves.network.ImprintPayload;
 import github.xevira.groves.poi.GrovesPOI;
-import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,8 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.stat.Stats;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -28,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class UnlockScrollItem extends Item {
-    private GroveAbility ability;
+    private final GroveAbility ability;
 
     public UnlockScrollItem(GroveAbility ability, Settings settings) {
         super(settings);
@@ -38,7 +32,8 @@ public class UnlockScrollItem extends Item {
 
     @Override
     public boolean hasGlint(ItemStack stack) {
-        return this.ability != null;
+        // Only when the scroll has an ability or
+        return this.ability != null && (this.ability.getRecipeIngredient() == null || this.ability.isForbidden());
     }
 
     @Override
@@ -55,26 +50,29 @@ public class UnlockScrollItem extends Item {
                 if (f > 0.9f) {
                     GrovesPOI.GroveSanctuary sanctuary = GrovesPOI.getSanctuary(player).orElse(null);
 
-                    if (sanctuary != null)
-                    {
-                        if (sanctuary.hasAbility(this.ability.getName()))
-                        {
+                    if (sanctuary != null) {
+                        if (sanctuary.hasAbility(this.ability.getName())) {
                             MutableText msg = Text.literal("Your sanctuary already has ");
                             msg.append(Groves.text("name", "ability." + this.ability.getName()).formatted(Formatting.RED));
                             msg.append(".");
 
                             player.sendMessage(msg, false);
-                        }
-                        else {
-                            sanctuary.installAbility(this.ability);
+                        } else {
+                            Text reason = this.ability.canUnlock(player.getServer(), sanctuary, player);
 
-                            MutableText msg = Groves.text("name", "ability." + this.ability.getName()).formatted(Formatting.GREEN);
-                            msg.append(" installed.");
+                            if (reason != null) {
+                                player.sendMessage(reason, false);
+                            } else {
+                                sanctuary.installAbility(this.ability);
 
-                            player.sendMessage(msg, false);
-                            // TODO: Play sound
+                                MutableText msg = Groves.text("name", "ability." + this.ability.getName()).formatted(Formatting.GREEN);
+                                msg.append(" installed.");
 
-                            stack.decrementUnlessCreative(1, player);
+                                player.sendMessage(msg, false);
+                                // TODO: Play sound, maybe make it ability specific?
+
+                                stack.decrementUnlessCreative(1, player);
+                            }
                         }
 
                         return true;
@@ -117,7 +115,10 @@ public class UnlockScrollItem extends Item {
         {
             if (Screen.hasShiftDown()) {
 
-                tooltip.add(Text.translatable(this.translationKey + ".lore"));
+                tooltip.add(Groves.text("lore", ".ability." + ability.getName()));
+                if (this.ability.hasUnlockRequirement())
+                    tooltip.add(Text.translatable(this.translationKey + ".unlock").formatted(Formatting.RED));
+
                 if (ability.startCost() > 0 || ability.tickCost() > 0 || ability.useCost() > 0) {
                     tooltip.add(Text.empty());
 

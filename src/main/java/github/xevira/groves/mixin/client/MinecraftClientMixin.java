@@ -2,6 +2,7 @@ package github.xevira.groves.mixin.client;
 
 import github.xevira.groves.ClientConfig;
 import github.xevira.groves.client.event.keybind.Keybind;
+import github.xevira.groves.poi.GrovesPOI;
 import net.minecraft.block.entity.VaultBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
@@ -36,6 +37,8 @@ public abstract class MinecraftClientMixin {
         else if (worldBefore == null && worldAfter != null) {
             ClientConfig.load();
             // TODO: Update keys?
+
+            GrovesPOI.ClearChunkColors();
         }
     }
 
@@ -50,6 +53,7 @@ public abstract class MinecraftClientMixin {
     private void onInitComplete(RunArgs args, CallbackInfo ci)
     {
         ClientConfig.load();
+        GrovesPOI.ClearChunkColors();
     }
 
     @Inject(method = "tick()V", at = @At("RETURN"))

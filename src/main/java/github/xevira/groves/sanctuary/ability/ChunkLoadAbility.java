@@ -19,7 +19,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     public static final long TICK_COST = 100L;
 
     public ChunkLoadAbility() {
-        super("chunk_load", true, true);
+        super("chunk_load", true, true, false, false);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         // TODO:
         sanctuary.setChunkLoading(true);
         sanctuary.useSunlight(startCost());
@@ -87,7 +87,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         sanctuary.setChunkLoading(false);
         player.sendMessage(Text.literal("Chunk loading in sanctuary deactivated."), false);
     }

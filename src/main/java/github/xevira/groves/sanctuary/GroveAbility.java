@@ -29,12 +29,14 @@ public abstract class GroveAbility {
         public GroveAbility decode(RegistryByteBuf buf) {
             String name = PacketCodecs.STRING.decode(buf);
             boolean active = PacketCodecs.BOOL.decode(buf);
+            long cooldown = PacketCodecs.LONG.decode(buf);
 
             Optional<GroveAbility> template = GroveAbilities.getByName(name);
             if (template.isPresent())
             {
                 GroveAbility ability = template.get().getConstructor().get();
                 ability.active = active;
+                ability.cooldownTicks = cooldown;
                 return ability;
             }
 
@@ -45,6 +47,7 @@ public abstract class GroveAbility {
         public void encode(RegistryByteBuf buf, GroveAbility value) {
             PacketCodecs.STRING.encode(buf, value.getName());
             PacketCodecs.BOOL.encode(buf, value.isActive());
+            PacketCodecs.LONG.encode(buf, value.cooldownTicks);
         }
     };
 
@@ -57,18 +60,34 @@ public abstract class GroveAbility {
     protected final boolean automatic;
     protected final boolean autoDeactivate;
     protected final boolean defaultAllow;
+    protected final boolean autoInstalled;
+    protected final boolean forbidden;
 
     private boolean active;
+    private long cooldownTicks;
 
-    public GroveAbility(final String name, final boolean automatic, final boolean autodeactivate, final boolean defaultAllow)
+    public GroveAbility(final String name, final boolean automatic, final boolean autoDeactivate, final boolean defaultAllow, final boolean autoInstalled, final boolean forbidden)
     {
         this.id = ++NextId;
         this.name = name;
         this.automatic = automatic;
-        this.autoDeactivate = autodeactivate;
+        this.autoDeactivate = autoDeactivate;
         this.defaultAllow = defaultAllow;
+        this.autoInstalled = autoInstalled;
+        this.forbidden = forbidden;
 
         this.active = false;
+        this.cooldownTicks = -1L;
+    }
+
+    public final boolean isAutoInstalled()
+    {
+        return this.autoInstalled;
+    }
+
+    public final boolean isForbidden()
+    {
+        return this.forbidden;
     }
 
     public abstract Supplier<? extends GroveAbility> getConstructor();
@@ -84,6 +103,16 @@ public abstract class GroveAbility {
     public abstract String getEnglishTickCostTranslation();
 
     public abstract String getEnglishUseCostTranslation();
+
+    public @Nullable String getEnglishUnlockTranslation()
+    {
+        return null;
+    }
+
+    public boolean hasUnlockRequirement()
+    {
+        return false;
+    }
 
     public boolean isAutomatic()
     {
@@ -105,6 +134,21 @@ public abstract class GroveAbility {
         return this.name;
     }
 
+    public boolean hasCooldown()
+    {
+        return this.cooldownTicks >= 0L;
+    }
+
+    public long getCooldown()
+    {
+        return this.cooldownTicks;
+    }
+
+    public void setCooldown(long ticks)
+    {
+        this.cooldownTicks = ticks;
+    }
+
     /** Indicates whether the mod has enabled this ability **/
     public boolean isEnabled()
     {
@@ -116,7 +160,13 @@ public abstract class GroveAbility {
 
     public long tickCost() { return 0L; }
 
-    public  long useCost() { return 0L; }
+    public long useCost() { return 0L; }
+
+    // Returns the reason why you can't unlock it.
+    public @Nullable Text canUnlock(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        return null;
+    }
 
     /** Whether to automatically deactivate if the {@code onServerTick} returns {@code true} **/
     public boolean autoDeactivate() { return this.autoDeactivate; }
@@ -133,13 +183,28 @@ public abstract class GroveAbility {
 
     public abstract void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
 
+    public final void activate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        this.onActivate(server, sanctuary, player);
+    }
+
     /** Action on performed when the ability is turned on **/
-    public void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
     {
     }
 
+    public final void deactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        this.onDeactivate(server, sanctuary, player);
+        this.onDeactivateCooldown(server, sanctuary, player);
+    }
+
     /** Action on performed when the ability is turned off **/
-    public void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+    }
+
+    protected void onDeactivateCooldown(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
     {
     }
 
@@ -158,10 +223,22 @@ public abstract class GroveAbility {
         return false;
     }
 
-    public boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public final void use(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        if (onUse(server, sanctuary, player)) {
+            onUseCooldown(server, sanctuary, player);
+        }
+    }
+
+    protected boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
     {
         return true;
     }
+
+    protected void onUseCooldown(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+    }
+
 
     public JsonObject serialize()
     {
@@ -173,6 +250,11 @@ public abstract class GroveAbility {
         return json;
     }
 
+    public boolean deserializeExtra(JsonObject json)
+    {
+        return true;
+    }
+
     public static Optional<GroveAbility> deserialize(JsonObject json)
     {
         String name = JSONHelper.getString(json, "name");
@@ -182,6 +264,9 @@ public abstract class GroveAbility {
             Optional<GroveAbility> ability = GroveAbilities.getByName(name);
 
             if (ability.isPresent()) {
+                if (!ability.get().deserializeExtra(json))
+                    return Optional.empty();
+
                 ability.get().active = active.isPresent() && active.get();
 
                 return ability;
@@ -192,14 +277,14 @@ public abstract class GroveAbility {
     }
 
     public static abstract class AutomaticGroveAbility extends GroveAbility {
-        public AutomaticGroveAbility(String name, boolean autodeactivate, boolean defaultAllow) {
-            super(name, true, autodeactivate, defaultAllow);
+        public AutomaticGroveAbility(String name, boolean autodeactivate, boolean defaultAllow, boolean autoInstalled, boolean forbidden) {
+            super(name, true, autodeactivate, defaultAllow, autoInstalled, forbidden);
         }
     }
 
     public static abstract class ManualGroveAbility extends GroveAbility {
-        public ManualGroveAbility(String name, boolean defaultAllow) {
-            super(name, false, false, defaultAllow);
+        public ManualGroveAbility(String name, boolean defaultAllow, boolean autoInstalled, boolean forbidden) {
+            super(name, false, false, defaultAllow, autoInstalled, forbidden);
         }
     }
 

@@ -3,6 +3,7 @@
 	"package": "github.xevira.groves.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"PlayerManagerMixin",
 		"fluid.BoatDispenserBehaviorMixin",
 		"fluid.AbstractBoatEntityMixin",
 		"fluid.BucketItemMixin",
@@ -31,7 +32,9 @@
 		"fluid.ZombieEntityMixin"
 	],
 	"client": [
+		"client.ChunkRendererRegionMixin",
 		"client.ClientPlayerEntityMixin",
+		"client.ClientWorldMixin",
 		"client.HandledScreenMixin",
 		"client.InGameHudMixin",
 		"client.KeyboardMixin",

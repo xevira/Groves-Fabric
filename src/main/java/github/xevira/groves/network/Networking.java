@@ -12,8 +12,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
 
 import java.util.Optional;
 
@@ -118,6 +123,12 @@ public class Networking {
                     handler.setErrorMessage(payload.reason());
             }
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(SyncChunkColorsPayload.ID, (payload, context) -> {
+            RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, Identifier.of(payload.worldId()));
+
+            GrovesPOI.SetChunkColors(worldKey, payload.chunks(), payload.colors());
+        });
     }
 
     public static void register()
@@ -146,6 +157,7 @@ public class Networking {
         PayloadTypeRegistry.playS2C().register(SetGroveNameResponsePayload.ID, SetGroveNameResponsePayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(AddFriendResponsePayload.ID, AddFriendResponsePayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(RemoveFriendResponsePayload.ID, RemoveFriendResponsePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SyncChunkColorsPayload.ID, SyncChunkColorsPayload.PACKET_CODEC);
 
         // Packet Handlers
         // - Server Side

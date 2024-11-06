@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     public RestorationAbility() {
-        super("restoration", true);
+        super("restoration", true, false, false);
     }
 
     @Override
@@ -66,9 +66,9 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
         // Empty hand
         if (stack.isEmpty())
             player.sendMessage(Groves.text("text", "ability.empty_hand"), false);
-        else if (stack.getMaxDamage() < 1)
+        else if (!stack.isDamageable())
             player.sendMessage(Groves.text("text", "ability.no_durability"), false);
-        else if (stack.getDamage() < 1)
+        else if (!stack.isDamaged())
             player.sendMessage(Groves.text("text", "ability.no_damage"), false);
         else {
             player.sendMessage(Groves.text("text", "ability.not_enough_sunlight.use", useCost()), false);
@@ -89,18 +89,18 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
             return false;
 
         // Has no durability
-        if (stack.getMaxDamage() < 1)
+        if (!stack.isDamageable())
             return false;
 
         // Doesn't need repair
-        if (stack.getDamage() < 1)
+        if (!stack.isDamaged())
             return false;
 
         return sanctuary.getStoredSunlight() >= useCost();
     }
 
     @Override
-    public boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
 
         if (!stack.isEmpty() && stack.getDamage() > 0)

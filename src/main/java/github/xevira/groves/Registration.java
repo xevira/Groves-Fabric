@@ -11,11 +11,14 @@ import github.xevira.groves.item.*;
 import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
 import github.xevira.groves.network.MoonwellScreenPayload;
 import github.xevira.groves.network.Networking;
+import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
@@ -58,6 +61,11 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class Registration {
+    @SuppressWarnings("UnstableApiUsage")
+    public static final AttachmentType<GrovesPOI.ClientGroveSanctuaryColorData> SANCTUARY_COLOR_DATA =
+            AttachmentRegistry.createPersistent(Groves.id("sanctuary_color_data"),
+                    GrovesPOI.ClientGroveSanctuaryColorData.CODEC);
+
     // Fluids
     public static final FlowableFluid BLESSED_MOON_WATER_FLUID = register("blessed_moon_water", new BlessedMoonWaterFluid.Still());
     public static final FlowableFluid FLOWING_BLESSED_MOON_WATER_FLUID = register("flowing_blessed_moon_water", new BlessedMoonWaterFluid.Flowing());
@@ -496,6 +504,12 @@ public class Registration {
 
     public static final Item UNLOCK_SCROLL_ITEM = register(
             "unlock_scroll",
+            settings -> new UnlockScrollItem(null, settings),
+            new Item.Settings().maxCount(64));
+
+    // This item should *never* be loaded without an ability assigned to it
+    public static final Item FORBIDDEN_SCROLL_ITEM = register(
+            "forbidden_scroll",
             settings -> new UnlockScrollItem(null, settings),
             new Item.Settings().maxCount(64));
 

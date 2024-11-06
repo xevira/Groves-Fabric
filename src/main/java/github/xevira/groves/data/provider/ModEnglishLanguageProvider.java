@@ -127,6 +127,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, "Music Disc");
         addText(translationBuilder, Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, ".desc", "Druid Music - Into the Heart of the Universe");
 
+        translationBuilder.add(Registration.FORBIDDEN_SCROLL_ITEM, "Forbidden Scroll");
         translationBuilder.add(Registration.UNLOCK_SCROLL_ITEM, "Blank Unlock Scroll");
         addText(translationBuilder, Registration.UNLOCK_SCROLL_ITEM, ".lore", "Craft with the required ingredients to make Grove Sanctuary unlock scrolls.");
 
@@ -138,15 +139,24 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
 
         for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {
-            UnlockScrollItem scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
-
             addText(translationBuilder, "name", "ability." + ability.getName(), ability.getEnglishTranslation());
-            translationBuilder.add(scroll, "Unlock Scroll (" + ability.getEnglishTranslation() + ")");
-            addText(translationBuilder, scroll, ".lore", ability.getEnglishLoreTranslation());
+            addText(translationBuilder, "lore", ".ability." + ability.getName(), ability.getEnglishLoreTranslation());
 
-            addText(translationBuilder, scroll, ".cost.start", ability.getEnglishStartCostTranslation());
-            addText(translationBuilder, scroll, ".cost.tick", ability.getEnglishTickCostTranslation());
-            addText(translationBuilder, scroll, ".cost.use", ability.getEnglishUseCostTranslation());
+            UnlockScrollItem scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
+            if (scroll != null)
+            {
+                if (ability.isForbidden())
+                    translationBuilder.add(scroll, "Forbidden Scroll (" + ability.getEnglishTranslation() + ")");
+                else
+                    translationBuilder.add(scroll, "Unlock Scroll (" + ability.getEnglishTranslation() + ")");
+
+                if (ability.hasUnlockRequirement() && ability.getEnglishUnlockTranslation() != null)
+                    addText(translationBuilder, scroll, ".unlock", ability.getEnglishUnlockTranslation());
+
+                addText(translationBuilder, scroll, ".cost.start", ability.getEnglishStartCostTranslation());
+                addText(translationBuilder, scroll, ".cost.tick", ability.getEnglishTickCostTranslation());
+                addText(translationBuilder, scroll, ".cost.use", ability.getEnglishUseCostTranslation());
+            }
         }
 
         translationBuilder.addEnchantment(Registration.SOLAR_REPAIR_ENCHANTMENT_KEY, "Solar Repair");

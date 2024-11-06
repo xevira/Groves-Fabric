@@ -6,7 +6,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import github.xevira.groves.Groves;
+import github.xevira.groves.Registration;
 import github.xevira.groves.ServerConfig;
 import github.xevira.groves.network.*;
 import github.xevira.groves.sanctuary.GroveAbilities;
@@ -14,6 +17,8 @@ import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.util.ChunkHelper;
 import github.xevira.groves.util.JSONHelper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.BlockState;
@@ -36,14 +41,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.UserCache;
-import net.minecraft.util.Uuids;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.*;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -51,6 +50,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 /** Manages the POIs for player-made Grove Sanctuaries **/
 public class GrovesPOI {
@@ -59,7 +59,38 @@ public class GrovesPOI {
 
     private static final List<GroveSanctuary> SANCTUARIES = new ArrayList<>();
 
+    public static void onPlayerConnect(ServerPlayerEntity player)
+    {
+        SANCTUARIES.forEach(sanctuary -> sanctuary.syncColorData(player));
+    }
+
+    private static final Map<RegistryKey<World>, Map<ChunkPos, GroveSanctuary>> CHUNK_MAP = new HashMap<>();
+
     private static final Map<RegistryKey<World>, Set<ChunkPos>> AVAILABILITY = new HashMap<>();
+
+    public static void registerGroveChunk(World world, ChunkPos pos, GroveSanctuary sanctuary)
+    {
+        Map<ChunkPos, GroveSanctuary> chunks;
+        if (CHUNK_MAP.containsKey(world.getRegistryKey()))
+        {
+            chunks = CHUNK_MAP.get(world.getRegistryKey());
+}
+        else
+        {
+            chunks = CHUNK_MAP.put(world.getRegistryKey(), new HashMap<>());
+        }
+        chunks.put(pos, sanctuary);
+    }
+
+    public static void unregisterGroveChunk(World world, ChunkPos pos)
+    {
+        if (CHUNK_MAP.containsKey(world.getRegistryKey()))
+        {
+            Map<ChunkPos, GroveSanctuary> chunks = CHUNK_MAP.get(world.getRegistryKey());
+
+            chunks.remove(pos);
+        }
+    }
 
     public static Optional<GroveSanctuary> getSanctuary(PlayerEntity player)
     {
@@ -71,27 +102,46 @@ public class GrovesPOI {
         return SANCTUARIES.stream().anyMatch(groveSanctuary -> groveSanctuary.isOwner(player));
     }
 
-    public static Optional<GroveSanctuary> getSanctuary(ServerWorld world, ChunkPos pos)
+    public static Optional<GroveSanctuary> getSanctuary(World world, ChunkPos pos)
     {
-        return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, pos)).findFirst();
+//        return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, pos)).findFirst();
+
+        if (CHUNK_MAP.containsKey(world.getRegistryKey()))
+        {
+            Map<ChunkPos, GroveSanctuary> chunks = CHUNK_MAP.get(world.getRegistryKey());
+
+            if (chunks.containsKey(pos))
+                return Optional.of(chunks.get(pos));
+        }
+
+        return Optional.empty();
     }
 
-    public static Optional<GroveSanctuary> getSanctuary(ServerWorld world, BlockPos pos)
+    public static Optional<GroveSanctuary> getSanctuary(World world, BlockPos pos)
     {
-        return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, new ChunkPos(pos))).findFirst();
+//        return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, new ChunkPos(pos))).findFirst();
+        return getSanctuary(world, new ChunkPos(pos));
     }
 
-    public static Optional<GroveSanctuary> getSanctuaryAbandoned(ServerWorld world, BlockPos pos)
+    public static Optional<GroveSanctuary> getSanctuaryAbandoned(World world, BlockPos pos)
     {
-        return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, new ChunkPos(pos)) && groveSanctuary.isAbandoned()).findFirst();
+//        return SANCTUARIES.stream().filter(groveSanctuary -> groveSanctuary.contains(world, new ChunkPos(pos)) && groveSanctuary.isAbandoned()).findFirst();
+        Optional<GroveSanctuary> sanctuary = getSanctuary(world, pos);
+
+        if (sanctuary.isPresent() && sanctuary.get().isAbandoned())
+            return sanctuary;
+
+        return Optional.empty();
     }
 
-    public static boolean sanctuaryExists(ServerWorld world, ChunkPos pos)
+    public static boolean sanctuaryExists(World world, ChunkPos pos)
     {
-        return SANCTUARIES.stream().anyMatch(groveSanctuary -> groveSanctuary.contains(world, pos));
+//        return SANCTUARIES.stream().anyMatch(groveSanctuary -> groveSanctuary.contains(world, pos));
+
+        return getSanctuary(world, pos).isPresent();
     }
 
-    public static void claimAvailable(ServerWorld world, ChunkPos pos)
+    public static void claimAvailable(World world, ChunkPos pos)
     {
         if (!AVAILABILITY.containsKey(world.getRegistryKey()))
             AVAILABILITY.put(world.getRegistryKey(), new HashSet<>());
@@ -101,7 +151,7 @@ public class GrovesPOI {
         chunks.add(pos);
     }
 
-    public static void releaseAvailable(ServerWorld world, ChunkPos pos)
+    public static void releaseAvailable(World world, ChunkPos pos)
     {
         if (AVAILABILITY.containsKey(world.getRegistryKey()))
         {
@@ -111,7 +161,7 @@ public class GrovesPOI {
         }
     }
 
-    public static boolean chunkAvailable(ServerWorld world, ChunkPos pos)
+    public static boolean chunkAvailable(World world, ChunkPos pos)
     {
         Set<ChunkPos> chunks = AVAILABILITY.get(world.getRegistryKey());
 
@@ -145,11 +195,18 @@ public class GrovesPOI {
         sanctuary = new GroveSanctuary(world.getServer(), player, world, chunkPos, enchanted);
         SANCTUARIES.add(sanctuary);
 
+        // Register the origin chunk
+        registerGroveChunk(world, chunkPos, sanctuary);
+
         // Set up the availability for the origin chunk
         sanctuary.calculateAvailable(chunkPos);
 
         // Default spawn point of the grove.
         sanctuary.setSpawnPoint(pos);
+
+        GroveAbilities.autoInstallAbilities(sanctuary);
+
+        sanctuary.updateColorData();
 
         return Either.left(sanctuary);
     }
@@ -373,6 +430,16 @@ public class GrovesPOI {
         private int updatingTickChunk;
         private int lastTotalFoliage = -1;
 
+        private int skyColor = -1;
+        private int grassColor = -1;
+        private int foliageColor = -1;
+        private int waterColor = -1;
+
+        private int lastSkyColor = -1;
+        private int lastGrassColor = -1;
+        private int lastFoliageColor = -1;
+        private int lastWaterColor = -1;
+
         private final Set<ServerPlayerEntity> listeners = new HashSet<>();
 
         public GroveSanctuary(final MinecraftServer server, final PlayerEntity player, final ServerWorld world, final ChunkPos pos, final boolean enchanted)
@@ -410,6 +477,11 @@ public class GrovesPOI {
             this.updatingTickChunk = -1; // -1 == Origin
         }
 
+        public ServerWorld getWorld()
+        {
+            return this.world;
+        }
+
         public void abandonSanctuary()
         {
             this.abandoned = true;
@@ -429,6 +501,12 @@ public class GrovesPOI {
             this.owner = newOwner.getUuid();
             this.ownerName = newOwner.getName().getString();
             this.enchanted = enchanted;
+            this.storedSunlight = 0L;   // All sunlight is lost
+
+            // Reset the abilities to the original default list
+            // All previous abilities are lost, as the new owner did not earn them.
+            this.groveAbilities.clear();
+            GroveAbilities.autoInstallAbilities(this);
 
             return true;
         }
@@ -661,6 +739,8 @@ public class GrovesPOI {
             if(groveChunks.stream().noneMatch(chunk -> chunk.isChunk(pos))) {
                 groveChunks.add(new GroveChunkData(this, this.world, pos));
                 calculateAvailable(pos);
+
+                GrovesPOI.registerGroveChunk(this.world, pos, this);
                 return true;
             }
 
@@ -711,6 +791,7 @@ public class GrovesPOI {
                 if (this.updatingTickChunk >= this.groveChunks.size())
                     this.updatingTickChunk = -1;
 
+                unregisterGroveChunk(this.world, pos);
                 resetAvailable();
                 return true;
             }
@@ -830,7 +911,8 @@ public class GrovesPOI {
 
         public void installAbility(GroveAbility prototype)
         {
-            this.groveAbilities.add(prototype.getConstructor().get());
+            if (!hasAbility(prototype.getName()))
+                this.groveAbilities.add(prototype.getConstructor().get());
         }
 
         private boolean isOwnerOnline(MinecraftServer server)
@@ -895,12 +977,12 @@ public class GrovesPOI {
                     {
                         // Ability was disabled, so deactivate it
                         ability.setActive(false);
-                        ability.onDeactivate(this.server, this, null);
+                        ability.deactivate(this.server, this, null);
                     }
                     else if (ability.onServerTick(this.server, this)) {
                         if (ability.autoDeactivate()) {
                             ability.setActive(false);
-                            ability.onDeactivate(this.server, this, null);
+                            ability.deactivate(this.server, this, null);
                         }
                     }
                 }
@@ -916,6 +998,7 @@ public class GrovesPOI {
             this.lastServerTick = 20;   // Once a second
 
             checkAvailable();
+            updateColorData();
 
             processFoliage();
             processAbilities();
@@ -958,6 +1041,11 @@ public class GrovesPOI {
             json.add("chunkLoaded", new JsonPrimitive(this.chunkLoaded));
 
             json.add("spawnPoint", JSONHelper.BlockPosToJson(this.spawnPoint));
+
+            if (this.skyColor >= 0) json.add("skyColor", JSONHelper.ColorToJson(this.skyColor));
+            if (this.grassColor >= 0) json.add("grassColor", JSONHelper.ColorToJson(this.grassColor));
+            if (this.foliageColor >= 0) json.add("foliageColor", JSONHelper.ColorToJson(this.foliageColor));
+            if (this.waterColor >= 0) json.add("waterColor", JSONHelper.ColorToJson(this.waterColor));
 
             if (this.moonwell != null)
                 json.add("moonwell", JSONHelper.BlockPosToJson(this.moonwell));
@@ -1168,7 +1256,13 @@ public class GrovesPOI {
             sanctuary.groveChunks.addAll(chunks);
             sanctuary.groveFriends.addAll(friends);
             sanctuary.groveAbilities.addAll(abilities);
+            GroveAbilities.autoInstallAbilities(sanctuary); // Add any missing abilities the sanctuary should have at the start
             sanctuary.availableChunks.addAll(available);
+
+            JSONHelper.JsonToColor(json, "skyColor").ifPresent(color -> sanctuary.skyColor = color);
+            JSONHelper.JsonToColor(json, "grassColor").ifPresent(color -> sanctuary.grassColor = color);
+            JSONHelper.JsonToColor(json, "foliageColor").ifPresent(color -> sanctuary.foliageColor = color);
+            JSONHelper.JsonToColor(json, "waterColor").ifPresent(color -> sanctuary.waterColor = color);
 
             chunkLoaded.ifPresent(aBoolean -> sanctuary.chunkLoaded = aBoolean);
             storedSunlight.ifPresent(sunlight -> sanctuary.storedSunlight = sunlight);
@@ -1195,6 +1289,56 @@ public class GrovesPOI {
             sanctuary.setAvailableChunks(this.availableChunks);
 
             return sanctuary;
+        }
+
+        private ClientGroveSanctuaryColorData createColorData()
+        {
+            return new ClientGroveSanctuaryColorData(skyColor, grassColor, foliageColor, waterColor);
+        }
+
+        // Need to send this to players when they connect...
+        public void syncColorData(ServerPlayerEntity player)
+        {
+            ClientGroveSanctuaryColorData newColors = createColorData();
+
+            List<ChunkPos> chunks = new ArrayList<>();
+            chunks.add(this.origin.chunkPos);
+            this.groveChunks.forEach(chunk -> chunks.add(chunk.chunkPos));
+
+            SyncChunkColorsPayload payload = new SyncChunkColorsPayload(this.world.getRegistryKey().getValue().toString(), chunks, newColors);
+
+            ServerPlayNetworking.send(player, payload);
+        }
+
+        public void updateColorData()
+        {
+
+            if (skyColor != lastSkyColor ||
+                grassColor != lastGrassColor ||
+                foliageColor != lastFoliageColor ||
+                waterColor != lastWaterColor)
+            {
+                lastSkyColor = skyColor;
+                lastGrassColor = grassColor;
+                lastFoliageColor = foliageColor;
+                lastWaterColor = waterColor;
+
+
+                // Don't waste your time if no one is even online
+                if (this.server.getPlayerManager().getPlayerList().isEmpty()) return;
+
+                ClientGroveSanctuaryColorData newColors = createColorData();
+
+                List<ChunkPos> chunks = new ArrayList<>();
+                chunks.add(this.origin.chunkPos);
+                this.groveChunks.forEach(chunk -> chunks.add(chunk.chunkPos));
+
+                SyncChunkColorsPayload payload = new SyncChunkColorsPayload(this.world.getRegistryKey().getValue().toString(), chunks, newColors);
+
+                // Send to all players
+                for(ServerPlayerEntity player : this.server.getPlayerManager().getPlayerList())
+                    ServerPlayNetworking.send(player, payload);
+            }
         }
 
         @Override
@@ -1833,4 +1977,122 @@ public class GrovesPOI {
             }
         }
     }
+
+    public record ClientGroveSanctuaryColorData(int sky, int grass, int foliage, int water)
+    {
+        public static final Codec<ClientGroveSanctuaryColorData> CODEC =
+                Codec.INT_STREAM.comapFlatMap(
+                        stream -> Util.decodeFixedLengthArray(stream, 4).map(values -> new ClientGroveSanctuaryColorData(values[0], values[1], values[2], values[3])),
+                        data -> IntStream.of(new int[] { data.sky, data.grass, data.foliage, data.water })
+                );
+
+        public static final PacketCodec<RegistryByteBuf, ClientGroveSanctuaryColorData> PACKET_CODEC = PacketCodec.tuple(
+                PacketCodecs.INTEGER, ClientGroveSanctuaryColorData::sky,
+                PacketCodecs.INTEGER, ClientGroveSanctuaryColorData::grass,
+                PacketCodecs.INTEGER, ClientGroveSanctuaryColorData::foliage,
+                PacketCodecs.INTEGER, ClientGroveSanctuaryColorData::water,
+                ClientGroveSanctuaryColorData::new);
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof ClientGroveSanctuaryColorData other)
+            {
+                if(sky != other.sky) return false;
+                if(grass != other.grass) return false;
+                if(foliage != other.foliage) return false;
+                if(water != other.water) return false;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private String colorToString(int color)
+        {
+            if (color < 0) return "none";
+
+            return Integer.toHexString(color).toUpperCase();
+        }
+
+        @Override
+        public String toString() {
+            return "[sky:" + colorToString(sky) + ", grass:" + colorToString(grass) + ", foliage:" + colorToString(foliage) + ", water:" + colorToString(water) + "]";
+        }
+    }
+
+
+
+    @Environment(EnvType.CLIENT)
+    private static final Map<RegistryKey<World>, Map<ChunkPos, ClientGroveSanctuaryColorData>> COLOR_MAP = new HashMap<>();
+
+    @Environment(EnvType.CLIENT)
+    public static @Nullable ClientGroveSanctuaryColorData getChunkColors(World world, ChunkPos pos)
+    {
+        if (COLOR_MAP.containsKey(world.getRegistryKey()))
+        {
+            Map<ChunkPos, ClientGroveSanctuaryColorData> chunks = COLOR_MAP.get(world.getRegistryKey());
+
+            return chunks.get(pos);
+        }
+
+        return null;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void ClearChunkColors()
+    {
+        Groves.LOGGER.info("ClearChunkColors - called");
+        COLOR_MAP.clear();
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void SetChunkColors(RegistryKey<World> worldKey, ChunkPos pos, ClientGroveSanctuaryColorData colors)
+    {
+        Map<ChunkPos, ClientGroveSanctuaryColorData> chunks;
+
+        if (COLOR_MAP.containsKey(worldKey))
+        {
+            chunks = COLOR_MAP.get(worldKey);
+        }
+        else
+        {
+            chunks = new HashMap<>();
+            COLOR_MAP.put(worldKey, chunks);
+        }
+
+        chunks.put(pos, colors);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void SetChunkColors(RegistryKey<World> worldKey, List<ChunkPos> posList, ClientGroveSanctuaryColorData colors)
+    {
+        Map<ChunkPos, ClientGroveSanctuaryColorData> chunks;
+
+        if (COLOR_MAP.containsKey(worldKey))
+        {
+            chunks = COLOR_MAP.get(worldKey);
+        }
+        else
+        {
+            chunks = new HashMap<>();
+            COLOR_MAP.put(worldKey, chunks);
+        }
+
+        for(ChunkPos pos : posList) {
+            chunks.put(pos, colors);
+            Groves.LOGGER.info("SetChunksColors({}) {} -> {}", worldKey, pos, colors);
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void RemoveChunkColors(RegistryKey<World> worldKey, ChunkPos pos)
+    {
+        if (COLOR_MAP.containsKey(worldKey))
+        {
+            COLOR_MAP.get(worldKey).remove(pos);
+        }
+    }
 }
+
+
