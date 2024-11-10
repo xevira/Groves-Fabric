@@ -160,7 +160,7 @@ public class AbilityListWidget extends ClickableWidget {
         }
 
         int textColor = ability.isActive() ? 0xC0C0C0 : 0x404040;
-        context.drawText(this.textRenderer, Groves.text("text", "ability." + ability.getName()), x + 20, y + (ROW_HEIGHT - this.textRenderer.fontHeight) / 2, textColor, false);
+        context.drawText(this.textRenderer, ability.getNameText(), x + 20, y + (ROW_HEIGHT - this.textRenderer.fontHeight) / 2, textColor, false);
 
         // What else is needed...
         // - Enabled

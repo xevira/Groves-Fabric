@@ -2,6 +2,7 @@ package github.xevira.groves.data.provider;
 
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
+import github.xevira.groves.item.UnlockScrollItem;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
@@ -10,6 +11,8 @@ import net.minecraft.block.Block;
 import net.minecraft.data.client.*;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
+
+import java.util.List;
 
 public class ModBlockModelProvider extends FabricModelProvider {
     public ModBlockModelProvider(FabricDataOutput output) {
@@ -129,13 +132,15 @@ public class ModBlockModelProvider extends FabricModelProvider {
 
         for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {
-            Item scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
-            if (scroll != null)
-            {
-                if (ability.isForbidden())
-                    itemModelGenerator.register(scroll, Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
-                else
-                    itemModelGenerator.register(scroll, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+            List<UnlockScrollItem> scrolls = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
+            if (scrolls != null) {
+
+                scrolls.forEach(scroll -> {
+                    if (ability.isForbidden())
+                        itemModelGenerator.register(scroll, Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
+                    else
+                        itemModelGenerator.register(scroll, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+                });
             }
         }
     }

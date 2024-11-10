@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 
 public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     public RestorationAbility() {
-        super("restoration", true, false, false);
+        super("restoration", true, false, false, 5);
     }
 
     @Override
@@ -25,8 +25,17 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     }
 
     @Override
-    public @Nullable Item getRecipeIngredient() {
-        return Items.ANVIL;
+    public @Nullable Item getRecipeIngredient(int rank)
+    {
+        return switch(rank)
+        {
+            case 1 -> Items.ANVIL;
+            case 2 -> Items.CHIPPED_ANVIL;  // Am I an ass?
+            case 3 -> Items.DAMAGED_ANVIL;  //  .. Yes, yes I am.
+            case 4 -> null;
+            case 5 -> null;
+            default -> null;
+        };
     }
 
     @Override
@@ -35,7 +44,7 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     }
 
     @Override
-    public String getEnglishLoreTranslation() {
+    public String getEnglishLoreTranslation(int rank) {
         return "Uses sunlight to repair your selected item.";
     }
 
@@ -57,7 +66,14 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
 
     @Override
     public long useCost() {
-        return 100L;
+        return switch(getRank())
+        {
+            case 2 -> 75L;
+            case 3 -> 50L;
+            case 4 -> 25L;
+            case 5 -> 10L;
+            default -> 100L;
+        };
     }
 
     @Override
@@ -104,7 +120,7 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     protected boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
 
-        if (!stack.isEmpty() && stack.getDamage() > 0)
+        if (!stack.isEmpty() && stack.isDamaged())
         {
             int damage = stack.getDamage();
             int repair = damage;

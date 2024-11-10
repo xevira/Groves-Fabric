@@ -20,7 +20,7 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     public static final int DURATION = 20;
 
     public RegenerationAbility() {
-        super("regeneration", true, true, false, false);
+        super("regeneration", true, true, false, false, 2);
     }
 
     @Override
@@ -29,8 +29,13 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public @Nullable Item getRecipeIngredient() {
-        return Items.GHAST_TEAR;
+    public @Nullable Item getRecipeIngredient(int rank) {
+        return switch(rank)
+        {
+            case 1 -> Items.GHAST_TEAR;
+            case 2 -> null;             // TODO: Add Ghast Heart
+            default -> null;
+        };
     }
 
     @Override
@@ -39,8 +44,10 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public String getEnglishLoreTranslation() {
-        return "Provides a Regeneration effect while inside your Grove Sanctuary.";
+    public String getEnglishLoreTranslation(int rank) {
+        if (rank == 2)
+            return "Provides a Regeneration II effect while inside your Grove Sanctuary.";
+        return "Provides a Regeneration effect while inside your Grove Sanctuary.  Level is based upon rank.";
     }
 
     @Override
@@ -104,10 +111,10 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
         return false;
     }
 
-    private static void applyStatusEffect(GrovesPOI.GroveSanctuary sanctuary, ServerPlayerEntity player)
+    private void applyStatusEffect(GrovesPOI.GroveSanctuary sanctuary, ServerPlayerEntity player)
     {
         if (player != null && sanctuary.contains(player.getBlockPos())) {
-            player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, DURATION * 20, 0, true, false));
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, DURATION * 20, getRank() - 1, true, false));
         }
     }
 }

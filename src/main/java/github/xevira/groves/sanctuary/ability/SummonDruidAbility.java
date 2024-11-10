@@ -24,7 +24,7 @@ public class SummonDruidAbility extends GroveAbility {
 
     // Special case Manual
     public SummonDruidAbility() {
-        super("summon_druid", false, true, true, true, false);
+        super("summon_druid", false, true, true, true, false, 1);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class SummonDruidAbility extends GroveAbility {
     }
 
     @Override
-    public @Nullable Item getRecipeIngredient() {
+    public @Nullable Item getRecipeIngredient(int rank) {
         return null;
     }
 
@@ -43,7 +43,7 @@ public class SummonDruidAbility extends GroveAbility {
     }
 
     @Override
-    public String getEnglishLoreTranslation() {
+    public String getEnglishLoreTranslation(int rank) {
         return "Calls forth a wandering druid to provide you with resources.";
     }
 
@@ -70,7 +70,6 @@ public class SummonDruidAbility extends GroveAbility {
     @Override
     protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         this.waitSeconds = rng.nextBetween(15, 30);
-        Groves.LOGGER.info("SummonDruid: waitSeconds = {}", this.waitSeconds);
     }
 
     @Override

@@ -24,6 +24,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -851,7 +852,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             context.drawTexture(RenderLayer::getGuiTextured, texture, x + darknessLabelW + 2, y, 0, TAB_HEIGHT, 102, 10, 256, 256);
 
             // Foreground of the bar
-            context.fill(x + darknessLabelW + 3, y + 1, x + darknessLabelW + 3 + percent, y + 11, this.darknessColor.getColor());
+            context.fill(x + darknessLabelW + 3, y + 1, x + darknessLabelW + 3 + percent, y + 9, this.darknessColor.getColor());
         }
 
         private void drawFoliage(DrawContext context, int x, int y) {
@@ -896,16 +897,24 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             if (isPointInBounds(sunlightLabelW + 6, 22, 100, 8, mouseX, mouseY)) {
                 long sunlight = this.handler.getSunlight();
                 long maxSunlight = this.handler.getMaxSunlight();
+                long total = this.handler.getTotalSunlight();
                 int percent = (int) (100 * sunlight / maxSunlight);
-                Text sunlightLabel = Groves.text("tooltip", "groves.sunlight", sunlight, percent).formatted(Formatting.YELLOW);
-                context.drawTooltip(this.textRenderer, sunlightLabel, mouseX, mouseY);
+
+                List<Text> tooltips = new ArrayList<>();
+                tooltips.add(Groves.text("tooltip", "groves.sunlight", sunlight, percent).formatted(Formatting.YELLOW));
+                tooltips.add(Groves.text("tooltip", "groves.sunlight.collected", total).formatted(Formatting.YELLOW));
+                context.drawTooltip(this.textRenderer, tooltips, mouseX, mouseY);
             }
             if (isPointInBounds(darknessLabelW + 6, 38, 100, 8, mouseX, mouseY)) {
                 long darkness = this.handler.getDarkness();
                 long maxDarkness = this.handler.getMaxDarkness();
+                long total = this.handler.getTotalDarkness();
                 int percent = (int) (100 * darkness / maxDarkness);
-                Text darknesstLabel = Groves.text("tooltip", "groves.darkness", darkness, percent).formatted(Formatting.LIGHT_PURPLE);
-                context.drawTooltip(this.textRenderer, darknesstLabel, mouseX, mouseY);
+
+                List<Text> tooltips = new ArrayList<>();
+                tooltips.add(Groves.text("tooltip", "groves.darkness", darkness, percent).formatted(Formatting.LIGHT_PURPLE));
+                tooltips.add(Groves.text("tooltip", "groves.darkness.collected", total).formatted(Formatting.LIGHT_PURPLE));
+                context.drawTooltip(this.textRenderer, tooltips, mouseX, mouseY);
             }
         }
 

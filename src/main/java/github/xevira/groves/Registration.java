@@ -505,13 +505,13 @@ public class Registration {
 
     public static final Item UNLOCK_SCROLL_ITEM = register(
             "unlock_scroll",
-            settings -> new UnlockScrollItem(null, settings),
+            settings -> new UnlockScrollItem(null, 0, settings),
             new Item.Settings().maxCount(64));
 
     // This item should *never* be loaded without an ability assigned to it
     public static final Item FORBIDDEN_SCROLL_ITEM = register(
             "forbidden_scroll",
-            settings -> new UnlockScrollItem(null, settings),
+            settings -> new UnlockScrollItem(null, 0, settings),
             new Item.Settings().maxCount(64));
 
     // Block Entities

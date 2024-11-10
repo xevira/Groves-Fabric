@@ -17,6 +17,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,7 @@ public abstract class GroveAbility {
             boolean active = PacketCodecs.BOOL.decode(buf);
             long start = PacketCodecs.LONG.decode(buf);
             long end = PacketCodecs.LONG.decode(buf);
+            int rank = PacketCodecs.INTEGER.decode(buf);
 
             Optional<GroveAbility> template = GroveAbilities.getByName(name);
             if (template.isPresent())
@@ -40,6 +42,7 @@ public abstract class GroveAbility {
                 ability.active = active;
                 ability.startCooldown = start;
                 ability.endCooldown = end;
+                ability.rank = rank;
                 return ability;
             }
 
@@ -52,6 +55,7 @@ public abstract class GroveAbility {
             PacketCodecs.BOOL.encode(buf, value.isActive());
             PacketCodecs.LONG.encode(buf, value.startCooldown);
             PacketCodecs.LONG.encode(buf, value.endCooldown);
+            PacketCodecs.INTEGER.encode(buf, value.rank);
         }
     };
 
@@ -68,12 +72,14 @@ public abstract class GroveAbility {
     protected final boolean defaultAllow;
     protected final boolean autoInstalled;
     protected final boolean forbidden;
+    protected final int maxRank;
 
     private boolean active;
     private long startCooldown;
     private long endCooldown;
+    private int rank;
 
-    public GroveAbility(final String name, final boolean automatic, final boolean autoDeactivate, final boolean defaultAllow, final boolean autoInstalled, final boolean forbidden)
+    public GroveAbility(final String name, final boolean automatic, final boolean autoDeactivate, final boolean defaultAllow, final boolean autoInstalled, final boolean forbidden, final int maxRank)
     {
         this.id = ++NextId;
         this.name = name;
@@ -82,9 +88,44 @@ public abstract class GroveAbility {
         this.defaultAllow = defaultAllow;
         this.autoInstalled = autoInstalled;
         this.forbidden = forbidden;
+        this.maxRank = MathHelper.clamp(maxRank, 1, 10);
+        this.rank = 1;
 
         this.active = false;
         clearCooldown();
+    }
+
+    public void setRank(int rank)
+    {
+        this.rank = MathHelper.clamp(rank, 1, this.maxRank);
+    }
+
+    public int getRank()
+    {
+        return this.rank;
+    }
+
+    public int getMaxRank()
+    {
+        return this.maxRank;
+    }
+
+    public MutableText getNameText()
+    {
+        MutableText text = Groves.text("name", "ability." + getName());
+        if (maxRank > 1) {
+            return text.append(Groves.text("text", "ability.suffix." + this.rank));
+        }
+        return text;
+    }
+
+    public MutableText getNameText(int rank)
+    {
+        MutableText text = Groves.text("name", "ability." + getName());
+        if (maxRank > 1) {
+            return text.append(Groves.text("text", "ability.suffix." + rank));
+        }
+        return text;
     }
 
     public final boolean isAutoInstalled()
@@ -99,11 +140,11 @@ public abstract class GroveAbility {
 
     public abstract Supplier<? extends GroveAbility> getConstructor();
 
-    public abstract @Nullable Item getRecipeIngredient();
+    public abstract @Nullable Item getRecipeIngredient(int rank);
 
     public abstract String getEnglishTranslation();
 
-    public abstract String getEnglishLoreTranslation();
+    public abstract String getEnglishLoreTranslation(int rank);
 
     public abstract String getEnglishStartCostTranslation();
 
@@ -111,12 +152,12 @@ public abstract class GroveAbility {
 
     public abstract String getEnglishUseCostTranslation();
 
-    public @Nullable String getEnglishUnlockTranslation()
+    public @Nullable String getEnglishUnlockTranslation(int rank)
     {
         return null;
     }
 
-    public boolean hasUnlockRequirement()
+    public boolean hasUnlockRequirement(int rank)
     {
         return false;
     }
@@ -188,7 +229,7 @@ public abstract class GroveAbility {
     public long useCost() { return 0L; }
 
     // Returns the reason why you can't unlock it.
-    public @Nullable Text canUnlock(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public @Nullable Text canUnlock(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player, int rank)
     {
         return null;
     }
@@ -296,6 +337,7 @@ public abstract class GroveAbility {
         JsonObject json = new JsonObject();
 
         json.add("name", new JsonPrimitive(this.name));
+        json.add("rank", new JsonPrimitive(this.rank));
         json.add("active", new JsonPrimitive(this.active));
 
         if (this.startCooldown >= 0) {
@@ -321,6 +363,7 @@ public abstract class GroveAbility {
     public static Optional<GroveAbility> deserialize(JsonObject json)
     {
         String name = JSONHelper.getString(json, "name");
+        int rank = JSONHelper.getInt(json, "rank").orElse(1);
         boolean active = JSONHelper.getBoolean(json, "active").orElse(false);
         long start = JSONHelper.getLong(json, "startCooldown").orElse(-1L);
         long end = JSONHelper.getLong(json, "endCooldown").orElse(-1L);
@@ -332,6 +375,7 @@ public abstract class GroveAbility {
                 if (!ability.get().deserializeExtra(json))
                     return Optional.empty();
 
+                ability.get().rank = rank;
                 ability.get().active = active;
                 ability.get().startCooldown = start;
                 ability.get().endCooldown = end;
@@ -344,14 +388,14 @@ public abstract class GroveAbility {
     }
 
     public static abstract class AutomaticGroveAbility extends GroveAbility {
-        public AutomaticGroveAbility(String name, boolean autodeactivate, boolean defaultAllow, boolean autoInstalled, boolean forbidden) {
-            super(name, true, autodeactivate, defaultAllow, autoInstalled, forbidden);
+        public AutomaticGroveAbility(String name, boolean autodeactivate, boolean defaultAllow, boolean autoInstalled, boolean forbidden, final int maxRank) {
+            super(name, true, autodeactivate, defaultAllow, autoInstalled, forbidden, maxRank);
         }
     }
 
     public static abstract class ManualGroveAbility extends GroveAbility {
-        public ManualGroveAbility(String name, boolean defaultAllow, boolean autoInstalled, boolean forbidden) {
-            super(name, false, false, defaultAllow, autoInstalled, forbidden);
+        public ManualGroveAbility(String name, boolean defaultAllow, boolean autoInstalled, boolean forbidden, final int maxRank) {
+            super(name, false, false, defaultAllow, autoInstalled, forbidden, maxRank);
         }
     }
 

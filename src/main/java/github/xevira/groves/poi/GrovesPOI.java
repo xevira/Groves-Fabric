@@ -418,6 +418,8 @@ public class GrovesPOI {
         private boolean enchanted;
 
         // Variable properties
+        private long totalSunlight;
+        private long totalDarkness;
         private long storedSunlight;
         private int storedDarkness;
         private @Nullable BlockPos moonwell;
@@ -471,6 +473,8 @@ public class GrovesPOI {
 
             this.storedSunlight = 0;
             this.storedDarkness = 0;
+            this.totalSunlight = 0;
+            this.totalDarkness = 0;
             this.moonwell = null;
             this.chunkLoaded = false;
 
@@ -691,26 +695,36 @@ public class GrovesPOI {
          **/
         public void addSunlight(long sunlight)
         {
+            sunlight = Math.max(0L, sunlight);
+
             this.storedSunlight = MathHelper.clamp(this.storedSunlight + sunlight, 0, getMaxStoredSunlight());
-            sendListeners(new UpdateSunlightPayload(this.storedSunlight));
+            this.totalSunlight += sunlight;
+            sendListeners(new UpdateSunlightPayload(this.storedSunlight, this.totalSunlight));
         }
 
         public void useSunlight(long sunlight)
         {
+            sunlight = Math.max(0L, sunlight);
+
             this.storedSunlight = MathHelper.clamp(this.storedSunlight - sunlight, 0, getMaxStoredSunlight());
-            sendListeners(new UpdateSunlightPayload(this.storedSunlight));
+            sendListeners(new UpdateSunlightPayload(this.storedSunlight, this.totalSunlight));
         }
 
         public void addDarkness(int darkness)
         {
+            darkness = Math.max(0, darkness);
+
             this.storedDarkness = MathHelper.clamp(this.storedDarkness + darkness, 0, ServerConfig.maxDarkness());
-            sendListeners(new UpdateDarknessPayload(this.storedDarkness));
+            this.totalDarkness += darkness;
+            sendListeners(new UpdateDarknessPayload(this.storedDarkness, this.totalDarkness));
         }
 
         public void useDarkness(int darkness)
         {
+            darkness = Math.max(0, darkness);
+
             this.storedDarkness = MathHelper.clamp(this.storedDarkness - darkness, 0, ServerConfig.maxDarkness());
-            sendListeners(new UpdateDarknessPayload(this.storedDarkness));
+            sendListeners(new UpdateDarknessPayload(this.storedDarkness, this.totalDarkness));
         }
 
         public enum SetSpawnPointResult
@@ -941,10 +955,15 @@ public class GrovesPOI {
             return this.groveAbilities.stream().anyMatch(ability -> ability.getName().equalsIgnoreCase(name));
         }
 
-        public void installAbility(GroveAbility prototype)
+        public void installAbility(GroveAbility prototype, int rank)
         {
-            if (!hasAbility(prototype.getName()))
-                this.groveAbilities.add(prototype.getConstructor().get());
+            if (!hasAbility(prototype.getName())) {
+                GroveAbility ability = prototype.getConstructor().get();
+                ability.setRank(rank);
+                this.groveAbilities.add(ability);
+
+                // TODO: sendListeners
+            }
         }
 
         private boolean isOwnerOnline(MinecraftServer server)
@@ -1111,6 +1130,9 @@ public class GrovesPOI {
 
             json.add("sunlight", new JsonPrimitive(this.storedSunlight));
             json.add("darkness", new JsonPrimitive(this.storedDarkness));
+
+            json.add("totalSunlight", new JsonPrimitive(this.totalSunlight));
+            json.add("totalDarkness", new JsonPrimitive(this.totalDarkness));
 
             return json;
         }
@@ -1289,6 +1311,9 @@ public class GrovesPOI {
             // If it is empty, it will reset to 0.
             Optional<Long> storedSunlight = JSONHelper.getLong(json, "sunlight");
             Optional<Integer> storedDarkness = JSONHelper.getInt(json, "darkness");
+            Optional<Long> totalSunlight = JSONHelper.getLong(json, "totalSunlight");
+            Optional<Long> totalDarkness = JSONHelper.getLong(json, "totalDarkness");
+
 
             List<GroveChunkData> chunks = deserializeChunks(json, server, world);
             Set<ChunkPos> available = deserializeAvailable(json);
@@ -1314,6 +1339,8 @@ public class GrovesPOI {
             chunkLoaded.ifPresent(aBoolean -> sanctuary.chunkLoaded = aBoolean);
             storedSunlight.ifPresent(sunlight -> sanctuary.storedSunlight = sunlight);
             storedDarkness.ifPresent(darkness -> sanctuary.storedDarkness = darkness);
+            totalSunlight.ifPresent(sunlight -> sanctuary.totalSunlight = sunlight);
+            totalDarkness.ifPresent(darkness -> sanctuary.totalDarkness = darkness);
             moonwell.ifPresent(blockPos -> sanctuary.moonwell = blockPos);
 
             GrovesPOI.registerGroveChunk(world, origin.get().chunkPos, sanctuary);
@@ -1335,8 +1362,10 @@ public class GrovesPOI {
             sanctuary.setFoliage(groveChunks.stream().map(chunk -> chunk.foliage).reduce(this.origin.foliage, Integer::sum));
             sanctuary.setMaxStoredSunlight(ServerConfig.sunlightPerChunk());
             sanctuary.setStoredSunlight(this.storedSunlight);
+            sanctuary.setTotalSunlight(this.totalSunlight);
             sanctuary.setMaxDarkness(ServerConfig.maxDarkness());
             sanctuary.setDarkness(this.storedDarkness);
+            sanctuary.setTotalDarkness(this.totalDarkness);
             sanctuary.setMoonwell(this.moonwell);
 
             sanctuary.groveAbilities.addAll(this.groveAbilities);
@@ -1701,8 +1730,10 @@ public class GrovesPOI {
                 sanctuary.setFoliage(PacketCodecs.INTEGER.decode(buf));
                 sanctuary.setMaxStoredSunlight(PacketCodecs.LONG.decode(buf));
                 sanctuary.setStoredSunlight(PacketCodecs.LONG.decode(buf));
+                sanctuary.setTotalSunlight(PacketCodecs.LONG.decode(buf));
                 sanctuary.setMaxDarkness(PacketCodecs.INTEGER.decode(buf));
                 sanctuary.setDarkness(PacketCodecs.INTEGER.decode(buf));
+                sanctuary.setTotalDarkness(PacketCodecs.LONG.decode(buf));
 
 
                 if (PacketCodecs.BOOL.decode(buf))
@@ -1745,8 +1776,10 @@ public class GrovesPOI {
                 PacketCodecs.INTEGER.encode(buf, value.foliage);
                 PacketCodecs.LONG.encode(buf, value.maxSunlight);
                 PacketCodecs.LONG.encode(buf, value.storedSunlight);
+                PacketCodecs.LONG.encode(buf, value.totalSunlight);
                 PacketCodecs.INTEGER.encode(buf, value.maxDarkness);
                 PacketCodecs.INTEGER.encode(buf, value.storedDarkness);
+                PacketCodecs.LONG.encode(buf, value.totalDarkness);
 
                 BlockPos well = value.getMoonwell();
                 if (well != null) {
@@ -1785,8 +1818,10 @@ public class GrovesPOI {
 
         private long storedSunlight;
         private long maxSunlight;
+        private long totalSunlight;
         private int storedDarkness;
         private int maxDarkness;
+        private long totalDarkness;
         private BlockPos moonwell;
 
         private final List<GameProfile> groveFriends = new ArrayList<>();
@@ -1901,11 +1936,12 @@ public class GrovesPOI {
                 this.groveAbilities.add(ability);
         }
 
-        public void updateAbility(String name, boolean active, long start, long end)
+        public void updateAbility(String name, boolean active, long start, long end, int rank)
         {
             this.groveAbilities.stream().filter(ability -> ability.getName().equalsIgnoreCase(name)).findFirst().ifPresent(ability -> {
                 ability.setActive(active);
                 ability.setCooldown(start, end);
+                ability.setRank(rank);
             });
         }
 
@@ -2009,6 +2045,10 @@ public class GrovesPOI {
             this.storedSunlight = MathHelper.clamp(this.storedSunlight + value, 0, getMaxStoredSunlight());
         }
 
+        public void setTotalSunlight(long value) { this.totalSunlight = value; }
+
+        public long getTotalSunlight() { return this.totalSunlight; }
+
         public void setMaxDarkness(int value) { this.maxDarkness = value; }
         public int getMaxDarkness() { return this.maxDarkness; }
 
@@ -2018,6 +2058,10 @@ public class GrovesPOI {
         }
 
         public int getDarkness() { return this.storedDarkness; }
+
+        public void setTotalDarkness(long value) { this.totalDarkness = value; }
+
+        public long getTotalDarkness() { return this.totalDarkness; }
 
         public int getFoliage()
         {

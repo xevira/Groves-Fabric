@@ -23,17 +23,19 @@ import java.util.List;
 
 public class UnlockScrollItem extends Item {
     private final GroveAbility ability;
+    private final int rank;
 
-    public UnlockScrollItem(GroveAbility ability, Settings settings) {
+    public UnlockScrollItem(GroveAbility ability, int rank, Settings settings) {
         super(settings);
 
         this.ability = ability;
+        this.rank = rank;
     }
 
     @Override
     public boolean hasGlint(ItemStack stack) {
         // Only when the scroll has an ability or
-        return this.ability != null && (this.ability.getRecipeIngredient() == null || this.ability.isForbidden());
+        return this.ability != null && (this.ability.getRecipeIngredient(this.rank) == null || this.ability.isForbidden());
     }
 
     @Override
@@ -51,25 +53,36 @@ public class UnlockScrollItem extends Item {
                     GrovesPOI.GroveSanctuary sanctuary = GrovesPOI.getSanctuary(player).orElse(null);
 
                     if (sanctuary != null) {
-                        if (sanctuary.hasAbility(this.ability.getName())) {
+                        GroveAbility currentAbility = sanctuary.getAbility(this.ability.getName()).orElse(null);
+                        if (currentAbility != null && this.rank <= currentAbility.getRank()) {
                             MutableText msg = Text.literal("Your sanctuary already has ");
-                            msg.append(Groves.text("name", "ability." + this.ability.getName()).formatted(Formatting.RED));
+                            msg.append(ability.getNameText());
                             msg.append(".");
-
-                            player.sendMessage(msg, false);
+                            player.sendMessage(msg.formatted(Formatting.RED), false);
                         } else {
-                            Text reason = this.ability.canUnlock(player.getServer(), sanctuary, player);
+                            Text reason = this.ability.canUnlock(player.getServer(), sanctuary, player, this.rank);
 
                             if (reason != null) {
                                 player.sendMessage(reason, false);
                             } else {
-                                sanctuary.installAbility(this.ability);
+                                if (currentAbility != null)
+                                {
+                                    MutableText msg = this.ability.getNameText(currentAbility.getRank()).formatted(Formatting.GREEN);
+                                    msg.append(" upgraded to ");
+                                    currentAbility.setRank(this.rank);
+                                    msg.append(currentAbility.getNameText().formatted(Formatting.GREEN));
+                                    player.sendMessage(msg, false);
 
-                                MutableText msg = Groves.text("name", "ability." + this.ability.getName()).formatted(Formatting.GREEN);
-                                msg.append(" installed.");
+                                    // TODO: Play upgrade sound, maybe make it ability specific?
+                                }
+                                else {
+                                    sanctuary.installAbility(this.ability, this.rank);
+                                    MutableText msg = this.ability.getNameText(this.rank).formatted(Formatting.GREEN);
+                                    msg.append(" installed.");
+                                    player.sendMessage(msg, false);
 
-                                player.sendMessage(msg, false);
-                                // TODO: Play sound, maybe make it ability specific?
+                                    // TODO: Play sound, maybe make it ability specific?
+                                }
 
                                 stack.decrementUnlessCreative(1, player);
                             }
@@ -115,9 +128,10 @@ public class UnlockScrollItem extends Item {
         {
             if (Screen.hasShiftDown()) {
 
-                tooltip.add(Groves.text("lore", ".ability." + ability.getName()));
-                if (this.ability.hasUnlockRequirement())
-                    tooltip.add(Text.translatable(this.translationKey + ".unlock").formatted(Formatting.RED));
+                tooltip.add(Groves.text("lore", "ability." + ability.getName() + "." + this.rank));
+                if (this.ability.hasUnlockRequirement(this.rank)) {
+                    tooltip.add(Groves.text("tooltip", "ability." + this.ability.getName() + ".unlock." + this.rank).formatted(Formatting.RED));
+                }
 
                 if (ability.startCost() > 0 || ability.tickCost() > 0 || ability.useCost() > 0) {
                     tooltip.add(Text.empty());
@@ -125,17 +139,17 @@ public class UnlockScrollItem extends Item {
                     if (ability.startCost() > 0)
                         tooltip.add(Groves.text("tooltip", "ability.cost.start").formatted(Formatting.YELLOW)
                                 .append(" ")
-                                .append(Text.translatable(this.translationKey + ".cost.start", ability.startCost())));
+                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.start", ability.startCost())));
 
                     if (ability.tickCost() > 0)
                         tooltip.add(Groves.text("tooltip", "ability.cost.tick").formatted(Formatting.YELLOW)
                                 .append(" ")
-                                .append(Text.translatable(this.translationKey + ".cost.tick", ability.tickCost())));
+                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.tick", ability.tickCost())));
 
                     if (ability.useCost() > 0)
                         tooltip.add(Groves.text("tooltip", "ability.cost.use").formatted(Formatting.YELLOW)
                                 .append(" ")
-                                .append(Text.translatable(this.translationKey + ".cost.use", ability.useCost())));
+                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.use", ability.useCost())));
                 }
             }
             else

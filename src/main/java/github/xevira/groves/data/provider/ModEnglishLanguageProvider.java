@@ -15,9 +15,23 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ModEnglishLanguageProvider extends FabricLanguageProvider {
+    private static final List<String> RANK_SUFFIX = List.of(
+            " I",
+            " II",
+            " III",
+            " IV",
+            " V",
+            " VI",
+            " VII",
+            " VIII",
+            " IX",
+            " X"
+    );
+
     public ModEnglishLanguageProvider(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
         super(dataOutput, "en_us", registryLookup);
     }
@@ -140,22 +154,40 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {
             addText(translationBuilder, "name", "ability." + ability.getName(), ability.getEnglishTranslation());
-            addText(translationBuilder, "lore", ".ability." + ability.getName(), ability.getEnglishLoreTranslation());
+            for(int i = 1; i <= ability.getMaxRank(); i++)
+                addText(translationBuilder, "lore", "ability." + ability.getName() + "." + i, ability.getEnglishLoreTranslation(i));
 
-            UnlockScrollItem scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
-            if (scroll != null)
+            addText(translationBuilder, "tooltip", "ability." + ability.getName() + ".cost.start", ability.getEnglishStartCostTranslation());
+            addText(translationBuilder, "tooltip", "ability." + ability.getName() + ".cost.tick", ability.getEnglishTickCostTranslation());
+            addText(translationBuilder, "tooltip", "ability." + ability.getName() + ".cost.use", ability.getEnglishUseCostTranslation());
+
+            List<UnlockScrollItem> scrolls = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
+            if (scrolls != null && !scrolls.isEmpty())
             {
-                if (ability.isForbidden())
-                    translationBuilder.add(scroll, "Forbidden Scroll (" + ability.getEnglishTranslation() + ")");
-                else
-                    translationBuilder.add(scroll, "Unlock Scroll (" + ability.getEnglishTranslation() + ")");
+                for(int i = 0; i < scrolls.size(); i++)
+                {
+                    int rank = i + 1;
+                    UnlockScrollItem scroll = scrolls.get(i);
+                    String suffix = RANK_SUFFIX.get(i);
 
-                if (ability.hasUnlockRequirement() && ability.getEnglishUnlockTranslation() != null)
-                    addText(translationBuilder, scroll, ".unlock", ability.getEnglishUnlockTranslation());
+                    if (ability.getMaxRank() > 1)
+                    {
+                        if (ability.isForbidden())
+                            translationBuilder.add(scroll, "Forbidden Scroll (" + ability.getEnglishTranslation() + suffix + ")");
+                        else
+                            translationBuilder.add(scroll, "Unlock Scroll (" + ability.getEnglishTranslation() + suffix + ")");
+                    }
+                    else {
+                        if (ability.isForbidden())
+                            translationBuilder.add(scroll, "Forbidden Scroll (" + ability.getEnglishTranslation() + ")");
+                        else
+                            translationBuilder.add(scroll, "Unlock Scroll (" + ability.getEnglishTranslation() + ")");
+                    }
 
-                addText(translationBuilder, scroll, ".cost.start", ability.getEnglishStartCostTranslation());
-                addText(translationBuilder, scroll, ".cost.tick", ability.getEnglishTickCostTranslation());
-                addText(translationBuilder, scroll, ".cost.use", ability.getEnglishUseCostTranslation());
+                    if (ability.hasUnlockRequirement(rank) && ability.getEnglishUnlockTranslation(rank) != null)
+                        addText(translationBuilder, "tooltip", "ability." + ability.getName() + ".unlock." + rank, ability.getEnglishUnlockTranslation(rank));
+
+                }
             }
         }
 
@@ -206,7 +238,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "label", "groves.sunlight", "Sunlight:");
         addText(translationBuilder, "label", "groves.darkness", "Darkness:");
         addText(translationBuilder, "tooltip", "groves.sunlight", "Total Sunlight: %s (%s%%)");
+        addText(translationBuilder, "tooltip", "groves.sunlight.collected", "Total Sunlight Collected: %s");
         addText(translationBuilder, "tooltip", "groves.darkness", "Total Darkness: %s (%s%%)");
+        addText(translationBuilder, "tooltip", "groves.darkness.collected", "Total Darkness Collected: %s");
         addText(translationBuilder, "label", "groves.moonwell", "Moonwell:");
         addText(translationBuilder, "text", "groves.moonwell", "(%s, %s, %s)");
         addText(translationBuilder, "text", "groves.no_moonwell", "None");
@@ -243,10 +277,16 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "ability.item_restored", "Item restored.");
         addText(translationBuilder, "text", "ability.item_partially_restored", "Item partially restored.");
 
-        addText(translationBuilder, "text", "ability.chunk_load", "Chunk Loading");
-        addText(translationBuilder, "text", "ability.regeneration", "Regeneration");
-        addText(translationBuilder, "text", "ability.restoration", "Restoration");
-        addText(translationBuilder, "text", "ability.summon_druid", "Summon Druid");
+        addText(translationBuilder, "text", "ability.suffix.1", " I");
+        addText(translationBuilder, "text", "ability.suffix.2", " II");
+        addText(translationBuilder, "text", "ability.suffix.3", " III");
+        addText(translationBuilder, "text", "ability.suffix.4", " IV");
+        addText(translationBuilder, "text", "ability.suffix.5", " V");
+        addText(translationBuilder, "text", "ability.suffix.6", " VI");
+        addText(translationBuilder, "text", "ability.suffix.7", " VII");
+        addText(translationBuilder, "text", "ability.suffix.8", " VIII");
+        addText(translationBuilder, "text", "ability.suffix.9", " IX");
+        addText(translationBuilder, "text", "ability.suffix.10", " X");
 
         addText(translationBuilder, "tooltip", "groves.chunk.location", "X = %s, Z = %s");
         addText(translationBuilder, "tooltip", "groves.chunk.available", "Available");

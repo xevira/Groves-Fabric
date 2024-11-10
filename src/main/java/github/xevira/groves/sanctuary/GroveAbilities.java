@@ -20,21 +20,20 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Rarity;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GroveAbilities {
 
     public static final Map<String, GroveAbility> ABILITIES = new HashMap<>();
-    public static final Map<String, UnlockScrollItem> UNLOCK_SCROLLS = new HashMap<>();
+    public static final Map<String, List<UnlockScrollItem>> UNLOCK_SCROLLS = new HashMap<>();
 
     private static <T extends GroveAbility> void registerAbility(T ability)
     {
         ABILITIES.put(ability.getName(), ability);
 
-        // Only create scrolls for abilities that are not automatically installed with imprinting
-        if (!ability.isAutoInstalled()) {
+        // Only create scrolls for abilities that are not automatically installed with imprinting or have multiple ranks
+        if (!ability.isAutoInstalled() || ability.getMaxRank() > 1) {
 
             String name;
             Item.Settings settings;
@@ -50,12 +49,32 @@ public class GroveAbilities {
                 settings = new Item.Settings().maxCount(1).rarity(Rarity.RARE);
             }
 
-            UnlockScrollItem scroll = Registration.register(
-                    name,
-                    s -> new UnlockScrollItem(ability, s),
-                    settings);
+            List<UnlockScrollItem> scrolls = new ArrayList<>();
 
-            UNLOCK_SCROLLS.put(ability.getName(), scroll);
+            if (ability.getMaxRank() > 1)
+            {
+                // Skip the first rank for autoinstalled abilities
+                for(int i = (ability.isAutoInstalled() ? 2 : 1); i <= ability.getMaxRank(); i++) {
+                    AtomicInteger rank = new AtomicInteger(i);
+
+                    UnlockScrollItem scroll = Registration.register(
+                            name + "_" + i,
+                            s -> new UnlockScrollItem(ability, rank.get(), s),
+                            settings);
+
+                    scrolls.add(scroll);
+                }
+            }
+            else
+            {
+                UnlockScrollItem scroll = Registration.register(
+                        name,
+                        s -> new UnlockScrollItem(ability, 1, s),
+                        settings);
+                scrolls.add(scroll);
+            }
+
+            UNLOCK_SCROLLS.put(ability.getName(), scrolls);
         }
     }
 
@@ -168,11 +187,17 @@ public class GroveAbilities {
 
     public static void addScrollsToItemGroup(FabricItemGroupEntries entries)
     {
-        entries.addAfter(Registration.UNLOCK_SCROLL_ITEM, UNLOCK_SCROLLS.values().toArray(new UnlockScrollItem[0]));
+        List<Item> items = new ArrayList<>();
+
+        // TODO: Sort scrolls
+        UNLOCK_SCROLLS.values().forEach(items::addAll);
+
+        entries.addAfter(Registration.UNLOCK_SCROLL_ITEM, items.toArray(new Item[0]));
     }
 
     public static void autoInstallAbilities(GrovesPOI.GroveSanctuary sanctuary)
     {
-        ABILITIES.values().stream().filter(GroveAbility::isAutoInstalled).forEach(sanctuary::installAbility);
+        ABILITIES.values().stream().filter(GroveAbility::isAutoInstalled).forEach(ability -> sanctuary.installAbility(ability, 1));
     }
+
 }

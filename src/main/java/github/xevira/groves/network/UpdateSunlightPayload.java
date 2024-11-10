@@ -6,10 +6,12 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 
-public record UpdateSunlightPayload(long sunlight) implements CustomPayload {
+public record UpdateSunlightPayload(long sunlight, long total) implements CustomPayload {
     public static final Id<UpdateSunlightPayload> ID = new Id<>(Groves.id("update_sunlight"));
-    public static final PacketCodec<RegistryByteBuf, UpdateSunlightPayload> PACKET_CODEC =
-            PacketCodec.tuple(PacketCodecs.LONG, UpdateSunlightPayload::sunlight, UpdateSunlightPayload::new);
+    public static final PacketCodec<RegistryByteBuf, UpdateSunlightPayload> PACKET_CODEC = PacketCodec.tuple(
+            PacketCodecs.LONG, UpdateSunlightPayload::sunlight,
+            PacketCodecs.LONG, UpdateSunlightPayload::total,
+            UpdateSunlightPayload::new);
 
     @Override
     public Id<? extends CustomPayload> getId() {

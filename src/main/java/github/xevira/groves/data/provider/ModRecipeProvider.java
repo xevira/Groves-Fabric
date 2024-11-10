@@ -2,6 +2,7 @@ package github.xevira.groves.data.provider;
 
 import com.google.common.collect.ImmutableList;
 import github.xevira.groves.Registration;
+import github.xevira.groves.item.UnlockScrollItem;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.util.WaxHelper;
@@ -45,21 +46,28 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 
                 for(GroveAbility ability : GroveAbilities.ABILITIES.values())
                 {
-                    Item ingredient = ability.getRecipeIngredient();
-                    if (ingredient != null) {
-                        Item scroll = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
-                        createShaped(RecipeCategory.MISC, scroll)
-                                .input('#', ingredient)
-                                .input('S', Registration.UNLOCK_SCROLL_ITEM)
-                                .input('I', Items.INK_SAC)
-                                .pattern(" # ")
-                                .pattern("ISI")
-                                .pattern(" I ")
-                                .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
-                                .criterion(hasItem(Registration.UNLOCK_SCROLL_ITEM), conditionsFromItem(Registration.UNLOCK_SCROLL_ITEM))
-                                .criterion(hasItem(Items.INK_SAC), conditionsFromItem(Items.INK_SAC))
-                                .offerTo(exporter);
+                    if (ability.isForbidden()) continue;    // Forbidden scrolls are *never* craftable
+
+                    List<UnlockScrollItem> scrolls = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());
+                    if (scrolls != null) {
+                        for (int i = 0; i < scrolls.size(); i++) {
+                            Item ingredient = ability.getRecipeIngredient(i + 1);
+                            if (ingredient != null) {
+                                createShaped(RecipeCategory.MISC, scrolls.get(i))
+                                        .input('#', ingredient)
+                                        .input('S', Registration.UNLOCK_SCROLL_ITEM)
+                                        .input('I', Items.INK_SAC)
+                                        .pattern(" # ")
+                                        .pattern("ISI")
+                                        .pattern(" I ")
+                                        .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
+                                        .criterion(hasItem(Registration.UNLOCK_SCROLL_ITEM), conditionsFromItem(Registration.UNLOCK_SCROLL_ITEM))
+                                        .criterion(hasItem(Items.INK_SAC), conditionsFromItem(Items.INK_SAC))
+                                        .offerTo(exporter);
+                            }
+                        }
                     }
+
                 }
             }
 

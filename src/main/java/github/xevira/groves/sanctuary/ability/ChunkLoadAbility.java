@@ -20,7 +20,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     public static final long TICK_COST = 100L;
 
     public ChunkLoadAbility() {
-        super("chunk_load", true, true, false, false);
+        super("chunk_load", true, true, false, false, 5);
     }
 
     @Override
@@ -29,8 +29,16 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public @Nullable Item getRecipeIngredient() {
-        return Items.ENDER_PEARL;
+    public @Nullable Item getRecipeIngredient(int rank) {
+        return switch(rank)
+        {
+            case 1 -> Items.ENDER_PEARL;
+            case 2 -> Items.ENDER_EYE;
+            case 3 -> null;                 // TODO: Add the Ender Heart
+            case 4 -> null;
+            case 5 -> null;
+            default -> null;
+        };
     }
 
     @Override
@@ -39,7 +47,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public String getEnglishLoreTranslation() {
+    public String getEnglishLoreTranslation(int rank) {
         return  "Allows your Grove Sanctuary to load enabled chunks.";
     }
 
@@ -60,12 +68,26 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
 
     @Override
     public long startCost() {
-        return 100000L;
+        return switch(getRank())
+        {
+            case 2 -> 50000L;
+            case 3 -> 25000L;
+            case 4 -> 12500L;
+            case 5 -> 6250L;
+            default -> 100000L;
+        };
     }
 
     @Override
     public long tickCost() {
-        return 100L;
+        return switch(getRank())
+        {
+            case 2 -> 75L;
+            case 3 -> 50L;
+            case 4 -> 25L;
+            case 5 -> 10L;
+            default -> 100L;
+        };
     }
 
     @Override
@@ -90,7 +112,12 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     @Override
     protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         sanctuary.setChunkLoading(false);
-        player.sendMessage(Text.literal("Chunk loading in sanctuary deactivated."), false);
+
+        if (player == null)
+            player = sanctuary.getOwnerPlayer();
+
+        if (player != null)
+            player.sendMessage(Text.literal("Chunk loading in sanctuary deactivated."), false);
     }
 
     @Override

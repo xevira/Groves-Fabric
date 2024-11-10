@@ -92,9 +92,14 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         return this.sanctuary.getStoredSunlight();
     }
 
-    public long getMaxDarkness()
+    public long getMaxSunlight()
     {
-        return this.sanctuary.getMaxDarkness();
+        return this.sanctuary.getMaxStoredSunlight();
+    }
+
+    public long getTotalSunlight()
+    {
+        return this.sanctuary.getTotalSunlight();
     }
 
     public long getDarkness()
@@ -102,9 +107,14 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         return this.sanctuary.getDarkness();
     }
 
-    public long getMaxSunlight()
+    public long getMaxDarkness()
     {
-        return this.sanctuary.getMaxStoredSunlight();
+        return this.sanctuary.getMaxDarkness();
+    }
+
+    public long getTotalDarkness()
+    {
+        return this.sanctuary.getTotalDarkness();
     }
 
     public @Nullable BlockPos getMoonwell()

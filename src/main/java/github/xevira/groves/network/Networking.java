@@ -36,7 +36,16 @@ public class Networking {
         ClientPlayNetworking.registerGlobalReceiver(UpdateSunlightPayload.ID, (payload, context) -> {
             if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
             {
-                handler.setSunlight(payload.sunlight());
+                handler.getSanctuary().setStoredSunlight(payload.sunlight());
+                handler.getSanctuary().setTotalSunlight(payload.total());
+            }
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(UpdateDarknessPayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                handler.getSanctuary().setDarkness(payload.darkness());
+                handler.getSanctuary().setTotalDarkness(payload.total());
             }
         });
 
@@ -144,7 +153,7 @@ public class Networking {
         ClientPlayNetworking.registerGlobalReceiver(UpdateAbilityPayload.ID, (payload, context) -> {
             if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
             {
-                handler.getSanctuary().updateAbility(payload.name(), payload.active(), payload.start(), payload.end());
+                handler.getSanctuary().updateAbility(payload.name(), payload.active(), payload.start(), payload.end(), payload.rank());
             }
         });
     }
