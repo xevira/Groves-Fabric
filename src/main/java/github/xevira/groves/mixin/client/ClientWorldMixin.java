@@ -32,6 +32,7 @@ abstract class ClientWorldMixin extends World {
         super(properties, registryRef, registryManager, dimensionEntry, isClient, debugWorld, seed, maxChainedNeighborUpdates);
     }
 
+    /*
     // I do not like this... as it is not compatible with other mods
     @ModifyExpressionValue(method = "getSkyColor(Lnet/minecraft/util/math/Vec3d;F)I",
             at = @At(value = "INVOKE",
@@ -59,5 +60,23 @@ abstract class ClientWorldMixin extends World {
         vec3d2 = vec3d2.multiply((double)g);
 
         return ColorHelper.getArgb(vec3d2);
+    }
+
+     */
+
+    @Inject(method =  "getSkyColor(Lnet/minecraft/util/math/Vec3d;F)I", at = @At("RETURN"), cancellable = true)
+    private void getSkyColorMixin(Vec3d cameraPos, float tickDelta, CallbackInfoReturnable<Integer> clr)
+    {
+        BlockPos pos = new BlockPos(MathHelper.floor(cameraPos.x), MathHelper.floor(cameraPos.y), MathHelper.floor(cameraPos.z));
+        ChunkPos chunkPos = new ChunkPos(pos);
+        GrovesPOI.ClientGroveSanctuaryColorData colors = GrovesPOI.getChunkColors(this, chunkPos);
+
+        if (colors != null && colors.sky() >= 0)
+        {
+            int color = colors.sky() | 0xFF000000;  // Full alpha
+
+            // TODO: Make the 'delta' parameter a client setting.
+            clr.setReturnValue(ColorHelper.lerp(0.25f, clr.getReturnValue(), color));
+        }
     }
 }

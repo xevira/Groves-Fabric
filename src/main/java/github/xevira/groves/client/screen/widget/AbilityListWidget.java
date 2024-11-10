@@ -9,8 +9,12 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.PlayerSkinDrawer;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.SkinTextures;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -18,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 public class AbilityListWidget extends ClickableWidget {
-    public static final int ROW_HEIGHT = 16;
+    public static final int ROW_HEIGHT = 20;
 
     private final List<GroveAbility> abilities;
     private final TextRenderer textRenderer;
@@ -75,7 +79,7 @@ public class AbilityListWidget extends ClickableWidget {
             this.changed.onSelectionChanged();
     }
 
-    public @Nullable Iterable<GroveAbility> getSelected()
+    public Iterable<GroveAbility> getSelected()
     {
         return this.selected;
     }
@@ -135,7 +139,28 @@ public class AbilityListWidget extends ClickableWidget {
             context.fill(x, y, x + width, y + height, 0x7FFFFFFF);
         }
 
-        context.drawText(this.textRenderer, Groves.text("text", "ability." + ability.getName()), x + 2, y + (ROW_HEIGHT - this.textRenderer.fontHeight) / 2, 0x404040, false);
+        Identifier icon = Groves.id("textures/gui/sprites/abilities/" + ability.getName() + ".png");
+        int color = ability.isActive() ? 0xFFFFFFFF : 0xFF808080;
+        context.drawTexture(RenderLayer::getGuiTextured, icon, x + 2, y + 2, 0, 0, 16, 16, 16, 16, color);
+
+        // Do Cooldown overlay
+        World world = MinecraftClient.getInstance().world;
+        if (world != null) {
+            if (ability.inCooldown(world)) {
+                long total = ability.getEndCooldown() - ability.getStartCooldown();
+                long left = ability.getEndCooldown() - world.getTimeOfDay();
+
+                if (left > 0)
+                {
+                    int h = MathHelper.clamp(((int)(32 * left / total) + 1) / 2, 0, 16);
+
+                    context.fill(x + 2, y + 18 - h, x + 18, y + 18, 0x40FFFFFF);
+                }
+            }
+        }
+
+        int textColor = ability.isActive() ? 0xC0C0C0 : 0x404040;
+        context.drawText(this.textRenderer, Groves.text("text", "ability." + ability.getName()), x + 20, y + (ROW_HEIGHT - this.textRenderer.fontHeight) / 2, textColor, false);
 
         // What else is needed...
         // - Enabled

@@ -7,6 +7,7 @@ import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.sanctuary.ability.RegenerationAbility;
 import github.xevira.groves.sanctuary.ability.RestorationAbility;
+import github.xevira.groves.sanctuary.ability.SummonDruidAbility;
 import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -102,22 +103,53 @@ public class GroveAbilities {
             GroveAbility ability = ablityOpt.get();
             if (ability.isAutomatic()) {
                 if (ability.isActive()) {
-                    // Turn off
-                    ability.setActive(false);
-                    ability.onDeactivate(sanctuary.getServer(), sanctuary, player);
+                    ability.deactivate(sanctuary.getServer(), sanctuary, player);
                 } else if (ability.isEnabled()) {
-                    // Check if it can be turned on
-                    if (ability.canActivate(sanctuary.getServer(), sanctuary, player)) {
-                        ability.setActive(true);
-                        ability.activate(sanctuary.getServer(), sanctuary, player);
-                    } else
-                        ability.sendFailure(sanctuary.getServer(), sanctuary, player);
+                    ability.activate(sanctuary.getServer(), sanctuary, player);
                 }
             } else if (ability.isEnabled()) {
-                if (ability.canUse(sanctuary.getServer(), sanctuary, player))
-                    ability.use(sanctuary.getServer(), sanctuary, player);
-                else
-                    ability.sendFailure(sanctuary.getServer(), sanctuary, player);
+                ability.use(sanctuary.getServer(), sanctuary, player);
+            }
+        }
+    }
+
+    // Explicitly *starts* a grove ability
+    // If it is already started or is manual, ignore
+    public static void startAbility(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
+        if (ablityOpt.isPresent()) {
+            GroveAbility ability = ablityOpt.get();
+
+            if (ability.isAutomatic() && ability.isEnabled() && !ability.isActive())
+            {
+                ability.activate(sanctuary.getServer(), sanctuary, player);
+            }
+        }
+    }
+
+    public static void stopAbility(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
+        if (ablityOpt.isPresent()) {
+            GroveAbility ability = ablityOpt.get();
+
+            if (ability.isAutomatic() && ability.isEnabled() && ability.isActive())
+            {
+                ability.deactivate(sanctuary.getServer(), sanctuary, player);
+            }
+        }
+    }
+
+    public static void useAbility(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    {
+        Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
+        if (ablityOpt.isPresent()) {
+            GroveAbility ability = ablityOpt.get();
+
+            if (!ability.isAutomatic() && ability.isEnabled())
+            {
+                ability.use(sanctuary.getServer(), sanctuary, player);
             }
         }
     }
@@ -127,6 +159,7 @@ public class GroveAbilities {
         registerAbility(new ChunkLoadAbility());
         registerAbility(new RegenerationAbility());
         registerAbility(new RestorationAbility());
+        registerAbility(new SummonDruidAbility());
 
         // Place all generated UNLOCK scrolls into the item group after the blank unlock scroll.
         ItemGroupEvents.modifyEntriesEvent(RegistryKey.of(RegistryKeys.ITEM_GROUP, Groves.id("groves_items")))

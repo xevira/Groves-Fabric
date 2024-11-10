@@ -20,6 +20,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
+import javax.xml.stream.events.StartDocument;
 import java.util.Optional;
 
 public class Networking {
@@ -91,7 +92,17 @@ public class Networking {
         });
 
         ClientPlayNetworking.registerGlobalReceiver(SanctuaryEnterPayload.ID, (payload, context) -> {
+//            Groves.LOGGER.info("SanctuaryEnterPayload({}, {}, {}, {}, {})", payload.uuid(), payload.name(), payload.groveName(), payload.abandoned(), payload.entry());
+
             HudRenderEvents.setSanctuaryEntry(payload.uuid(), payload.name(), payload.groveName(), payload.abandoned(), payload.entry());
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(SanctuarySunlightPayload.ID, (payload, context) -> {
+            HudRenderEvents.setSunlightPercent(payload.sunlightPercent());
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(SanctuaryDarknessPayload.ID, (payload, context) -> {
+            HudRenderEvents.setDarknessPercent(payload.darknessPercent());
         });
 
         ClientPlayNetworking.registerGlobalReceiver(SetGroveNameResponsePayload.ID, (payload, context) -> {
@@ -129,6 +140,13 @@ public class Networking {
 
             GrovesPOI.SetChunkColors(worldKey, payload.chunks(), payload.colors());
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(UpdateAbilityPayload.ID, (payload, context) -> {
+            if (context.player().currentScreenHandler instanceof GrovesSanctuaryScreenHandler handler)
+            {
+                handler.getSanctuary().updateAbility(payload.name(), payload.active(), payload.start(), payload.end());
+            }
+        });
     }
 
     public static void register()
@@ -143,9 +161,13 @@ public class Networking {
         PayloadTypeRegistry.playC2S().register(SetGroveNamePayload.ID, SetGroveNamePayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(AddFriendPayload.ID, AddFriendPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(RemoveFriendPayload.ID, RemoveFriendPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(StartGroveAbitlityPayload.ID, StartGroveAbitlityPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(StopGroveAbitlityPayload.ID, StopGroveAbitlityPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(UseGroveAbitlityPayload.ID, UseGroveAbitlityPayload.PACKET_CODEC);
 
         // - Server -> Client
         PayloadTypeRegistry.playS2C().register(UpdateSunlightPayload.ID, UpdateSunlightPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(UpdateDarknessPayload.ID, UpdateDarknessPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdateTotalFoliagePayload.ID, UpdateTotalFoliagePayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdateMoonwellPayload.ID, UpdateMoonwellPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(ClaimChunkResponsePayload.ID, ClaimChunkResponsePayload.PACKET_CODEC);
@@ -158,6 +180,10 @@ public class Networking {
         PayloadTypeRegistry.playS2C().register(AddFriendResponsePayload.ID, AddFriendResponsePayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(RemoveFriendResponsePayload.ID, RemoveFriendResponsePayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(SyncChunkColorsPayload.ID, SyncChunkColorsPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SyncSanctuariesPayload.ID, SyncSanctuariesPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SanctuarySunlightPayload.ID, SanctuarySunlightPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SanctuaryDarknessPayload.ID, SanctuaryDarknessPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(UpdateAbilityPayload.ID, UpdateAbilityPayload.PACKET_CODEC);
 
         // Packet Handlers
         // - Server Side
@@ -232,6 +258,24 @@ public class Networking {
             Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> groveSanctuary.removeFriend(context.player(), payload.uuid()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(StartGroveAbitlityPayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+
+            sanctuary.ifPresent(groveSanctuary -> GroveAbilities.startAbility(payload.name(), groveSanctuary, context.player()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(StopGroveAbitlityPayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+
+            sanctuary.ifPresent(groveSanctuary -> GroveAbilities.stopAbility(payload.name(), groveSanctuary, context.player()));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(UseGroveAbitlityPayload.ID, (payload, context) -> {
+            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+
+            sanctuary.ifPresent(groveSanctuary -> GroveAbilities.useAbility(payload.name(), groveSanctuary, context.player()));
         });
     }
 }

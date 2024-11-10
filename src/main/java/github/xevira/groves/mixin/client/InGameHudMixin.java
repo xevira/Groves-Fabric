@@ -17,6 +17,6 @@ public class InGameHudMixin {
     @Inject(method = "tick()V", at = @At("TAIL"))
     private void tickMixin(CallbackInfo cb)
     {
-        HudRenderEvents.handleSanctuaryEntryTick();
+        HudRenderEvents.handleTick();
     }
 }

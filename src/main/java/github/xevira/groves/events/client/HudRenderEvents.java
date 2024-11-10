@@ -1,14 +1,17 @@
 package github.xevira.groves.events.client;
 
 import github.xevira.groves.Groves;
+import github.xevira.groves.util.ColorPulser;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +19,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class HudRenderEvents {
+
+    private static final Identifier METER_OVERLAY = Groves.id("textures/gui/hud/meter_overlay.png");
 
     private static int sanctuaryRemainingTicks = 0;
     private static int lastAlpha = 255;
@@ -33,9 +38,23 @@ public class HudRenderEvents {
     private static Formatting othersColor = Formatting.YELLOW;
     private static Formatting yourColor = Formatting.GREEN;
 
+    private static int sunlightPercent = -1;
+    private static int darknessPercent = -1;
+
+    private static final ColorPulser darknessColor = new ColorPulser(0xFF400040, 0xFF800080, 0.025f);
+
+    public static void setSunlightPercent(int percent)
+    {
+        sunlightPercent = Math.min(percent, 100);
+    }
+
+    public static void setDarknessPercent(int percent)
+    {
+        darknessPercent = Math.min(percent, 100);
+    }
+
     public static void setSanctuaryEntry(UUID uuid, String name, String groveName, boolean abandoned, boolean entry)
     {
-        Groves.LOGGER.info("setSanctuaryEntry({}, {}, {}, {}, {})", uuid, name, groveName, abandoned, entry);
         if (entry) {
             // When you *ENTER* the particular sanctuary
             if (abandoned) {
@@ -84,7 +103,7 @@ public class HudRenderEvents {
         lastAlpha = 255;
     }
 
-    public static void handleSanctuaryEntryTick()
+    public static void handleTick()
     {
         if (sanctuaryRemainingTicks > 0)
         {
@@ -94,6 +113,8 @@ public class HudRenderEvents {
                 sanctuaryMessage = null;
             }
         }
+
+        darknessColor.tick();
     }
 
     public static void renderSanctuaryEntry(DrawContext context, RenderTickCounter tickCounter)
@@ -137,5 +158,23 @@ public class HudRenderEvents {
                 sanctuaryMessage = null;
             }
         }
+    }
+
+    public static void renderSanctuaryMeters(DrawContext context, RenderTickCounter tickCounter)
+    {
+        if (sunlightPercent >= 0)
+        {
+            context.fill(3, 59 - (sunlightPercent/2), 15, 59, 0xFFFFFF00);
+            context.drawTexture(RenderLayer::getGuiTextured, METER_OVERLAY, 1, 1, 32, 0, 16, 66, 64, 66);
+            context.drawTexture(RenderLayer::getGuiTextured, METER_OVERLAY, 1, 1, 0, 0, 16, 66, 64, 66);
+        }
+
+        if (darknessPercent > 0)    // Will only show *IF* the sanctuary has dabbled into darkness.  If it's still at 0, it won't show
+        {
+            context.drawTexture(RenderLayer::getGuiTextured, METER_OVERLAY, 18, 1, 48, 0, 16, 66, 64, 66);
+            context.fill(20, 59 - (darknessPercent/2), 32, 59, darknessColor.getColor());
+            context.drawTexture(RenderLayer::getGuiTextured, METER_OVERLAY, 18, 1, 16, 0, 16, 66, 64, 66);
+        }
+
     }
 }

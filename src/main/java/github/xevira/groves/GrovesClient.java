@@ -12,7 +12,6 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.RenderLayer;
@@ -44,6 +43,7 @@ public class GrovesClient implements ClientModInitializer {
 
         // HudRenderers
         HudRenderCallback.EVENT.register(HudRenderEvents::renderSanctuaryEntry);
+        HudRenderCallback.EVENT.register(HudRenderEvents::renderSanctuaryMeters);
 
         // Keybinds
         KeyInputHandler.load();

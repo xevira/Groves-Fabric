@@ -3,6 +3,7 @@ package github.xevira.groves.screenhandler;
 import github.xevira.groves.Registration;
 import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.util.ISlotVisibility;
 import github.xevira.groves.util.ScreenTab;
 import net.minecraft.entity.player.PlayerEntity;
@@ -91,6 +92,16 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         return this.sanctuary.getStoredSunlight();
     }
 
+    public long getMaxDarkness()
+    {
+        return this.sanctuary.getMaxDarkness();
+    }
+
+    public long getDarkness()
+    {
+        return this.sanctuary.getDarkness();
+    }
+
     public long getMaxSunlight()
     {
         return this.sanctuary.getMaxStoredSunlight();
@@ -175,6 +186,11 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
 
     //
     // -- Abiliies
+
+    public List<GroveAbility> getAbilities()
+    {
+        return this.sanctuary.getAbilities();
+    }
 
     //
     // -- Keybinds (All client side processing)

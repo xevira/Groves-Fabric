@@ -3,17 +3,12 @@ package github.xevira.groves.client.screen.widget;
 import github.xevira.groves.Groves;
 import github.xevira.groves.util.ScreenTab;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +57,11 @@ public abstract class TabControlWidget extends ClickableWidget {
     {
         this.visible = visible;
         this.children.forEach(element -> element.visible = visible);
+    }
+
+    public void tick()
+    {
+
     }
 
     @Override

@@ -4,6 +4,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"PlayerManagerMixin",
+		"block.PowderSnowBlockMixin",
+		"entity.ServerPlayerEntityMixin",
 		"fluid.BoatDispenserBehaviorMixin",
 		"fluid.AbstractBoatEntityMixin",
 		"fluid.BucketItemMixin",

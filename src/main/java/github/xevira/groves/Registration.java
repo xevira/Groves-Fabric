@@ -43,6 +43,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
@@ -550,6 +551,7 @@ public class Registration {
     public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
     public static final SoundEvent MOONWELL_DEACTIVATE_SOUND = register("moonwell_deactivate");
     public static final SoundEvent INTO_THE_HEART_OF_THE_UNIVERSE_SOUND = register("into_the_heart_of_the_universe");
+    public static final RegistryEntry<SoundEvent> MACE_THUNDERING_SOUND = registerReference("mace_thundering");
 
     // Tags
     // -- Block
@@ -642,7 +644,9 @@ public class Registration {
 
     public static final MapCodec<SolarRepairEnchantmentEffect> SOLAR_REPAIR_ENCHANTMENT_CODEC = register("solar_repair", SolarRepairEnchantmentEffect.CODEC);
 
+    public static final RegistryKey<Enchantment> LIGHT_FOOTED_ENCHANTMENT_KEY = RegistryKey.of(RegistryKeys.ENCHANTMENT, Groves.id("light_footed"));
     public static final RegistryKey<Enchantment> SOLAR_REPAIR_ENCHANTMENT_KEY = RegistryKey.of(RegistryKeys.ENCHANTMENT, Groves.id("solar_repair"));
+    public static final RegistryKey<Enchantment> THUNDERING_ENCHANTMENT_KEY = RegistryKey.of(RegistryKeys.ENCHANTMENT, Groves.id("thundering"));
 
     // Registration Functions
     public static Block register(RegistryKey<Block> key, Function<AbstractBlock.Settings, Block> factory, AbstractBlock.Settings settings) {
@@ -737,6 +741,12 @@ public class Registration {
         Identifier id = Groves.id(name);
         return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
     }
+
+    private static RegistryEntry.Reference<SoundEvent> registerReference(String name) {
+        Identifier id = Groves.id(name);
+        return Registry.registerReference(Registries.SOUND_EVENT, id, SoundEvent.of(id));
+    }
+
 
     public static <T extends ScreenHandler, D extends CustomPayload> ExtendedScreenHandlerType<T, D> register(String name, ExtendedScreenHandlerType.ExtendedFactory<T, D> factory, PacketCodec<? super RegistryByteBuf, D> codec) {
         return Registry.register(Registries.SCREEN_HANDLER, Groves.id(name), new ExtendedScreenHandlerType<>(factory, codec));

@@ -2,6 +2,7 @@ package github.xevira.groves.sanctuary.ability;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import github.xevira.groves.Groves;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.util.JSONHelper;
@@ -17,14 +18,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public class SummonDruidAbility extends GroveAbility.ManualGroveAbility {
-    private static final Random rng = Random.create();
-
+public class SummonDruidAbility extends GroveAbility {
     private long waitSeconds = -1L;
     private long lastSummonTime = -1L;
 
+    // Special case Manual
     public SummonDruidAbility() {
-        super("summon_druid", true, true, false);
+        super("summon_druid", false, true, true, true, false);
     }
 
     @Override
@@ -70,23 +70,27 @@ public class SummonDruidAbility extends GroveAbility.ManualGroveAbility {
     @Override
     protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
         this.waitSeconds = rng.nextBetween(15, 30);
+        Groves.LOGGER.info("SummonDruid: waitSeconds = {}", this.waitSeconds);
     }
 
     @Override
     protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+        this.lastSummonTime = sanctuary.getWorld().getTimeOfDay();
+        ServerPlayerEntity owner = sanctuary.getOwnerPlayer();
         // Summon the druid
-        player.sendMessage(Text.literal("A wandering druid appears!  ").append(Text.literal("*TADA!*").formatted(Formatting.GREEN, Formatting.ITALIC)), false);
+        if (owner != null)
+            owner.sendMessage(Text.literal("A wandering druid appears!  ").append(Text.literal("*TADA!*").formatted(Formatting.GREEN, Formatting.ITALIC)), false);
     }
 
     @Override
     protected void onDeactivateCooldown(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
-        int days = 1;//rng.nextBetween(1, 4);
+        int days = rng.nextBetween(1, 4);
 
         ServerWorld world = sanctuary.getWorld();
         long time = world.getTimeOfDay();
 
         // Back to the last dawn, then add DAYS days.
-        setCooldown(time - (time % 24000) + days * 24000L);
+        setCooldown(world, days * 24000L - (time % 24000));
     }
 
     @Override
@@ -96,7 +100,7 @@ public class SummonDruidAbility extends GroveAbility.ManualGroveAbility {
 
     @Override
     public boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
-        return !isActive() && !hasCooldown();
+        return !isActive() && !inCooldown(sanctuary.getWorld());
     }
 
     @Override
@@ -106,9 +110,7 @@ public class SummonDruidAbility extends GroveAbility.ManualGroveAbility {
     }
 
     @Override
-    public JsonObject serialize() {
-        JsonObject json = super.serialize();
-
+    public void serializeExtra(JsonObject json) {
         JsonObject extra = new JsonObject();
 
         if (this.waitSeconds > 0)
@@ -118,8 +120,6 @@ public class SummonDruidAbility extends GroveAbility.ManualGroveAbility {
             extra.add("lastSummonTime", new JsonPrimitive(this.lastSummonTime));
 
         json.add("extra", extra);
-
-        return json;
     }
 
     @Override

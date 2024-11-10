@@ -4,12 +4,14 @@ import com.google.gson.*;
 import github.xevira.groves.Groves;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static github.xevira.groves.Groves.GSON;
 
@@ -202,6 +204,15 @@ public class JSONHelper {
         return data;
     }
 
+    public static int getInt(JsonObject json, String key, int defaultValue, int minValue, int maxValue)
+    {
+        AtomicReference<Integer> value = new AtomicReference<>(defaultValue);
+
+        getInt(json, key).ifPresent(aInteger -> value.set(MathHelper.clamp(aInteger, minValue, maxValue)));
+
+        return value.get();
+    }
+
     public static Optional<Long> getLong(JsonObject json, String key)
     {
         if (json.has(key))
@@ -219,6 +230,15 @@ public class JSONHelper {
         }
 
         return Optional.empty();
+    }
+
+    public static long getLong(JsonObject json, String key, long defaultValue, long minValue, long maxValue)
+    {
+        AtomicReference<Long> value = new AtomicReference<>(defaultValue);
+
+        getLong(json, key).ifPresent(aLong -> value.set(MathHelper.clamp(aLong, minValue, maxValue)));
+
+        return value.get();
     }
 
     public static Optional<Float> getFloat(JsonObject json, String key)
@@ -240,6 +260,15 @@ public class JSONHelper {
         return Optional.empty();
     }
 
+    public static float getFloat(JsonObject json, String key, float defaultValue, float minValue, float maxValue)
+    {
+        AtomicReference<Float> value = new AtomicReference<>(defaultValue);
+
+        getFloat(json, key).ifPresent(aFloat -> value.set(MathHelper.clamp(aFloat, minValue, maxValue)));
+
+        return value.get();
+    }
+
     public static Optional<Double> getDouble(JsonObject json, String key)
     {
         if (json.has(key))
@@ -257,6 +286,16 @@ public class JSONHelper {
         }
 
         return Optional.empty();
+    }
+
+
+    public static double getDouble(JsonObject json, String key, double defaultValue, double minValue, double maxValue)
+    {
+        AtomicReference<Double> value = new AtomicReference<>(defaultValue);
+
+        getDouble(json, key).ifPresent(aDouble -> value.set(MathHelper.clamp(aDouble, minValue, maxValue)));
+
+        return value.get();
     }
 
     public static Optional<Integer> JsonToColor(JsonObject json, String key)

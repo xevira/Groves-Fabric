@@ -159,7 +159,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
             }
         }
 
+        translationBuilder.addEnchantment(Registration.LIGHT_FOOTED_ENCHANTMENT_KEY, "Light Footed");
         translationBuilder.addEnchantment(Registration.SOLAR_REPAIR_ENCHANTMENT_KEY, "Solar Repair");
+        translationBuilder.addEnchantment(Registration.THUNDERING_ENCHANTMENT_KEY, "Thundering");
 
         addText(translationBuilder, MoonwellMultiblockMasterBlockEntity.TITLE, "Moonwell");
         addText(translationBuilder, GrovesPOI.GroveSanctuary.TITLE, "Grove Sanctuary");
@@ -185,6 +187,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
 
         addText(translationBuilder, "sound", "moonwell.activate", "Moonwell activates");
         addText(translationBuilder, "sound", "moonwell.deactivate", "Moonwell deactivates");
+        addText(translationBuilder, "sound", "mace.thundering", "Mace thunders");
 
         addText(translationBuilder, "text", "imprinting.already_exists", "§cThere is already a Grove Sanctuary here.§r");
         addText(translationBuilder, "text", "imprinting.has_grove", "§cYou already possess a Grove Sanctuary.§r");
@@ -201,7 +204,9 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "label", "groves.foliage", "Foliage:");
         addText(translationBuilder, "text", "groves.foliage", "%s leaf block%s");
         addText(translationBuilder, "label", "groves.sunlight", "Sunlight:");
+        addText(translationBuilder, "label", "groves.darkness", "Darkness:");
         addText(translationBuilder, "tooltip", "groves.sunlight", "Total Sunlight: %s (%s%%)");
+        addText(translationBuilder, "tooltip", "groves.darkness", "Total Darkness: %s (%s%%)");
         addText(translationBuilder, "label", "groves.moonwell", "Moonwell:");
         addText(translationBuilder, "text", "groves.moonwell", "(%s, %s, %s)");
         addText(translationBuilder, "text", "groves.no_moonwell", "None");
@@ -229,6 +234,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "key", "groves_ability_chunk_load", "Toggle Grove Chunk Loading");
         addText(translationBuilder, "key", "groves_ability_regeneration", "Toggle Grove Regeneration");
 
+        addText(translationBuilder, "text", "ability.on_cooldown.suffix", " is on cooldown.");
         addText(translationBuilder, "text", "ability.not_enough_sunlight.activate", "Not enough sunlight.  Need %s to activate.");
         addText(translationBuilder, "text", "ability.not_enough_sunlight.use", "Not enough sunlight.  Need %s to use.");
         addText(translationBuilder, "text", "ability.empty_hand", "Nothing in your main hand to restore.");
@@ -240,6 +246,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "text", "ability.chunk_load", "Chunk Loading");
         addText(translationBuilder, "text", "ability.regeneration", "Regeneration");
         addText(translationBuilder, "text", "ability.restoration", "Restoration");
+        addText(translationBuilder, "text", "ability.summon_druid", "Summon Druid");
 
         addText(translationBuilder, "tooltip", "groves.chunk.location", "X = %s, Z = %s");
         addText(translationBuilder, "tooltip", "groves.chunk.available", "Available");
@@ -276,5 +283,15 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "gui", "sanctuary.entered.claimed.named", "Entering %s's %s");
         addText(translationBuilder, "gui", "sanctuary.entered.yours", "Entering Your Sanctuary");
         addText(translationBuilder, "gui", "sanctuary.entered.yours.named", "Entering %s");
+
+        addText(translationBuilder, "error", "already.friend", "Player is already a friend.");
+        addText(translationBuilder, "error", "player.not.found", "Player does not exist.");
+        addText(translationBuilder, "error", "player.not.friend", "Player is not a friend.");
+
+        addText(translationBuilder, "error", "ability.on_cooldown.suffix", " is on cooldown.");
+
+        addText(translationBuilder, "button", "start", "On");
+        addText(translationBuilder, "button", "stop", "Off");
+        addText(translationBuilder, "button", "use", "Use");
     }
 }

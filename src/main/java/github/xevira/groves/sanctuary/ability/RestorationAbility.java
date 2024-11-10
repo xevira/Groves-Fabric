@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,13 +66,13 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
 
         // Empty hand
         if (stack.isEmpty())
-            player.sendMessage(Groves.text("text", "ability.empty_hand"), false);
+            sendError(player, Groves.text("text", "ability.empty_hand"), false);
         else if (!stack.isDamageable())
-            player.sendMessage(Groves.text("text", "ability.no_durability"), false);
+            sendError(player, Groves.text("text", "ability.no_durability"), false);
         else if (!stack.isDamaged())
-            player.sendMessage(Groves.text("text", "ability.no_damage"), false);
+            sendError(player, Groves.text("text", "ability.no_damage"), false);
         else {
-            player.sendMessage(Groves.text("text", "ability.not_enough_sunlight.use", useCost()), false);
+            sendError(player, Groves.text("text", "ability.not_enough_sunlight.use", useCost()), false);
         }
     }
 

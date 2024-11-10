@@ -11,6 +11,7 @@ import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
@@ -74,7 +75,7 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
 
     @Override
     public void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
-        player.sendMessage(Groves.text("text", "ability.not_enough_sunlight.activate", startCost()), false);
+        sendError(player, Groves.text("text", "ability.not_enough_sunlight.activate", startCost()), false);
     }
 
     @Override

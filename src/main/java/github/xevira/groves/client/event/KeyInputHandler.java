@@ -29,6 +29,7 @@ public class KeyInputHandler {
     public static final HotKey CHUNK_LOAD_ABILITY = new HotKey.AbilityHotKey("ability_chunk_load", "chunk_load", "G,C");
     public static final HotKey REGENERATION_ABILITY = new HotKey.AbilityHotKey("ability_regeneration", "regeneration", "G,R");
     public static final HotKey RESTORATION_ABILITY = new HotKey.AbilityHotKey("ability_restoration", "restoration", "G,M");
+    public static final HotKey SUMMON_DRUID_ABILITY = new HotKey.AbilityHotKey("ability_summon_druid", "summon_druid", "G,D");
 
     public static void registerHotKey(HotKey key)
     {

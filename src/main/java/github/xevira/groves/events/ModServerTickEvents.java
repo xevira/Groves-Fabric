@@ -1,16 +1,17 @@
 package github.xevira.groves.events;
 
+import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.ServerConfig;
 import github.xevira.groves.item.MoonPhialItem;
+import github.xevira.groves.network.SanctuaryDarknessPayload;
 import github.xevira.groves.network.SanctuaryEnterPayload;
+import github.xevira.groves.network.SanctuarySunlightPayload;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.util.EnchantHelper;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -18,17 +19,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class ModServerTickEvents {
-    private static Map<UUID, PlayerTracking> PLAYER_TRACKING = new HashMap<>();
+    private static final Map<UUID, PlayerTracking> PLAYER_TRACKING = new HashMap<>();
 
-    private static Random RNG = Random.create();
+    private static final Random RNG = Random.create();
 
     public static void onServerStarted(MinecraftServer server)
     {
@@ -42,6 +41,7 @@ public class ModServerTickEvents {
 
         boolean entry;
         PlayerTracking tracking;
+        GrovesPOI.GroveSanctuary newSanctuary = GrovesPOI.getSanctuary(player.getServerWorld(), newChunk).orElse(null);
 
         if (PLAYER_TRACKING.containsKey(player.getUuid()))
         {
@@ -49,10 +49,14 @@ public class ModServerTickEvents {
             tracking = PLAYER_TRACKING.get(player.getUuid());
 
             // Same world&chunk as before
-            if (tracking.world == player.getServerWorld() && newChunk.equals(tracking.chunk)) return;
-
-            tracking.world = player.getServerWorld();
-            tracking.chunk = newChunk;
+            if (tracking.world == player.getServerWorld() && newChunk.equals(tracking.chunk)) {
+                if (tracking.sanctuary != newSanctuary)
+                    entry = false;
+            }
+            else {
+                tracking.world = player.getServerWorld();
+                tracking.chunk = newChunk;
+            }
         }
         else
         {
@@ -62,18 +66,37 @@ public class ModServerTickEvents {
             PLAYER_TRACKING.put(player.getUuid(), tracking);
         }
 
-        GrovesPOI.GroveSanctuary newSanctuary = GrovesPOI.getSanctuary(player.getServerWorld(), newChunk).orElse(null);
+        int sunlight;
+        int darkness;
 
-        GrovesPOI.GroveSanctuary oldSanctuary = tracking.sanctuary;
+        if (newSanctuary != null && newSanctuary.isOwner(player))
+        {
+            sunlight = newSanctuary.getSunlightPercent();
+            darkness = newSanctuary.getDarknessPercent();
+        }
+        else
+        {
+            sunlight = -1;
+            darkness = -1;
+        }
 
-        // Same sanctuary as before
-        if (newSanctuary == oldSanctuary)
-            return;
+        if (tracking.sanctuary != newSanctuary) {
+            tracking.sanctuary = newSanctuary;
 
-        tracking.sanctuary = newSanctuary;
+            if (newSanctuary != null) {
+                ServerPlayNetworking.send(player, new SanctuaryEnterPayload(newSanctuary.getOwner(), newSanctuary.getOwnerName(), newSanctuary.getGroveName(), newSanctuary.isAbandoned(), entry));
+            }
+        }
 
-        if (newSanctuary != null)
-            ServerPlayNetworking.send(player, new SanctuaryEnterPayload(newSanctuary.getOwner(), newSanctuary.getOwnerName(), newSanctuary.getGroveName(), newSanctuary.isAbandoned(), entry));
+        if (tracking.sunlightPercent != sunlight) {
+            tracking.sunlightPercent = sunlight;
+            ServerPlayNetworking.send(player, new SanctuarySunlightPayload(sunlight));
+        }
+
+        if (tracking.darknessPercent != darkness) {
+            tracking.darknessPercent = darkness;
+            ServerPlayNetworking.send(player, new SanctuaryDarknessPayload(darkness));
+        }
     }
 
     public static void onEndServerTick(MinecraftServer server)
@@ -112,22 +135,6 @@ public class ModServerTickEvents {
         return world.isSkyVisible(player.getBlockPos());
     }
 
-    private static int getSolarRepair(ItemStack stack)
-    {
-        ItemEnchantmentsComponent enchants = stack.getEnchantments();
-        if (enchants == null || enchants.isEmpty()) return 0;
-
-        for(Entry<RegistryEntry<Enchantment>> enchant : enchants.getEnchantmentEntries())
-        {
-            RegistryEntry<Enchantment> registryEntry = enchant.getKey();
-
-            if (registryEntry.getKey().isPresent() && registryEntry.getKey().get().equals(Registration.SOLAR_REPAIR_ENCHANTMENT_KEY))
-                return enchant.getIntValue();
-        }
-
-        return 0;
-    }
-
     private static void processSolarRepair(ServerPlayerEntity player)
     {
         PlayerInventory inventory = player.getInventory();
@@ -138,8 +145,7 @@ public class ModServerTickEvents {
 
             if (stack.isEmpty() || !stack.isDamageable() || !stack.isDamaged()) continue;
 
-            int solarRepair = getSolarRepair(stack);
-
+            int solarRepair = EnchantHelper.getEnchantLevel(stack, Registration.SOLAR_REPAIR_ENCHANTMENT_KEY);
             if (solarRepair > 0)
             {
                 float chance = ServerConfig.getSolarRepairBaseChance() + (solarRepair - 1) * ServerConfig.getSolarRepairExtraChance();
@@ -167,13 +173,16 @@ public class ModServerTickEvents {
         public ServerWorld world;
         public ChunkPos chunk;
         public GrovesPOI.GroveSanctuary sanctuary;
+        public int sunlightPercent;
+        public int darknessPercent;
 
         public PlayerTracking(ServerWorld world, ChunkPos pos)
         {
             this.world = world;
             this.chunk = pos;
             this.sanctuary = null;
+            this.sunlightPercent = -1;
+            this.darknessPercent = -1;
         }
-
     }
 }
