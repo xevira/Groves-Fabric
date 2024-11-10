@@ -69,6 +69,7 @@ public class ServerConfig {
     {
         this.costMap.clear();
         this.costMap.put("baseClaimChunk", 50000L);
+        this.costMap.put("formMoonwell", 100000L);
     }
 
     private long getCost(String name)
@@ -292,6 +293,7 @@ public class ServerConfig {
     public static int maxDarkness() { return currentConfig.maxDarkness; }
 
     public static long getBaseCostClaimChunk() { return currentConfig.getCost("baseClaimChunk"); }
+    public static long getFormMoonwellCost() { return currentConfig.getCost("formMoonwell"); }
 
     public static int getFoliagePower(Block block) {
         Optional<RegistryKey<Block>> key = Registries.BLOCK.getKey(block);

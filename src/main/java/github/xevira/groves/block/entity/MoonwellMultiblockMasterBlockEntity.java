@@ -2,13 +2,11 @@ package github.xevira.groves.block.entity;
 
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
-import github.xevira.groves.network.BlockPosPayload;
 import github.xevira.groves.network.MoonwellScreenPayload;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.ServerTickableBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.base.SingleFluidStorage;
@@ -53,6 +51,8 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
 
     private boolean was_day = false;
     private int last_phase = 8;
+
+    private GrovesPOI.GroveSanctuary sanctuary = null;
 
     private final PropertyDelegate propertyDelegate = new PropertyDelegate() {
         @Override
@@ -135,33 +135,77 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
         return (int) (100 * this.fluidStorage.getAmount() / this.fluidStorage.getCapacity());
     }
 
+    public void drainMoonlight(long amount)
+    {
+        try (Transaction transaction = Transaction.openOuter()) {
+            long extracted = this.fluidStorage.extract(MOONLIGHT, amount, transaction);
+
+            if (extracted > 0) {
+                transaction.commit();
+                markDirty();
+            }
+        }
+    }
+
+    private void processDraining()
+    {
+        // No sanctuary, it rapidly dissipate
+        if (this.sanctuary == null) {
+            drainMoonlight(100L);
+        }
+
+        // If it is abandoned, it will slowly leak
+        else if (this.sanctuary.isAbandoned())
+        {
+            drainMoonlight(1L);
+        }
+    }
+
+    private void collectMoonlight()
+    {
+        // No sanctuary, it will not function
+        if (this.sanctuary == null) return;
+
+        if (!this.sanctuary.isAbandoned())
+        {
+            if (this.world.getDimension().hasFixedTime()) return;
+            // If not at build height, check if the moonwell can even *see* the sky
+            if (this.pos.getY() < (this.world.getTopYInclusive() - 1) && !this.world.isSkyVisible(this.pos)) return;
+
+            // Only do this once a second
+            if (this.world.getTime() % 20 != 0) return;
+
+            int phase = this.world.getMoonPhase();
+            if (!this.world.isDay()) {
+                int power = 100 + this.getTotalDecorations() * 2;
+
+                int fill = PHASE_RATES[phase] * power / 100;
+
+                try (Transaction transaction = Transaction.openOuter()) {
+                    long inserted = this.fluidStorage.insert(MOONLIGHT, fill, transaction);
+
+                    if (inserted > 0) {
+                        transaction.commit();
+                        markDirty();
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void serverTick() {
         if (this.world == null) return;
 
-        if (this.world.getDimension().hasFixedTime()) return;
-        // If not at build height, check if the moonwell can even *see* the sky
-        if (this.pos.getY() < (this.world.getTopYInclusive() - 1) && !this.world.isSkyVisible(this.pos)) return;
+        // Automatically grab the sanctuary if it's tied to one.
+        if (this.sanctuary == null)
+            this.sanctuary = GrovesPOI.getSanctuary(this.world, this.pos).orElse(null);
 
-        // Only do this once a second
-        if (this.world.getTime() % 20 != 0) return;
+        processDraining();
+        collectMoonlight();
 
+        // Keep listeners updated
         int phase = this.world.getMoonPhase();
-        if (!this.world.isDay()) {
-            int power = 100 + this.getTotalDecorations() * 2;
-
-            int fill = PHASE_RATES[phase] * power / 100;
-
-            try (Transaction transaction = Transaction.openOuter()) {
-                long inserted = this.fluidStorage.insert(MOONLIGHT, fill, transaction);
-
-                if (inserted > 0) {
-                    transaction.commit();
-                    markDirty();
-                }
-            }
-        }
-
         if (this.was_day != this.world.isDay() || this.last_phase != phase)
         {
             this.was_day = this.world.isDay();

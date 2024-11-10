@@ -9,6 +9,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import github.xevira.groves.Groves;
 import github.xevira.groves.ServerConfig;
+import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
+import github.xevira.groves.block.entity.MoonwellMultiblockSlaveBlockEntity;
 import github.xevira.groves.network.*;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;

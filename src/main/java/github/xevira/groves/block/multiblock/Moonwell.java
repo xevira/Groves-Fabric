@@ -4,6 +4,7 @@ import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import github.xevira.groves.block.entity.MoonwellMultiblockSlaveBlockEntity;
+import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.util.QuintConsumer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

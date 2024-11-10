@@ -2,6 +2,7 @@ package github.xevira.groves.item;
 
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
+import github.xevira.groves.ServerConfig;
 import github.xevira.groves.block.multiblock.Moonwell;
 import github.xevira.groves.poi.GrovesPOI;
 import net.fabricmc.api.EnvType;
@@ -114,8 +115,13 @@ public class MoonPhialItem extends Item {
                             player.sendMessage(MOONWELL_EXISTS_TEXT, false);
                             return ActionResult.FAIL;
 
+                        } else if (sanctuary.getStoredSunlight() < ServerConfig.getFormMoonwellCost()) {
+                            player.sendMessage(MOONWELL_EXISTS_TEXT, false);
+                            return ActionResult.FAIL;
+
                         } else if (Moonwell.tryForm(player, world, pos)) {
                             sanctuary.setMoonwell(pos);
+                            sanctuary.useSunlight(ServerConfig.getFormMoonwellCost());
                             context.getStack().decrementUnlessCreative(1, player);
                             world.playSound(null, pos, Registration.MOONWELL_ACTIVATE_SOUND, SoundCategory.BLOCKS, 1.0f, 1.0f);
                         }
