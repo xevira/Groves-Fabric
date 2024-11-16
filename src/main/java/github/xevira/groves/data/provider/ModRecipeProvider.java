@@ -158,9 +158,14 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 generateLunarCycleStonecutting(RecipeCategory.BUILDING_BLOCKS, Registration.MOONSTONE_BRICKS_BLOCK, CHISELED_MOONSTONE);
             }
 
+            private void smelt(List<ItemConvertible> inputs, RecipeCategory category, ItemConvertible output, float experience, int cookingTime, String group)
+            {
+                offerSmelting(inputs, category, output, experience, cookingTime, group);
+                offerBlasting(inputs, category, output, 0.5f * experience, cookingTime / 2, group);
+            }
+
             @Override
             public void generate() {
-//                RegistryEntryLookup<Item> itemLookup = wrapperLookup.getOrThrow(RegistryKeys.ITEM);
 
                 generateMoonstoneRecipes();
                 generateUnlockScrollRecipes();
@@ -171,8 +176,13 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                         .offerTo(exporter);
 
                 ImmutableList<ItemConvertible> AQUAMARINE_ORES = ImmutableList.of(Registration.AQUAMARINE_ORE_ITEM, Registration.DEEPSLATE_AQUAMARINE_ORE_ITEM);
-                offerSmelting(AQUAMARINE_ORES, RecipeCategory.MISC, Registration.AQUAMARINE_ITEM, 1.0F, 200, "aquamarine");
+                smelt(AQUAMARINE_ORES, RecipeCategory.MISC, Registration.AQUAMARINE_ITEM, 1.0F, 200, "aquamarine");
                 offerReversibleCompactingRecipesWithReverseRecipeGroup(RecipeCategory.MISC, Registration.AQUAMARINE_ITEM, RecipeCategory.BUILDING_BLOCKS, Registration.AQUAMARINE_BLOCK_ITEM, "aquamarine_from_aquamarine_block", "aquamarine");
+
+                ImmutableList<ItemConvertible> IRONWOOD_SHARDS = ImmutableList.of(Registration.IRONWOOD_SHARD_ITEM);
+                smelt(IRONWOOD_SHARDS, RecipeCategory.MISC, Items.IRON_NUGGET, 1.0F, 200, "ironwood_shard");
+
+
             }
         };
     }

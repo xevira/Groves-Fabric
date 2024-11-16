@@ -3,7 +3,6 @@ package github.xevira.groves;
 import com.mojang.serialization.MapCodec;
 import github.xevira.groves.block.*;
 import github.xevira.groves.block.entity.*;
-import github.xevira.groves.enchantment.effects.SolarRepairEnchantmentEffect;
 import github.xevira.groves.fluid.BlessedMoonWaterFluid;
 import github.xevira.groves.fluid.FluidSystem;
 import github.xevira.groves.fluid.MoonlightFluid;
@@ -17,6 +16,8 @@ import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
+import github.xevira.groves.worldgen.foliage.SanctumFoliagePlacer;
+import github.xevira.groves.worldgen.trunk.SanctumTrunkPlacer;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -31,7 +32,6 @@ import net.minecraft.block.jukebox.JukeboxSong;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.effect.EnchantmentEntityEffect;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.*;
@@ -39,24 +39,29 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
+import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
+import net.minecraft.world.gen.feature.*;
+import net.minecraft.world.gen.feature.size.TwoLayersFeatureSize;
+import net.minecraft.world.gen.foliage.FoliagePlacer;
+import net.minecraft.world.gen.foliage.FoliagePlacerType;
+import net.minecraft.world.gen.placementmodifier.PlacementModifier;
+import net.minecraft.world.gen.stateprovider.SimpleBlockStateProvider;
+import net.minecraft.world.gen.trunk.TrunkPlacer;
+import net.minecraft.world.gen.trunk.TrunkPlacerType;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -66,6 +71,9 @@ public class Registration {
     public static final AttachmentType<GrovesPOI.ClientGroveSanctuaryColorData> SANCTUARY_COLOR_DATA =
             AttachmentRegistry.createPersistent(Groves.id("sanctuary_color_data"),
                     GrovesPOI.ClientGroveSanctuaryColorData.CODEC);
+
+    // BlockSetTypes
+    public static final BlockSetType SANCTUM_BLOCKSET = new BlockSetType(Groves.id("sanctum").toString());
 
     // Fluids
     public static final FlowableFluid BLESSED_MOON_WATER_FLUID = register("blessed_moon_water", new BlessedMoonWaterFluid.Still());
@@ -77,9 +85,33 @@ public class Registration {
     public static final RegistryKey<JukeboxSong> INTO_THE_HEART_OF_THE_UNIVERSE_KEY =
             RegistryKey.of(RegistryKeys.JUKEBOX_SONG, Groves.id("into_the_heart_of_the_universe"));
 
+    // Wood Types
+    public static final WoodType SANCTUM_WOODTYPE = new WoodType(
+            Groves.id("sanctum").toString(),
+            SANCTUM_BLOCKSET,
+            BlockSoundGroup.WOOD,
+            BlockSoundGroup.HANGING_SIGN,
+            SoundEvents.BLOCK_FENCE_GATE_CLOSE,
+            SoundEvents.BLOCK_FENCE_GATE_OPEN
+    );
+
     // Component Types
     public static final ComponentType<GroveAbility> GROVE_ABILITY =
             registerComponent("grove_ability", builder -> builder.codec(GroveAbility.CODEC));
+
+    // Worldgen
+
+    // - Foliage Placers
+    public static final FoliagePlacerType<SanctumFoliagePlacer> SANCTUM_FOLIAGE_PLACER = registerFoliagePlacer("sanctum_foliage_placer", SanctumFoliagePlacer.CODEC);
+
+    // - Trunk Placers
+    public static final TrunkPlacerType<SanctumTrunkPlacer> SANCTUM_TRUNK_PLACER = registerTrunkPlacer("sanctum_trunk_placer", SanctumTrunkPlacer.CODEC);
+
+    // - Configured Features
+    public static final RegistryKey<ConfiguredFeature<?, ?>> SANCTUM_TREE_CONFIG_KEY = registerConfigKey("sanctum_tree");
+
+    // - Placed Features
+    public static final RegistryKey<PlacedFeature> SANCTUM_TREE_PLACED_KEY = registerPlacedKey("sanctum_tree");
 
     // Block Settings
     public static final AbstractBlock.Settings MOONSTONE_SETTINGS = AbstractBlock.Settings.create()
@@ -101,6 +133,71 @@ public class Registration {
             settings -> new ExperienceDroppingBlock(UniformIntProvider.create(3, 7), settings),
             AbstractBlock.Settings.create().mapColor(MapColor.STONE_GRAY).instrument(NoteBlockInstrument.BASEDRUM).requiresTool().strength(3.0F, 3.0F)
     );
+
+    public static final Block SANCTUM_LOG_BLOCK = register(
+            "sanctum_log",
+            PillarBlock::new,
+            Blocks.createLogSettings(MapColor.ORANGE, MapColor.ORANGE, BlockSoundGroup.WOOD).requiresTool());
+
+    public static final Block SANCTUM_CORE_LOG_BLOCK = register(
+            "sanctum_core_log",
+            PillarBlock::new,
+            Blocks.createLogSettings(MapColor.WHITE_GRAY, MapColor.ORANGE, BlockSoundGroup.WOOD).requiresTool());
+
+    public static final Block SANCTUM_WOOD_BLOCK = register(
+            "sanctum_wood",
+            PillarBlock::new,
+            Blocks.createLogSettings(MapColor.ORANGE, MapColor.ORANGE, BlockSoundGroup.WOOD).requiresTool());
+
+    public static final Block STRIPPED_SANCTUM_LOG_BLOCK = register(
+            "stripped_sanctum_log",
+            PillarBlock::new,
+            Blocks.createLogSettings(MapColor.ORANGE, MapColor.ORANGE, BlockSoundGroup.WOOD).requiresTool());
+
+    public static final Block STRIPPED_SANCTUM_WOOD_BLOCK = register(
+            "stripped_sanctum_wood",
+            PillarBlock::new,
+            Blocks.createLogSettings(MapColor.ORANGE, MapColor.ORANGE, BlockSoundGroup.WOOD).requiresTool());
+
+    public static final Block SANCTUM_LEAVES_BLOCK = register(
+            "sanctum_leaves",
+            LeavesBlock::new,
+            Blocks.createLeavesSettings(BlockSoundGroup.GRASS));
+
+    public static final Block SANCTUM_SAPLING_BLOCK = register(
+            "sanctum_sapling",
+            settings -> new SanctumSaplingBlock(
+                    new SaplingGenerator(
+                            Groves.id("sanctum").toString(),
+                            0.0f,
+                            Optional.of(SANCTUM_TREE_CONFIG_KEY),
+                            Optional.empty(),   // TODO: Make the variant that has iron wood in it, but make it super rare
+                            Optional.empty(),
+                            Optional.empty(),
+                            Optional.empty(),
+                            Optional.empty()
+                    ),
+                    settings
+            ),
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.ORANGE)
+                    .ticksRandomly()
+                    .strength(0.0F)
+                    .sounds(BlockSoundGroup.GRASS)
+                    .nonOpaque()
+                    .allowsSpawning(Blocks::canSpawnOnLeaves)
+                    .suffocates(Blocks::never)
+                    .blockVision(Blocks::never)
+                    .burnable()
+                    .pistonBehavior(PistonBehavior.DESTROY)
+                    .solidBlock(Blocks::never)
+                    .noCollision()
+    );
+
+    public static final Block POTTED_SANCTUM_SAPLING_BLOCK = register(
+            "potted_sanctun_sapling",
+            settings -> new FlowerPotBlock(SANCTUM_SAPLING_BLOCK, settings),
+            Blocks.createFlowerPotSettings());
 
     @SuppressWarnings("deprecation")        // Vanilla uses copyShallow.
     public static final Block DEEPSLATE_AQUAMARINE_ORE_BLOCK = register(
@@ -392,6 +489,20 @@ public class Registration {
     public static final Block WAXED_MOONSTONE_BRICK_WALL_BLOCK = register("waxed_moonstone_brick_wall", WallBlock::new, MOONSTONE_SETTINGS);
 
     // BlockItems
+    public static final Item SANCTUM_LOG_ITEM = register(SANCTUM_LOG_BLOCK);
+
+    public static final Item SANCTUM_CORE_LOG_ITEM = register(SANCTUM_CORE_LOG_BLOCK);
+
+    public static final Item SANCTUM_WOOD_ITEM = register(SANCTUM_WOOD_BLOCK);
+
+    public static final Item STRIPPED_SANCTUM_LOG_ITEM = register(STRIPPED_SANCTUM_LOG_BLOCK);
+
+    public static final Item STRIPPED_SANCTUM_WOOD_ITEM = register(STRIPPED_SANCTUM_WOOD_BLOCK);
+
+    public static final Item SANCTUM_LEAVES_ITEM = register(SANCTUM_LEAVES_BLOCK);
+
+    public static final Item SANCTUM_SAPLING_ITEM = register(SANCTUM_SAPLING_BLOCK);
+
     public static final Item AQUAMARINE_ORE_ITEM = register(AQUAMARINE_ORE_BLOCK);
 
     public static final Item AQUAMARINE_BLOCK_ITEM = register(AQUAMARINE_BLOCK_BLOCK);
@@ -493,6 +604,11 @@ public class Registration {
             Item::new,
             new Item.Settings().rarity(Rarity.EPIC).jukeboxPlayable(INTO_THE_HEART_OF_THE_UNIVERSE_KEY).maxCount(1));
 
+    public static final Item IRONWOOD_SHARD_ITEM = register(
+            "ironwood_shard",
+            Item::new,
+            new Item.Settings().maxCount(64));
+
     public static final Item MOONLIGHT_BUCKET_ITEM = register(
             "moonlight_bucket",
             settings -> new BucketItem(MOONLIGHT_FLUID, settings),
@@ -566,6 +682,8 @@ public class Registration {
     /** Valid blocks that compose a {@code Moonwell} for interacting with the screen **/
     public static final TagKey<Block> MOONWELL_INTERACTION_BLOCKS = registerBlockTag("moonwell_interaction_blocks");
 
+    public static final TagKey<Block> SANCTUM_LOG_BLOCKS = registerBlockTag("sanctum_log_blocks");
+
     /** Valid fluids considered {@code Blessed Moon Water} **/
     public static final TagKey<Fluid> BLESSED_MOON_WATERS_TAG = registerFluidTag("blessed_moon_waters");
 
@@ -577,6 +695,15 @@ public class Registration {
             // Ores
             AQUAMARINE_ORE_ITEM,
             DEEPSLATE_AQUAMARINE_ORE_ITEM,
+
+            // Trees and Wood
+            SANCTUM_LOG_ITEM,
+            SANCTUM_CORE_LOG_ITEM,
+            SANCTUM_WOOD_ITEM,
+            STRIPPED_SANCTUM_LOG_ITEM,
+            STRIPPED_SANCTUM_WOOD_ITEM,
+            SANCTUM_LEAVES_ITEM,
+            SANCTUM_SAPLING_ITEM,
 
             // Moonstone blocks
             MOONSTONE_BRICKS_ITEM,
@@ -618,6 +745,7 @@ public class Registration {
             IMPRINTING_SIGIL_ITEM,
             ENCHANTED_IMPRINTING_SIGIL_ITEM,
             INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM,
+            IRONWOOD_SHARD_ITEM,
             UNLOCK_SCROLL_ITEM);
 
     public static final FluidSystem BLESSED_MOON_WATER_FLUID_DATA = new FluidSystem.Builder(BLESSED_MOON_WATERS_TAG)
@@ -641,8 +769,6 @@ public class Registration {
             .affectsBlockBreakSpeed()
             .canBoatsWork()
             .build();
-
-    public static final MapCodec<SolarRepairEnchantmentEffect> SOLAR_REPAIR_ENCHANTMENT_CODEC = register("solar_repair", SolarRepairEnchantmentEffect.CODEC);
 
     public static final RegistryKey<Enchantment> LIGHT_FOOTED_ENCHANTMENT_KEY = RegistryKey.of(RegistryKeys.ENCHANTMENT, Groves.id("light_footed"));
     public static final RegistryKey<Enchantment> SOLAR_REPAIR_ENCHANTMENT_KEY = RegistryKey.of(RegistryKeys.ENCHANTMENT, Groves.id("solar_repair"));
@@ -783,9 +909,65 @@ public class Registration {
                         .entries((displayContext, entries) -> Arrays.stream(items).forEach(entries::add)).build());
     }
 
-    public static <T extends EnchantmentEntityEffect> MapCodec<T> register(String name, MapCodec<T> codec)
+    public static <P extends FoliagePlacer> FoliagePlacerType<P> registerFoliagePlacer(String id, MapCodec<P> codec) {
+        return Registry.register(Registries.FOLIAGE_PLACER_TYPE, id, new FoliagePlacerType<>(codec));
+    }
+
+    public static <P extends TrunkPlacer> TrunkPlacerType<P> registerTrunkPlacer(String id, MapCodec<P> codec) {
+        return Registry.register(Registries.TRUNK_PLACER_TYPE, id, new TrunkPlacerType<>(codec));
+    }
+
+    public static RegistryKey<ConfiguredFeature<?, ?>> registerConfigKey(String name) {
+        return RegistryKey.of(RegistryKeys.CONFIGURED_FEATURE, Groves.id(name));
+    }
+
+    public static RegistryKey<PlacedFeature> registerPlacedKey(String name) {
+        return RegistryKey.of(RegistryKeys.PLACED_FEATURE, Groves.id(name));
+    }
+
+
+    public static <FC extends FeatureConfig, F extends Feature<FC>> void registerConfiguredFeature(Registerable<ConfiguredFeature<?, ?>> context,
+                                                                                   RegistryKey<ConfiguredFeature<?, ?>> key,
+                                                                                   F feature,
+                                                                                   FC featureConfig) {
+        context.register(key, new ConfiguredFeature<>(feature, featureConfig));
+    }
+
+    public static void registerPlacedFeature(Registerable<PlacedFeature> context,
+                                 RegistryKey<PlacedFeature> key,
+                                 RegistryEntry<ConfiguredFeature<?, ?>> config,
+                                 List<PlacementModifier> modifiers) {
+        context.register(key, new PlacedFeature(config, List.copyOf(modifiers)));
+    }
+
+    public static void bootstrapConfiguredFeature(Registerable<ConfiguredFeature<?, ?>> context)
     {
-        return Registry.register(Registries.ENCHANTMENT_ENTITY_EFFECT_TYPE, Groves.id(name), codec);
+        Groves.LOGGER.info("bootstrapConfiguredFeature");
+        registerConfiguredFeature(context, SANCTUM_TREE_CONFIG_KEY, Feature.TREE, new TreeFeatureConfig.Builder(
+                SimpleBlockStateProvider.of(SANCTUM_LOG_BLOCK),
+                new SanctumTrunkPlacer(
+                        30,
+                        10,
+                        10,
+                        UniformIntProvider.create(3, 5),
+                        UniformIntProvider.create(3, 6),
+                        UniformIntProvider.create(12,16)
+                ),
+                SimpleBlockStateProvider.of(SANCTUM_LEAVES_BLOCK),
+                new SanctumFoliagePlacer(ConstantIntProvider.create(4), ConstantIntProvider.create(0), 5),
+                new TwoLayersFeatureSize(1, 0, 2)
+        ).ignoreVines().build());
+    }
+
+    public static void bootstrapPlacedFeature(Registerable<PlacedFeature> context)
+    {
+        Groves.LOGGER.info("bootstrapPlacedFeature");
+        RegistryEntryLookup<ConfiguredFeature<?, ?>> registryLookup = context.getRegistryLookup(RegistryKeys.CONFIGURED_FEATURE);
+
+        registerPlacedFeature(context, SANCTUM_TREE_PLACED_KEY, registryLookup.getOrThrow(SANCTUM_TREE_CONFIG_KEY),
+                VegetationPlacedFeatures.treeModifiersWithWouldSurvive(
+                        PlacedFeatures.createCountExtraModifier(1, 0.1f, 0),
+                        SANCTUM_SAPLING_BLOCK));
     }
 
     public static final Map<Item, Item> BLOCK_TO_BLESSED = new HashMap<>();

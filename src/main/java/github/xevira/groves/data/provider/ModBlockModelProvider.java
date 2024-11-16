@@ -116,6 +116,12 @@ public class ModBlockModelProvider extends FabricModelProvider {
         blockStateModelGenerator.registerSimpleCubeAll(Registration.AQUAMARINE_ORE_BLOCK);
         blockStateModelGenerator.registerSimpleCubeAll(Registration.DEEPSLATE_AQUAMARINE_ORE_BLOCK);
         blockStateModelGenerator.registerSimpleCubeAll(Registration.AQUAMARINE_BLOCK_BLOCK);
+
+        blockStateModelGenerator.registerLog(Registration.SANCTUM_LOG_BLOCK).log(Registration.SANCTUM_LOG_BLOCK).wood(Registration.SANCTUM_WOOD_BLOCK);
+        blockStateModelGenerator.registerLog(Registration.SANCTUM_CORE_LOG_BLOCK).log(Registration.SANCTUM_CORE_LOG_BLOCK);
+        blockStateModelGenerator.registerLog(Registration.STRIPPED_SANCTUM_LOG_BLOCK).log(Registration.STRIPPED_SANCTUM_LOG_BLOCK).wood(Registration.STRIPPED_SANCTUM_WOOD_BLOCK);;
+        blockStateModelGenerator.registerSimpleCubeAll(Registration.SANCTUM_LEAVES_BLOCK);
+        blockStateModelGenerator.registerFlowerPotPlant(Registration.SANCTUM_SAPLING_BLOCK, Registration.POTTED_SANCTUM_SAPLING_BLOCK, BlockStateModelGenerator.TintType.NOT_TINTED);
     }
 
     @Override
@@ -127,6 +133,7 @@ public class ModBlockModelProvider extends FabricModelProvider {
         itemModelGenerator.register(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.MOONLIGHT_BUCKET_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.IRONWOOD_SHARD_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
 

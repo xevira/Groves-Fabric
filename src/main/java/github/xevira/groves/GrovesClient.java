@@ -22,7 +22,11 @@ public class GrovesClient implements ClientModInitializer {
     public void onInitializeClient() {
         // Render Layers
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
+                Registration.SANCTUM_SAPLING_BLOCK,
                 Registration.MOONWELL_BASIN_BLOCK);
+
+        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutoutMipped(),
+                Registration.SANCTUM_LEAVES_BLOCK);
 
         // Block Renderers
         BlockEntityRendererFactories.register(Registration.MOONWELL_FAKE_FLUID_BLOCK_ENTITY, MoonwellFluidLevelBER::new);

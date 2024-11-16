@@ -114,6 +114,14 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.MOONWELL_BRICK_STAIRS_BLOCK, "Moonwell Brick Stairs");
         translationBuilder.add(Registration.MOONWELL_BRICK_WALL_BLOCK, "Moonwell Brick Wall");
 
+        translationBuilder.add(Registration.SANCTUM_LOG_BLOCK, "Sanctum Log");
+        translationBuilder.add(Registration.SANCTUM_CORE_LOG_BLOCK, "Sanctum Core Log");
+        translationBuilder.add(Registration.SANCTUM_WOOD_BLOCK, "Sanctum Wood");
+        translationBuilder.add(Registration.STRIPPED_SANCTUM_LOG_BLOCK, "Stripped Sanctum Log");
+        translationBuilder.add(Registration.STRIPPED_SANCTUM_WOOD_BLOCK, "Stripped Sanctum Wood");
+        translationBuilder.add(Registration.SANCTUM_LEAVES_BLOCK, "Sanctum Leaves");
+        translationBuilder.add(Registration.SANCTUM_SAPLING_BLOCK, "Sanctum Sapling");
+
         translationBuilder.add(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK, "Waxed Chiseled Moonstone Bricks");
         translationBuilder.add(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK, "Waxed Chiseled Moonstone Bricks");
         translationBuilder.add(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK, "Waxed Chiseled Moonstone Bricks");
@@ -136,6 +144,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.BLESSED_MOON_WATER_BUCKET_ITEM, "Bucket of Blessed Moon Water");
         translationBuilder.add(Registration.IMPRINTING_SIGIL_ITEM, "Imprinting Sigil");
         translationBuilder.add(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, "Enchanted Imprinting Sigil");
+        translationBuilder.add(Registration.IRONWOOD_SHARD_ITEM, "Ironwood Shard");
         translationBuilder.add(Registration.MOONLIGHT_BUCKET_ITEM, "Bucket of Moonlight");
         translationBuilder.add(Registration.MOON_PHIAL_ITEM, "Phial of the Moon");
         translationBuilder.add(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, "Music Disc");

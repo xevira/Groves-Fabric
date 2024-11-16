@@ -61,7 +61,20 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Registration.WAXED_MOONSTONE_BRICK_SLAB_BLOCK)
                 .add(Registration.WAXED_MOONSTONE_BRICK_STAIRS_BLOCK)
                 .add(Registration.WAXED_MOONSTONE_BRICK_WALL_BLOCK)
-        ;
+                ;
+
+        getOrCreateTagBuilder(BlockTags.AXE_MINEABLE)
+                .add(Registration.SANCTUM_LOG_BLOCK)
+                .add(Registration.SANCTUM_WOOD_BLOCK)
+                .add(Registration.STRIPPED_SANCTUM_LOG_BLOCK)
+                .add(Registration.STRIPPED_SANCTUM_WOOD_BLOCK)
+                .add(Registration.SANCTUM_CORE_LOG_BLOCK)
+                ;
+
+        getOrCreateTagBuilder(BlockTags.NEEDS_STONE_TOOL)
+                .add(Registration.SANCTUM_CORE_LOG_BLOCK)
+                ;
+
 
         getOrCreateTagBuilder(BlockTags.NEEDS_IRON_TOOL)
                 .add(Registration.AQUAMARINE_BLOCK_BLOCK)
@@ -71,23 +84,31 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
         getOrCreateTagBuilder(BlockTags.BEACON_BASE_BLOCKS)
                 .add(Registration.AQUAMARINE_BLOCK_BLOCK);
 
+        getOrCreateTagBuilder(BlockTags.LEAVES)
+                .add(Registration.SANCTUM_LEAVES_BLOCK)
+                ;
+
+        getOrCreateTagBuilder(BlockTags.LOGS_THAT_BURN)
+                .addTag(Registration.SANCTUM_LOG_BLOCKS)
+                ;
+
         getOrCreateTagBuilder(BlockTags.SLABS)
                 .add(Registration.MOONSTONE_BRICK_SLAB_BLOCK)
                 .add(Registration.MOONWELL_BRICK_SLAB_BLOCK)
                 .add(Registration.WAXED_MOONSTONE_BRICK_SLAB_BLOCK)
-        ;
+                ;
 
         getOrCreateTagBuilder(BlockTags.STAIRS)
                 .add(Registration.MOONSTONE_BRICK_STAIRS_BLOCK)
                 .add(Registration.MOONWELL_BRICK_STAIRS_BLOCK)
                 .add(Registration.WAXED_MOONSTONE_BRICK_STAIRS_BLOCK)
-        ;
+                ;
 
         getOrCreateTagBuilder(BlockTags.WALLS)
                 .add(Registration.MOONSTONE_BRICK_WALL_BLOCK)
                 .add(Registration.MOONWELL_BRICK_WALL_BLOCK)
                 .add(Registration.WAXED_MOONSTONE_BRICK_WALL_BLOCK)
-        ;
+                ;
 
         // Mod block tags
         getOrCreateTagBuilder(Registration.MOONSTONE_BLOCKS)
@@ -136,5 +157,12 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Registration.CHISELED_MOONSTONE_BRICKS_WAXING_GIBBOUS_BLOCK)
                 .add(Registration.CRACKED_MOONSTONE_BRICKS_BLOCK)
                 .add(Registration.MOONSTONE_BRICKS_BLOCK);
+
+        getOrCreateTagBuilder(Registration.SANCTUM_LOG_BLOCKS)
+                .add(Registration.SANCTUM_LOG_BLOCK)
+                .add(Registration.SANCTUM_WOOD_BLOCK)
+                .add(Registration.STRIPPED_SANCTUM_LOG_BLOCK)
+                .add(Registration.STRIPPED_SANCTUM_WOOD_BLOCK)
+                ;
     }
 }
