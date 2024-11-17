@@ -1,8 +1,8 @@
 package github.xevira.groves.sanctuary.ability;
 
 import github.xevira.groves.Groves;
-import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbility;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,8 +10,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
@@ -76,17 +74,17 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public boolean canActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    public boolean canActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         return sanctuary.getStoredSunlight() >= startCost();
     }
 
     @Override
-    public void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    public void sendFailure(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         sendError(player, Groves.text("text", "ability.not_enough_sunlight.activate", startCost()), false);
     }
 
     @Override
-    protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         // TODO: play a sound on the client
         ServerPlayerEntity owner = sanctuary.getOwnerPlayer();
 
@@ -95,12 +93,12 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onDeactivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         // TODO: play a sound on the client
     }
 
     @Override
-    public boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary) {
+    public boolean onServerTick(MinecraftServer server, GroveSanctuary sanctuary) {
         if (sanctuary.getStoredSunlight() < tickCost())
             return true;
 
@@ -111,7 +109,7 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
         return false;
     }
 
-    private void applyStatusEffect(GrovesPOI.GroveSanctuary sanctuary, ServerPlayerEntity player)
+    private void applyStatusEffect(GroveSanctuary sanctuary, ServerPlayerEntity player)
     {
         if (player != null && sanctuary.contains(player.getBlockPos())) {
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, DURATION * 20, getRank() - 1, true, false));

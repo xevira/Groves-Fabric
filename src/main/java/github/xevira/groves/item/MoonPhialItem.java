@@ -5,6 +5,7 @@ import github.xevira.groves.Registration;
 import github.xevira.groves.ServerConfig;
 import github.xevira.groves.block.multiblock.Moonwell;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.*;
@@ -101,11 +102,11 @@ public class MoonPhialItem extends Item {
                     return ActionResult.FAIL;
                 }
                 else {
-                    Optional<GrovesPOI.GroveSanctuary> sanc = GrovesPOI.getSanctuary((ServerWorld)world, pos);
+                    Optional<GroveSanctuary> sanc = GrovesPOI.getSanctuary((ServerWorld)world, pos);
 
                     if (sanc.isPresent())
                     {
-                        GrovesPOI.GroveSanctuary sanctuary = sanc.get();
+                        GroveSanctuary sanctuary = sanc.get();
 
                         if (!sanctuary.isOwner(player)) {
                             player.sendMessage(NOT_OWNER_TEXT, false);

@@ -5,22 +5,20 @@ import github.xevira.groves.events.client.HudRenderEvents;
 import github.xevira.groves.item.ImprintingSigilItem;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbilities;
+import github.xevira.groves.sanctuary.GroveSanctuary;
+import github.xevira.groves.sanctuary.GroveUnlocks;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
-import javax.xml.stream.events.StartDocument;
 import java.util.Optional;
 
 public class Networking {
@@ -156,6 +154,10 @@ public class Networking {
                 handler.getSanctuary().updateAbility(payload.name(), payload.active(), payload.start(), payload.end(), payload.rank());
             }
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(GroveUnlockToastPayload.ID, (payload, context) -> {
+            GroveUnlocks.toast(payload.unlock());
+        });
     }
 
     public static void register()
@@ -193,13 +195,14 @@ public class Networking {
         PayloadTypeRegistry.playS2C().register(SanctuarySunlightPayload.ID, SanctuarySunlightPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(SanctuaryDarknessPayload.ID, SanctuaryDarknessPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdateAbilityPayload.ID, UpdateAbilityPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(GroveUnlockToastPayload.ID, GroveUnlockToastPayload.PACKET_CODEC);
 
         // Packet Handlers
         // - Server Side
 
         // Request to open the UI for the player's grove sanctuary
         ServerPlayNetworking.registerGlobalReceiver(OpenGrovesRequestPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             // Open Screen (if present)
             if(sanctuary.isPresent())
@@ -215,26 +218,26 @@ public class Networking {
 
         // Execute the specified grove ability
         ServerPlayNetworking.registerGlobalReceiver(GroveAbitlityKeybindPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> GroveAbilities.executeKeybind(payload.name(), groveSanctuary, context.player()));
         });
 
         // Update the chunk loading state for the specified chunk
         ServerPlayNetworking.registerGlobalReceiver(SetChunkLoadingPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> groveSanctuary.setChunkLoadingForChunk(payload.pos(), payload.loaded()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(ClaimChunkPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> groveSanctuary.claimChunk(context.player(), payload.pos()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(SetSpawnPointPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> {
                 switch(groveSanctuary.setSpawnPoint(payload.pos()))
@@ -247,7 +250,7 @@ public class Networking {
         });
 
         ServerPlayNetworking.registerGlobalReceiver(SetGroveNamePayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> {
                 // TODO: Validate name
@@ -258,31 +261,31 @@ public class Networking {
         });
 
         ServerPlayNetworking.registerGlobalReceiver(AddFriendPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> groveSanctuary.addFriend(context.player(), payload.name()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(RemoveFriendPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> groveSanctuary.removeFriend(context.player(), payload.uuid()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(StartGroveAbitlityPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> GroveAbilities.startAbility(payload.name(), groveSanctuary, context.player()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(StopGroveAbitlityPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> GroveAbilities.stopAbility(payload.name(), groveSanctuary, context.player()));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(UseGroveAbitlityPayload.ID, (payload, context) -> {
-            Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
+            Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> GroveAbilities.useAbility(payload.name(), groveSanctuary, context.player()));
         });

@@ -3,6 +3,7 @@ package github.xevira.groves.item;
 import github.xevira.groves.Groves;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbility;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,6 +19,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -30,6 +32,15 @@ public class UnlockScrollItem extends Item {
 
         this.ability = ability;
         this.rank = rank;
+    }
+
+    public int getRank() {
+        return this.rank;
+    }
+
+    @Nullable
+    public GroveAbility getAbility() {
+        return this.ability;
     }
 
     @Override
@@ -50,7 +61,7 @@ public class UnlockScrollItem extends Item {
                 int i = this.getMaxUseTime(stack, user) - remainingUseTicks;
                 float f = getPullProgress(i);
                 if (f > 0.9f) {
-                    GrovesPOI.GroveSanctuary sanctuary = GrovesPOI.getSanctuary(player).orElse(null);
+                    GroveSanctuary sanctuary = GrovesPOI.getSanctuary(player).orElse(null);
 
                     if (sanctuary != null) {
                         GroveAbility currentAbility = sanctuary.getAbility(this.ability.getName()).orElse(null);

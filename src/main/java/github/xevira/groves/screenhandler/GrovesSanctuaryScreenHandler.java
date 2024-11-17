@@ -2,7 +2,7 @@ package github.xevira.groves.screenhandler;
 
 import github.xevira.groves.Registration;
 import github.xevira.groves.network.GrovesSanctuaryScreenPayload;
-import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.ClientGroveSanctuary;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.util.ISlotVisibility;
 import github.xevira.groves.util.ScreenTab;
@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.Set;
 
 public class GrovesSanctuaryScreenHandler extends ScreenHandler {
-    private final GrovesPOI.ClientGroveSanctuary sanctuary;
+    private final ClientGroveSanctuary sanctuary;
     private ScreenTab currentTab;
 
-    private Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> chunks = new HashMap<>();
+    private Map<ChunkPos, ClientGroveSanctuary.ChunkData> chunks = new HashMap<>();
 
     private Text errorMessage = Text.empty();
     private int errorMessageTicks = 0;
@@ -36,7 +36,7 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         this(syncId, playerInventory, payload.sanctuary());
     }
 
-    public GrovesSanctuaryScreenHandler(int syncId, PlayerInventory playerInventory, GrovesPOI.ClientGroveSanctuary sanctuary)
+    public GrovesSanctuaryScreenHandler(int syncId, PlayerInventory playerInventory, ClientGroveSanctuary sanctuary)
     {
         super(Registration.GROVES_SANCTUARY_SCREEN_HANDLER, syncId);
 
@@ -45,7 +45,7 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
 
         putChunk(sanctuary.getOrigin());
 
-        for(GrovesPOI.ClientGroveSanctuary.ChunkData chunk : sanctuary.getChunks())
+        for(ClientGroveSanctuary.ChunkData chunk : sanctuary.getChunks())
             putChunk(chunk);
     }
 
@@ -62,7 +62,7 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         return !getSanctuary().isAbandoned() || player.isCreativeLevelTwoOp();
     }
 
-    public GrovesPOI.ClientGroveSanctuary getSanctuary()
+    public ClientGroveSanctuary getSanctuary()
     {
         return this.sanctuary;
     }
@@ -146,30 +146,30 @@ public class GrovesSanctuaryScreenHandler extends ScreenHandler {
         return this.sanctuary.isChunkLoading();
     }
 
-    public GrovesPOI.ClientGroveSanctuary.ChunkData getOrigin()
+    public ClientGroveSanctuary.ChunkData getOrigin()
     {
         return this.sanctuary.getOrigin();
     }
 
-    public List<GrovesPOI.ClientGroveSanctuary.ChunkData> getChunks()
+    public List<ClientGroveSanctuary.ChunkData> getChunks()
     {
         return this.sanctuary.getChunks();
     }
 
-    public Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> getChunkMap()
+    public Map<ChunkPos, ClientGroveSanctuary.ChunkData> getChunkMap()
     {
         return this.chunks;
     }
 
     public void addChunk(ChunkPos pos)
     {
-        GrovesPOI.ClientGroveSanctuary.ChunkData data = new GrovesPOI.ClientGroveSanctuary.ChunkData(pos, false);
+        ClientGroveSanctuary.ChunkData data = new ClientGroveSanctuary.ChunkData(pos, false);
 
         if (this.sanctuary.addChunk(data))
             putChunk(data);
     }
 
-    public void putChunk(GrovesPOI.ClientGroveSanctuary.ChunkData chunk)
+    public void putChunk(ClientGroveSanctuary.ChunkData chunk)
     {
         this.chunks.put(chunk.pos(), chunk);
     }

@@ -1,6 +1,5 @@
 package github.xevira.groves.events;
 
-import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.ServerConfig;
 import github.xevira.groves.item.MoonPhialItem;
@@ -8,6 +7,7 @@ import github.xevira.groves.network.SanctuaryDarknessPayload;
 import github.xevira.groves.network.SanctuaryEnterPayload;
 import github.xevira.groves.network.SanctuarySunlightPayload;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import github.xevira.groves.util.EnchantHelper;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerInventory;
@@ -41,7 +41,7 @@ public class ModServerTickEvents {
 
         boolean entry;
         PlayerTracking tracking;
-        GrovesPOI.GroveSanctuary newSanctuary = GrovesPOI.getSanctuary(player.getServerWorld(), newChunk).orElse(null);
+        GroveSanctuary newSanctuary = GrovesPOI.getSanctuary(player.getServerWorld(), newChunk).orElse(null);
 
         if (PLAYER_TRACKING.containsKey(player.getUuid()))
         {
@@ -172,7 +172,7 @@ public class ModServerTickEvents {
     private static class PlayerTracking {
         public ServerWorld world;
         public ChunkPos chunk;
-        public GrovesPOI.GroveSanctuary sanctuary;
+        public GroveSanctuary sanctuary;
         public int sunlightPercent;
         public int darknessPercent;
 

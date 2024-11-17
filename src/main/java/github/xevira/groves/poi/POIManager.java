@@ -42,6 +42,14 @@ public class POIManager {
     /** Called when the {@link net.minecraft.server.MinecraftServer} is saved. **/
     public static void onServerStopped(MinecraftServer server)
     {
+        onAfterSave(server, true, true);
+
+        // Purge all data
+        purgeServer();
+    }
+
+    public static void onAfterSave(MinecraftServer server, boolean flush, boolean force)
+    {
         Path path = getServerPath(server);
 
         try {
@@ -51,11 +59,6 @@ public class POIManager {
         } catch (IOException exception) {
             Groves.LOGGER.error("Failed to write POI file!", exception);
         }
-    }
-
-    public static void onAfterSave(MinecraftServer server, boolean flush, boolean force)
-    {
-        onServerStopped(server);
     }
 
 
@@ -137,6 +140,11 @@ public class POIManager {
         JsonObject json = new JsonObject();
 
         return json;
+    }
+
+    private static void purgeServer()
+    {
+        GrovesPOI.cleanup();
     }
 
 }

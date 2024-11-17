@@ -2,10 +2,14 @@ package github.xevira.groves.sanctuary.ability;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import github.xevira.groves.Groves;
-import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.Registration;
+import github.xevira.groves.entity.passive.DruidEntity;
 import github.xevira.groves.sanctuary.GroveAbility;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import github.xevira.groves.util.JSONHelper;
+import net.minecraft.entity.SpawnLocation;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
@@ -13,14 +17,22 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.WorldView;
+import net.minecraft.world.poi.PointOfInterestStorage;
+import net.minecraft.world.poi.PointOfInterestTypes;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SummonDruidAbility extends GroveAbility {
     private long waitSeconds = -1L;
     private long lastSummonTime = -1L;
+    private final Random random = Random.create();
 
     // Special case Manual
     public SummonDruidAbility() {
@@ -63,26 +75,87 @@ public class SummonDruidAbility extends GroveAbility {
     }
 
     @Override
-    public void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    public void sendFailure(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
 
     }
 
     @Override
-    protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         this.waitSeconds = rng.nextBetween(15, 30);
     }
 
-    @Override
-    protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
-        this.lastSummonTime = sanctuary.getWorld().getTimeOfDay();
-        ServerPlayerEntity owner = sanctuary.getOwnerPlayer();
-        // Summon the druid
-        if (owner != null)
-            owner.sendMessage(Text.literal("A wandering druid appears!  ").append(Text.literal("*TADA!*").formatted(Formatting.GREEN, Formatting.ITALIC)), false);
+    @Nullable
+    private BlockPos getNearbySpawnPos(WorldView world, BlockPos pos, int range) {
+        BlockPos blockPos = null;
+        SpawnLocation spawnLocation = SpawnRestriction.getLocation(Registration.DRUID_ENTITY);
+
+        for (int i = 0; i < 10; i++) {
+            int j = pos.getX() + this.random.nextInt(range * 2) - range;
+            int k = pos.getZ() + this.random.nextInt(range * 2) - range;
+            int l = world.getTopY(Heightmap.Type.WORLD_SURFACE, j, k);
+            BlockPos blockPos2 = new BlockPos(j, l, k);
+            if (spawnLocation.isSpawnPositionOk(world, blockPos2, Registration.DRUID_ENTITY)) {
+                blockPos = blockPos2;
+                break;
+            }
+        }
+
+        return blockPos;
+    }
+
+    private boolean doesNotSuffocateAt(BlockView world, BlockPos pos) {
+        for (BlockPos blockPos : BlockPos.iterate(pos, pos.add(1, 2, 1))) {
+            if (!world.getBlockState(blockPos).getCollisionShape(world, blockPos).isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean trySpawn(ServerWorld world, GroveSanctuary sanctuary, ServerPlayerEntity owner)
+    {
+        if (owner == null) return false;
+
+        BlockPos blockPos = owner.getBlockPos();
+        int range = 48;
+        PointOfInterestStorage pointOfInterestStorage = world.getPointOfInterestStorage();
+        Optional<BlockPos> optional = pointOfInterestStorage.getPosition(
+                poiType -> poiType.matchesKey(PointOfInterestTypes.MEETING), pos -> true, blockPos, range, PointOfInterestStorage.OccupationStatus.ANY
+        );
+
+        BlockPos blockPos2 = (BlockPos)optional.orElse(blockPos);
+        BlockPos blockPos3 = this.getNearbySpawnPos(world, blockPos2, range);
+
+        if (blockPos3 != null && this.doesNotSuffocateAt(world, blockPos3)) {
+            DruidEntity druid = Registration.DRUID_ENTITY.spawn(world, blockPos3, SpawnReason.EVENT);
+            if (druid != null) {
+                druid.setDespawnDelay(48000);
+                druid.setWanderTarget(blockPos2);
+                druid.setPositionTarget(blockPos2, 16);
+                druid.setSanctuary(sanctuary);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
-    protected void onDeactivateCooldown(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onDeactivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
+        this.lastSummonTime = sanctuary.getWorld().getTimeOfDay();
+        ServerPlayerEntity owner = sanctuary.getOwnerPlayer();
+        // Summon the druid
+        if (owner != null) {
+            if (!trySpawn(sanctuary.getWorld(), sanctuary, owner))
+            {
+                owner.sendMessage(Text.literal("A wandering druid appears!  ").append(Text.literal("*TADA!*").formatted(Formatting.GREEN, Formatting.ITALIC)), false);
+            }
+        }
+    }
+
+    @Override
+    protected void onDeactivateCooldown(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         int days = rng.nextBetween(1, 4);
 
         ServerWorld world = sanctuary.getWorld();
@@ -93,17 +166,17 @@ public class SummonDruidAbility extends GroveAbility {
     }
 
     @Override
-    public boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary) {
+    public boolean onServerTick(MinecraftServer server, GroveSanctuary sanctuary) {
         return (--this.waitSeconds <= 0);
     }
 
     @Override
-    public boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    public boolean canUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         return !isActive() && !inCooldown(sanctuary.getWorld());
     }
 
     @Override
-    protected boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected boolean onUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         this.activate(server, sanctuary, player);
         return false;
     }

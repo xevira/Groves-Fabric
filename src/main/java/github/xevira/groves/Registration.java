@@ -3,6 +3,7 @@ package github.xevira.groves;
 import com.mojang.serialization.MapCodec;
 import github.xevira.groves.block.*;
 import github.xevira.groves.block.entity.*;
+import github.xevira.groves.entity.passive.DruidEntity;
 import github.xevira.groves.fluid.BlessedMoonWaterFluid;
 import github.xevira.groves.fluid.FluidSystem;
 import github.xevira.groves.fluid.MoonlightFluid;
@@ -13,6 +14,7 @@ import github.xevira.groves.network.Networking;
 import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
+import github.xevira.groves.sanctuary.GroveUnlocks;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.LunarPhasesEnum;
@@ -22,6 +24,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.block.*;
@@ -32,6 +35,8 @@ import net.minecraft.block.jukebox.JukeboxSong;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.component.ComponentType;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.entity.*;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.*;
@@ -52,6 +57,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.gen.feature.*;
 import net.minecraft.world.gen.feature.size.TwoLayersFeatureSize;
 import net.minecraft.world.gen.foliage.FoliagePlacer;
@@ -659,11 +665,30 @@ public class Registration {
                             MOONWELL_FAKE_FLUID_BLOCK)
                     .build());
 
+    // Entities
+    public static final EntityType<DruidEntity> DRUID_ENTITY = register("druid",
+            EntityType.Builder.create(DruidEntity::new, SpawnGroup.CREATURE)
+                    .dimensions(0.6F, 1.95F)
+                    .eyeHeight(1.62F)
+                    .maxTrackingRange(10));
+
     // Screen Handlers
     public static final ScreenHandlerType<MoonwellScreenHandler> MOONWELL_SCREEN_HANDLER = register("moonwell", MoonwellScreenHandler::new, MoonwellScreenPayload.PACKET_CODEC);
     public static final ScreenHandlerType<GrovesSanctuaryScreenHandler> GROVES_SANCTUARY_SCREEN_HANDLER = register("groves_sanctuary", GrovesSanctuaryScreenHandler::new, GrovesSanctuaryScreenPayload.PACKET_CODEC);
 
     // Sound Events
+    public static final SoundEvent DRUID_APPEARED_SOUND = register("druid_appeared");
+    public static final SoundEvent DRUID_DEATH_SOUND = register("druid_death");
+    public static final SoundEvent DRUID_DISAPPEARED_SOUND = register("druid_disappeared");
+    public static final SoundEvent DRUID_DRINK_MILK_SOUND = register("druid_drink_milk");
+    public static final SoundEvent DRUID_DRINK_POTION_SOUND = register("druid_drink_potion");
+    public static final SoundEvent DRUID_TRADE_SOUND = register("druid_trade");
+    public static final SoundEvent DRUID_HURT_SOUND = register("druid_hurt");
+    public static final SoundEvent DRUID_AMBIENT_SOUND = register("druid_ambient");
+    public static final SoundEvent DRUID_NO_SOUND = register("druid_no");
+    public static final SoundEvent DRUID_REAPPEARED_SOUND = register("druid_reappeared");
+    public static final SoundEvent DRUID_YES_SOUND = register("druid_yes");
+
     public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
     public static final SoundEvent MOONWELL_DEACTIVATE_SOUND = register("moonwell_deactivate");
     public static final SoundEvent INTO_THE_HEART_OF_THE_UNIVERSE_SOUND = register("into_the_heart_of_the_universe");
@@ -909,6 +934,15 @@ public class Registration {
                         .entries((displayContext, entries) -> Arrays.stream(items).forEach(entries::add)).build());
     }
 
+    private static <T extends Entity> EntityType<T> register(RegistryKey<EntityType<?>> key, EntityType.Builder<T> type) {
+        return Registry.register(Registries.ENTITY_TYPE, key, type.build(key));
+    }
+
+    private static <T extends Entity> EntityType<T> register(String id, EntityType.Builder<T> type) {
+        RegistryKey<EntityType<?>> key = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Groves.id(id));
+        return register(key, type);
+    }
+
     public static <P extends FoliagePlacer> FoliagePlacerType<P> registerFoliagePlacer(String id, MapCodec<P> codec) {
         return Registry.register(Registries.FOLIAGE_PLACER_TYPE, id, new FoliagePlacerType<>(codec));
     }
@@ -985,9 +1019,12 @@ public class Registration {
         FluidSystem.registerFluid(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
 
         GroveAbilities.register();
+        GroveUnlocks.register();
 
         // TODO: Add to the item group where other music discs are
 
+        SpawnRestriction.register(DRUID_ENTITY, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, MobEntity::canMobSpawn);
+        FabricDefaultAttributeRegistry.register(DRUID_ENTITY, DruidEntity.addAttributes());
 
         Networking.register();
     }

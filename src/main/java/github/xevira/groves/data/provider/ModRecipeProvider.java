@@ -18,6 +18,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.SmeltingRecipe;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.tag.ItemTags;
 
 import java.util.Arrays;
 import java.util.List;
@@ -169,6 +170,19 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 
                 generateMoonstoneRecipes();
                 generateUnlockScrollRecipes();
+
+                createShaped(RecipeCategory.MISC, Registration.IMPRINTING_SIGIL_ITEM, 1)
+                        .input('a', Registration.AQUAMARINE_ITEM)
+                        .input('i', Items.IRON_INGOT)
+                        .input('s', ItemTags.SAPLINGS)
+                        .pattern("sis")
+                        .pattern("iai")
+                        .pattern("sis")
+                        .criterion(hasItem(Registration.AQUAMARINE_ITEM), conditionsFromItem(Registration.AQUAMARINE_ITEM))
+                        .criterion(hasItem(Items.IRON_INGOT), conditionsFromItem(Items.IRON_INGOT))
+                        .criterion("has_sapling", conditionsFromTag(ItemTags.SAPLINGS))
+                        .offerTo(exporter);
+
 
                 createShapeless(RecipeCategory.MISC, Registration.AQUAMARINE_DUST_ITEM, 2)
                         .input(Registration.AQUAMARINE_ITEM)

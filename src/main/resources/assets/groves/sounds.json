@@ -1,4 +1,93 @@
 {
+  "druid_appeared" : {
+    "subtitle": "sound.groves.druid.appeared",
+    "sounds": [
+      "groves:druid/appeared1",
+      "groves:druid/appeared2"
+    ]
+  },
+  "druid_death" : {
+    "subtitle": "sound.groves.druid.death",
+    "sounds": [
+      "groves:druid/death"
+    ]
+  },
+  "druid_disappeared" : {
+    "subtitle": "sound.groves.druid.disappeared",
+    "sounds": [
+      "groves:druid/disappeared1",
+      "groves:druid/disappeared2"
+    ]
+  },
+  "druid_drink_milk" : {
+    "subtitle": "sound.groves.druid.drink_milk",
+    "sounds": [
+      "groves:druid/drink_milk1",
+      "groves:druid/drink_milk2",
+      "groves:druid/drink_milk3",
+      "groves:druid/drink_milk4",
+      "groves:druid/drink_milk5"
+    ]
+  },
+  "druid_drink_potion" : {
+    "subtitle": "sound.groves.druid.drink_potion",
+    "sounds": [
+      "groves:druid/drink_potion"
+    ]
+  },
+  "druid_trade" : {
+    "subtitle": "sound.groves.druid.trade",
+    "sounds": [
+      "groves:druid/haggle1",
+      "groves:druid/haggle2",
+      "groves:druid/haggle3"
+    ]
+  },
+  "druid_hurt" : {
+    "subtitle": "sound.groves.druid.hurt",
+    "sounds": [
+      "groves:druid/hurt1",
+      "groves:druid/hurt2",
+      "groves:druid/hurt3",
+      "groves:druid/hurt4"
+    ]
+  },
+  "druid_ambient" : {
+    "subtitle": "sound.groves.druid.ambient",
+    "sounds": [
+      "groves:druid/idle1",
+      "groves:druid/idle2",
+      "groves:druid/idle3",
+      "groves:druid/idle4",
+      "groves:druid/idle5"
+    ]
+  },
+  "druid_no" : {
+    "subtitle": "sound.groves.druid.no",
+    "sounds": [
+      "groves:druid/no1",
+      "groves:druid/no2",
+      "groves:druid/no3",
+      "groves:druid/no4",
+      "groves:druid/no5"
+    ]
+  },
+  "druid_reappeared" : {
+    "subtitle": "sound.groves.druid.reappeared",
+    "sounds": [
+      "groves:druid/reappeared1",
+      "groves:druid/reappeared2"
+    ]
+  },
+  "druid_yes" : {
+    "subtitle": "sound.groves.druid.yes",
+    "sounds": [
+      "groves:druid/yes1",
+      "groves:druid/yes2",
+      "groves:druid/yes3",
+      "groves:druid/yes4"
+    ]
+  },
   "mace_thundering": {
     "subtitle": "sound.groves.mace.thundering",
     "sounds": [

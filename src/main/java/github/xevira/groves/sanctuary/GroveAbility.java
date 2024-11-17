@@ -6,7 +6,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import github.xevira.groves.Groves;
 import github.xevira.groves.network.UpdateAbilityPayload;
-import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.util.JSONHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -140,6 +139,30 @@ public abstract class GroveAbility {
 
     public abstract Supplier<? extends GroveAbility> getConstructor();
 
+    public int getTradeCost(int rank)
+    {
+        return switch(rank)
+        {
+            case 1 -> 8;
+            case 2 -> 16;
+            case 3 -> 32;
+            case 4 -> 48;
+            default -> 64;
+        };
+    }
+
+    public int getWeight(int rank)
+    {
+        return switch(rank)
+        {
+            case 1 -> 64;
+            case 2 -> 16;
+            case 3 -> 4;
+            case 4 -> 2;
+            default -> 1;
+        };
+    }
+
     public abstract @Nullable Item getRecipeIngredient(int rank);
 
     public abstract String getEnglishTranslation();
@@ -229,7 +252,7 @@ public abstract class GroveAbility {
     public long useCost() { return 0L; }
 
     // Returns the reason why you can't unlock it.
-    public @Nullable Text canUnlock(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player, int rank)
+    public @Nullable Text canUnlock(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player, int rank)
     {
         return null;
     }
@@ -242,7 +265,7 @@ public abstract class GroveAbility {
     public void setActive(boolean value) { this.active = value; }
 
     /** Determines whether the sanctuary can enable the ability **/
-    public boolean canActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public boolean canActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
         return true;
     }
@@ -252,9 +275,9 @@ public abstract class GroveAbility {
         player.sendMessage(error.formatted(Formatting.RED), overlay);
     }
 
-    public abstract void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player);
+    public abstract void sendFailure(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player);
 
-    public final void activate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public final void activate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
         if (this.canActivate(sanctuary.getServer(), sanctuary, player)) {
             this.setActive(true);
@@ -271,11 +294,11 @@ public abstract class GroveAbility {
     }
 
     /** Action on performed when the ability is turned on **/
-    protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    protected void onActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
     }
 
-    public final void deactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public final void deactivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
         this.setActive(false);
         this.onDeactivate(server, sanctuary, player);
@@ -285,11 +308,11 @@ public abstract class GroveAbility {
     }
 
     /** Action on performed when the ability is turned off **/
-    protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    protected void onDeactivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
     }
 
-    protected void onDeactivateCooldown(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    protected void onDeactivateCooldown(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
     }
 
@@ -298,17 +321,17 @@ public abstract class GroveAbility {
      *
      *  {@return whether to disable the ability}
      ***/
-    public boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary)
+    public boolean onServerTick(MinecraftServer server, GroveSanctuary sanctuary)
     {
         return true;
     }
 
-    public boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public boolean canUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
         return false;
     }
 
-    public final void use(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public final void use(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
         if (canUse(sanctuary.getServer(), sanctuary, player)) {
             if (onUse(server, sanctuary, player)) {
@@ -323,12 +346,12 @@ public abstract class GroveAbility {
             sendFailure(sanctuary.getServer(), sanctuary, player);
     }
 
-    protected boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    protected boolean onUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
         return false;
     }
 
-    protected void onUseCooldown(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    protected void onUseCooldown(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
     }
 

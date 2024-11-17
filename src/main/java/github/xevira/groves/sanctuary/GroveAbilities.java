@@ -3,7 +3,6 @@ package github.xevira.groves.sanctuary;
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.item.UnlockScrollItem;
-import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
 import github.xevira.groves.sanctuary.ability.RegenerationAbility;
 import github.xevira.groves.sanctuary.ability.RestorationAbility;
@@ -15,15 +14,19 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Rarity;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.village.TradeOffers;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GroveAbilities {
+    private static final Random RNG = Random.create();
 
     public static final Map<String, GroveAbility> ABILITIES = new HashMap<>();
     public static final Map<String, List<UnlockScrollItem>> UNLOCK_SCROLLS = new HashMap<>();
+    public static final Map<String, List<TradeOffers.SellItemFactory>> TRADE_OFFERS = new HashMap<>();
 
     private static <T extends GroveAbility> void registerAbility(T ability)
     {
@@ -111,7 +114,7 @@ public class GroveAbilities {
         return null;
     }
 
-    public static void executeKeybind(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public static void executeKeybind(@NotNull String name, GroveSanctuary sanctuary, PlayerEntity player)
     {
         Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
 
@@ -131,7 +134,7 @@ public class GroveAbilities {
 
     // Explicitly *starts* a grove ability
     // If it is already started or is manual, ignore
-    public static void startAbility(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public static void startAbility(@NotNull String name, GroveSanctuary sanctuary, PlayerEntity player)
     {
         Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
         if (ablityOpt.isPresent()) {
@@ -144,7 +147,7 @@ public class GroveAbilities {
         }
     }
 
-    public static void stopAbility(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public static void stopAbility(@NotNull String name, GroveSanctuary sanctuary, PlayerEntity player)
     {
         Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
         if (ablityOpt.isPresent()) {
@@ -157,7 +160,7 @@ public class GroveAbilities {
         }
     }
 
-    public static void useAbility(@NotNull String name, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public static void useAbility(@NotNull String name, GroveSanctuary sanctuary, PlayerEntity player)
     {
         Optional<GroveAbility> ablityOpt = sanctuary.getAbility(name);
         if (ablityOpt.isPresent()) {
@@ -192,9 +195,41 @@ public class GroveAbilities {
         entries.addAfter(Registration.UNLOCK_SCROLL_ITEM, items.toArray(new Item[0]));
     }
 
-    public static void autoInstallAbilities(GrovesPOI.GroveSanctuary sanctuary)
+    public static void autoInstallAbilities(GroveSanctuary sanctuary)
     {
         ABILITIES.values().stream().filter(GroveAbility::isAutoInstalled).forEach(ability -> sanctuary.installAbility(ability, 1));
     }
 
+    private static GroveAbility randomAbility(boolean allowNormal, boolean allowForbidden)
+    {
+        List<GroveAbility> abilities = ABILITIES.values().stream().filter(
+                ability ->
+                        (allowNormal && !ability.isForbidden()) ||
+                                (allowForbidden && ability.isForbidden())
+        ).toList();
+        int size = abilities.size();
+        if (size > 0)
+        {
+            int index = RNG.nextInt(size);
+            return abilities.get(index);
+        }
+
+        return null;
+    }
+
+    public static UnlockScrollItem randomScroll(boolean allowNormal, boolean allowForbidden)
+    {
+        // Get random ability
+        GroveAbility ability = randomAbility(allowNormal, allowForbidden);
+
+        if (ability == null) return null;
+
+        List<UnlockScrollItem> scrolls = UNLOCK_SCROLLS.get(ability.getName());
+
+        if (scrolls == null) return null;
+
+        int index = RNG.nextInt(scrolls.size());
+
+        return scrolls.get(index);
+    }
 }

@@ -4,6 +4,7 @@ import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.network.MoonwellScreenPayload;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import github.xevira.groves.screenhandler.MoonwellScreenHandler;
 import github.xevira.groves.util.ServerTickableBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -52,7 +53,7 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
     private boolean was_day = false;
     private int last_phase = 8;
 
-    private GrovesPOI.GroveSanctuary sanctuary = null;
+    private GroveSanctuary sanctuary = null;
 
     private final PropertyDelegate propertyDelegate = new PropertyDelegate() {
         @Override
@@ -103,8 +104,8 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
         if (this.world == null) return;
         if (this.world.isClient) return;
 
-        Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary((ServerWorld) this.world, this.pos);
-        sanctuary.ifPresent(GrovesPOI.GroveSanctuary::clearMoonwell);
+        Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary((ServerWorld) this.world, this.pos);
+        sanctuary.ifPresent(GroveSanctuary::clearMoonwell);
 
         this.world.playSound(null, this.pos, Registration.MOONWELL_DEACTIVATE_SOUND, SoundCategory.BLOCKS, 1.0f, 1.0f);
     }
@@ -116,7 +117,7 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
         if (this.world == null) return;
         if (this.world.isClient) return;
 
-        Optional<GrovesPOI.GroveSanctuary> sanctuary = GrovesPOI.getSanctuary((ServerWorld) this.world, this.pos);
+        Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary((ServerWorld) this.world, this.pos);
         sanctuary.ifPresent(groveSanctuary -> groveSanctuary.setMoonwell(this.pos));
     }
 

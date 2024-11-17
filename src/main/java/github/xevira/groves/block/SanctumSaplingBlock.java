@@ -46,7 +46,6 @@ public class SanctumSaplingBlock extends SaplingBlock {
                             BlockState blockState = Blocks.AIR.getDefaultState();
                             setSaplings(world, pos, i, j, blockState);
                             if (configuredFeature.generate(world, chunkGenerator, random, pos.add(i, 0, j))) {
-                                Groves.LOGGER.info("TREE AT {}", pos.add(i, 0, j));
                                 return;
                             }
 

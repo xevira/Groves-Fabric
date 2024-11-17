@@ -5,10 +5,10 @@ import github.xevira.groves.Groves;
 import github.xevira.groves.client.event.KeyInputHandler;
 import github.xevira.groves.network.ImprintPayload;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -66,11 +66,11 @@ public class ImprintingSigilItem extends Item {
                 float f = getPullProgress(i);
                 if (f > 0.9f) {
                     if (GrovesPOI.isValidGroveLocation((ServerWorld)world, player.getBlockPos(), this.enchanted)) {
-                        Either<GrovesPOI.GroveSanctuary, GrovesPOI.ImprintSanctuaryResult> result = GrovesPOI.imprintSanctuary(player, (ServerWorld)world, player.getBlockPos(), this.enchanted);
+                        Either<GroveSanctuary, GrovesPOI.ImprintSanctuaryResult> result = GrovesPOI.imprintSanctuary(player, (ServerWorld)world, player.getBlockPos(), this.enchanted);
 
                         if (result.left().isPresent()) {
 
-                            GrovesPOI.GroveSanctuary sanctuary = result.left().get();
+                            GroveSanctuary sanctuary = result.left().get();
                             // TODO: Play Sound
                             // TODO: Give them an item?  A guide book, perhaps?
                             stack.decrementUnlessCreative(1, player);

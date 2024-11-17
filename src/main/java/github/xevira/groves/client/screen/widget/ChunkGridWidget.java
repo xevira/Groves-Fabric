@@ -4,7 +4,7 @@ import github.xevira.groves.ClientConfig;
 import github.xevira.groves.Groves;
 import github.xevira.groves.network.ClaimChunkPayload;
 import github.xevira.groves.network.SetChunkLoadingPayload;
-import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.ClientGroveSanctuary;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -12,7 +12,6 @@ import net.minecraft.client.gui.ScreenRect;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.sound.SoundManager;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ChunkPos;
@@ -31,8 +30,8 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
 
     private static final int GRID_SIZE = 16;
 
-    private GrovesPOI.ClientGroveSanctuary.ChunkData origin;
-    private final Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> chunks;
+    private ClientGroveSanctuary.ChunkData origin;
+    private final Map<ChunkPos, ClientGroveSanctuary.ChunkData> chunks;
     private final Set<ChunkPos> available;
 
     private int centerX;
@@ -52,7 +51,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
     private ChunkPos mouseOverPos;
     private ScreenRect navigationFocus;
 
-    public ChunkGridWidget(int x, int y, int width, int height, Map<ChunkPos, GrovesPOI.ClientGroveSanctuary.ChunkData> chunks, Set<ChunkPos> available) {
+    public ChunkGridWidget(int x, int y, int width, int height, Map<ChunkPos, ClientGroveSanctuary.ChunkData> chunks, Set<ChunkPos> available) {
         super(x, y, width, height, Text.empty());
 
         this.navigationFocus = new ScreenRect(x, y, width, height);
@@ -76,7 +75,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
         this.south = MathHelper.floor((getBottom() - (this.centerY + (float)this.yOffset)) / (float)GRID_SIZE + 1);
     }
 
-    public ChunkGridWidget setOrigin(GrovesPOI.ClientGroveSanctuary.ChunkData origin)
+    public ChunkGridWidget setOrigin(ClientGroveSanctuary.ChunkData origin)
     {
         this.origin = origin;
         return this;
@@ -104,7 +103,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
     {
         if (this.mouseOverPos == null) return;
 
-        GrovesPOI.ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
+        ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
 
         MutableText tooltipText = Groves.text("tooltip", "groves.chunk.location", this.mouseOverPos.x, this.mouseOverPos.z);
         if (data != null)
@@ -159,7 +158,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
                 {
                     // Toggle Chunk load
                     if (this.mouseOverPos != null) {
-                        GrovesPOI.ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
+                        ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
 
                         if (data != null) {
                             data.setLoaded(!data.chunkLoad());
@@ -172,7 +171,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
                 {
                     // Purchase
                     if (this.mouseOverPos != null) {
-                        GrovesPOI.ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
+                        ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(this.mouseOverPos, null);
 
                         if (data == null && this.available.contains(this.mouseOverPos)) {
                             ClientPlayNetworking.send(new ClaimChunkPayload(this.mouseOverPos));
@@ -218,7 +217,7 @@ public class ChunkGridWidget extends ClickableTooltipWidget{
             {
                 ChunkPos pos = new ChunkPos(originPos.x + ew, originPos.z + ns);
 
-                GrovesPOI.ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(pos, null);
+                ClientGroveSanctuary.ChunkData data = this.chunks.getOrDefault(pos, null);
                 int x = ew * GRID_SIZE;
                 int y = ns * GRID_SIZE;
 

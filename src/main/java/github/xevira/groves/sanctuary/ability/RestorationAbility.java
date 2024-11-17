@@ -1,14 +1,13 @@
 package github.xevira.groves.sanctuary.ability;
 
 import github.xevira.groves.Groves;
-import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbility;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,7 +76,7 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     }
 
     @Override
-    public void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    public void sendFailure(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
 
         // Empty hand
@@ -93,12 +92,12 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     }
 
     @Override
-    public boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary) {
+    public boolean onServerTick(MinecraftServer server, GroveSanctuary sanctuary) {
         return false;
     }
 
     @Override
-    public boolean canUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    public boolean canUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
 
         // Empty hand
@@ -117,7 +116,7 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
     }
 
     @Override
-    protected boolean onUse(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected boolean onUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
 
         if (!stack.isEmpty() && stack.isDamaged())

@@ -4,9 +4,7 @@ import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
 import github.xevira.groves.item.UnlockScrollItem;
-import github.xevira.groves.poi.GrovesPOI;
-import github.xevira.groves.sanctuary.GroveAbilities;
-import github.xevira.groves.sanctuary.GroveAbility;
+import github.xevira.groves.sanctuary.*;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.item.Item;
@@ -154,6 +152,8 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.UNLOCK_SCROLL_ITEM, "Blank Unlock Scroll");
         addText(translationBuilder, Registration.UNLOCK_SCROLL_ITEM, ".lore", "Craft with the required ingredients to make Grove Sanctuary unlock scrolls.");
 
+        addText(translationBuilder, "entity", "druid", "Druid");
+
         addText(translationBuilder, "tooltip", "hold.shift", "Hold Shift for more information.");
 
         addText(translationBuilder, "tooltip", "ability.cost.start", "Start Cost:");
@@ -200,12 +200,18 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
             }
         }
 
+        for(GroveUnlock unlock : GroveUnlocks.UNLOCK_MAP.values())
+        {
+            addText(translationBuilder, "toast", unlock.getName() + ".title", unlock.getEnglishToastTitle());
+            addText(translationBuilder, "toast", unlock.getName() + ".text", unlock.getEnglishToastText());
+        }
+
         translationBuilder.addEnchantment(Registration.LIGHT_FOOTED_ENCHANTMENT_KEY, "Light Footed");
         translationBuilder.addEnchantment(Registration.SOLAR_REPAIR_ENCHANTMENT_KEY, "Solar Repair");
         translationBuilder.addEnchantment(Registration.THUNDERING_ENCHANTMENT_KEY, "Thundering");
 
         addText(translationBuilder, MoonwellMultiblockMasterBlockEntity.TITLE, "Moonwell");
-        addText(translationBuilder, GrovesPOI.GroveSanctuary.TITLE, "Grove Sanctuary");
+        addText(translationBuilder, GroveSanctuary.TITLE, "Grove Sanctuary");
 
         addText(translationBuilder, "itemgroup", "groves_items", "Groves");
 
@@ -225,6 +231,18 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "lore", "lunar_phase.first_quarter_day", "First Quarter to Waxing Gibbous");
         addText(translationBuilder, "lore", "lunar_phase.waxing_gibbous", "Waxing Gibbous");
         addText(translationBuilder, "lore", "lunar_phase.waxing_gibbous_day", "Waxing Gibbous to Full Moon");
+
+        addText(translationBuilder, "sound", "druid.appeared", "Druid appears");
+        addText(translationBuilder, "sound", "druid.ambient", "Druid mumbles");
+        addText(translationBuilder, "sound", "druid.death", "Druid dies");
+        addText(translationBuilder, "sound", "druid.disappeared", "Druid disappears");
+        addText(translationBuilder, "sound", "druid.drink_milk", "Druid drinks milk");
+        addText(translationBuilder, "sound", "druid.drink_potion", "Druid drinks potion");
+        addText(translationBuilder, "sound", "druid.hurt", "Druid hurts");
+        addText(translationBuilder, "sound", "druid.no", "Druid disagrees");
+        addText(translationBuilder, "sound", "druid.reappeared", "Druid appears");
+        addText(translationBuilder, "sound", "druid.trade", "Druid trades");
+        addText(translationBuilder, "sound", "druid.yes", "Druid agrees");
 
         addText(translationBuilder, "sound", "moonwell.activate", "Moonwell activates");
         addText(translationBuilder, "sound", "moonwell.deactivate", "Moonwell deactivates");

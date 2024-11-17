@@ -1,18 +1,15 @@
 package github.xevira.groves.sanctuary.ability;
 
 import github.xevira.groves.Groves;
-import github.xevira.groves.poi.GrovesPOI;
 import github.xevira.groves.sanctuary.GroveAbility;
-import net.minecraft.client.util.InputUtil;
+import github.xevira.groves.sanctuary.GroveSanctuary;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
@@ -91,18 +88,18 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public boolean canActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    public boolean canActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         return sanctuary.getStoredSunlight() >= startCost();
     }
 
     @Override
-    public void sendFailure(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player)
+    public void sendFailure(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
     {
         sendError(player, Groves.text("text", "ability.not_enough_sunlight.activate", startCost()), false);
     }
 
     @Override
-    protected void onActivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         // TODO:
         sanctuary.setChunkLoading(true);
         sanctuary.useSunlight(startCost());
@@ -110,7 +107,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    protected void onDeactivate(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary, PlayerEntity player) {
+    protected void onDeactivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         sanctuary.setChunkLoading(false);
 
         if (player == null)
@@ -121,7 +118,7 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public boolean onServerTick(MinecraftServer server, GrovesPOI.GroveSanctuary sanctuary) {
+    public boolean onServerTick(MinecraftServer server, GroveSanctuary sanctuary) {
         long cost = tickCost() * sanctuary.totalChunks();
 
         if (sanctuary.getStoredSunlight() < cost)

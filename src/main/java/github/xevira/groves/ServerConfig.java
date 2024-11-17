@@ -68,7 +68,7 @@ public class ServerConfig {
     private void resetCosts()
     {
         this.costMap.clear();
-        this.costMap.put("baseClaimChunk", 50000L);
+        this.costMap.put("baseClaimChunk", 10000L);
         this.costMap.put("formMoonwell", 100000L);
     }
 
@@ -89,6 +89,7 @@ public class ServerConfig {
     private void resetFoliagePower()
     {
         this.foliageMap.clear();
+        addFoliagePower(Registration.SANCTUM_LEAVES_BLOCK, 10);     // SUPER powerful
         addFoliagePower(Blocks.ACACIA_LEAVES, 1);
         addFoliagePower(Blocks.AZALEA_LEAVES, 1);
         addFoliagePower(Blocks.BIRCH_LEAVES, 1);

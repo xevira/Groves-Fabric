@@ -1,9 +1,11 @@
 package github.xevira.groves;
 
 import github.xevira.groves.client.event.KeyInputHandler;
+import github.xevira.groves.client.renderer.DruidEntityRenderer;
 import github.xevira.groves.client.renderer.MoonwellFluidLevelBER;
 import github.xevira.groves.client.screen.GrovesSanctuaryScreen;
 import github.xevira.groves.client.screen.MoonwellScreen;
+import github.xevira.groves.entity.passive.DruidEntity;
 import github.xevira.groves.events.client.HudRenderEvents;
 import github.xevira.groves.item.MoonPhialItem;
 import github.xevira.groves.network.Networking;
@@ -11,11 +13,16 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
+import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.client.render.entity.model.ModelTransformer;
+import net.minecraft.client.render.entity.model.VillagerResemblingModel;
 
 public class GrovesClient implements ClientModInitializer {
     @Override
@@ -28,8 +35,15 @@ public class GrovesClient implements ClientModInitializer {
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutoutMipped(),
                 Registration.SANCTUM_LEAVES_BLOCK);
 
+        // Model Layers
+        ModelTransformer modelTransformer = ModelTransformer.scaling(0.9375F);
+        EntityModelLayerRegistry.registerModelLayer(DruidEntityRenderer.MAIN_LAYER, () -> TexturedModelData.of(VillagerResemblingModel.getModelData(), 64, 64).transform(modelTransformer));
+
         // Block Renderers
         BlockEntityRendererFactories.register(Registration.MOONWELL_FAKE_FLUID_BLOCK_ENTITY, MoonwellFluidLevelBER::new);
+
+        // Entity Renderers
+        EntityRendererRegistry.register(Registration.DRUID_ENTITY, DruidEntityRenderer::new);
 
         // Fluid Renderers
         FluidRenderHandlerRegistry.INSTANCE.register(Registration.BLESSED_MOON_WATER_FLUID, Registration.FLOWING_BLESSED_MOON_WATER_FLUID,

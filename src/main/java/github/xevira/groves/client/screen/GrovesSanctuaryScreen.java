@@ -5,7 +5,7 @@ import github.xevira.groves.ClientConfig;
 import github.xevira.groves.Groves;
 import github.xevira.groves.client.screen.widget.*;
 import github.xevira.groves.network.*;
-import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.ClientGroveSanctuary;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.util.ColorPulser;
@@ -24,12 +24,10 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -61,8 +59,8 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         this.tabBackgroundWidth = 162;
         this.tabBackgroundHeight = 131;
 
-        List<GrovesPOI.ClientGroveSanctuary.ChunkData> chunks = this.handler.getSanctuary().getChunks();
-        for(GrovesPOI.ClientGroveSanctuary.ChunkData chunk : chunks)
+        List<ClientGroveSanctuary.ChunkData> chunks = this.handler.getSanctuary().getChunks();
+        for(ClientGroveSanctuary.ChunkData chunk : chunks)
         {
             Groves.LOGGER.info("Screen: chunk = {} ({})", chunk.pos(), chunk.chunkLoad());
         }
@@ -569,7 +567,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         public void drawForeground(DrawContext context, int mouseX, int mouseY) {
             context.enableScissor(this.wx + this.x + 1, this.wy + this.y + 13, this.wx + this.x + 145, this.wy + this.y + 109);
 
-            List<GrovesPOI.ClientGroveSanctuary.ChunkData> chunks = this.handler.getChunks();
+            List<ClientGroveSanctuary.ChunkData> chunks = this.handler.getChunks();
             int startIndex;
             int endIndex;
             int yOffset;
@@ -591,7 +589,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             int y = 13 - yOffset;
             for(int i = startIndex; i <= endIndex; i++)
             {
-                GrovesPOI.ClientGroveSanctuary.ChunkData chunk = chunks.get(i);
+                ClientGroveSanctuary.ChunkData chunk = chunks.get(i);
 
                 // Do a button
 
@@ -608,7 +606,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
 
             int scrollBarY = (int)(82.0F * this.scrollPosition);
 
-            List<GrovesPOI.ClientGroveSanctuary.ChunkData> chunks = this.handler.getChunks();
+            List<ClientGroveSanctuary.ChunkData> chunks = this.handler.getChunks();
             int pixels = chunks.size() * ROW_HEIGHT;
             Identifier bar = (pixels > 97) ? GrovesSanctuaryScreen.SCROLLBAR : GrovesSanctuaryScreen.SCROLLBAR_DISABLED;
             context.drawGuiTexture(RenderLayer::getGuiTextured, bar, this.wx + this.x + 149, this.wy + this.y + 13 + scrollBarY, 12, 15);
@@ -617,7 +615,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             this.scrollbarClicked = false;
-            List<GrovesPOI.ClientGroveSanctuary.ChunkData> chunks = this.handler.getChunks();
+            List<ClientGroveSanctuary.ChunkData> chunks = this.handler.getChunks();
             int pixels = chunks.size() * ROW_HEIGHT;
 
             if (pixels > 97 && isMouseInsideTabElement(149, 13, 12, 97, mouseX, mouseY))
@@ -1227,16 +1225,16 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             boolean start = false;
             boolean stop = false;
             boolean use = false;
-            for (GroveAbility ability : this.abilityListWidget.getSelected()) {
-                if (ability.isAutomatic())
-                {
-                    if (ability.isActive())
-                        stop = true;
-                    else if (ability.isEnabled())
-                        start = true;
+            if (this.abilityListWidget.getSelectedCount() > 0) {
+                for (GroveAbility ability : this.abilityListWidget.getSelected()) {
+                    if (ability.isAutomatic()) {
+                        if (ability.isActive())
+                            stop = true;
+                        else if (ability.isEnabled())
+                            start = true;
+                    } else if (ability.isEnabled())
+                        use = true;
                 }
-                else if (ability.isEnabled())
-                    use = true;
             }
 
             this.startButtonWidget.active = start;

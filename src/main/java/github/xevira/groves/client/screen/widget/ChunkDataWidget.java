@@ -1,13 +1,11 @@
 package github.xevira.groves.client.screen.widget;
 
 import github.xevira.groves.Groves;
-import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.ClientGroveSanctuary;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 
 public class ChunkDataWidget extends ClickableTooltipWidget {
@@ -17,14 +15,14 @@ public class ChunkDataWidget extends ClickableTooltipWidget {
     private static final Text TOOLTIP_ON = Groves.text("tooltip", "groves.chunks.keep_loaded.on");
     private static final Text TOOLTIP_OFF = Groves.text("tooltip", "groves.chunks.keep_loaded.off");
 
-    private final GrovesPOI.ClientGroveSanctuary.ChunkData chunkData;
+    private final ClientGroveSanctuary.ChunkData chunkData;
 
     private final ToggleButtonWidget chunkLoadToggleButton;
     private final TextRenderer textRenderer;
 
     private final ChunkLoadingToggled toggled;
 
-    public ChunkDataWidget(int x, int y, int width, int height, GrovesPOI.ClientGroveSanctuary.ChunkData chunkData, ChunkLoadingToggled toggled) {
+    public ChunkDataWidget(int x, int y, int width, int height, ClientGroveSanctuary.ChunkData chunkData, ChunkLoadingToggled toggled) {
         super(x, y, width, height, Text.empty());
 
         this.textRenderer = MinecraftClient.getInstance().textRenderer;
@@ -37,7 +35,7 @@ public class ChunkDataWidget extends ClickableTooltipWidget {
         this.toggled = toggled;
     }
 
-    public boolean isChunkData(GrovesPOI.ClientGroveSanctuary.ChunkData chunk)
+    public boolean isChunkData(ClientGroveSanctuary.ChunkData chunk)
     {
         return this.chunkData.pos().equals(chunk.pos());
     }
