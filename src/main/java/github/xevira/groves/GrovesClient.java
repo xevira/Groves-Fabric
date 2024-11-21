@@ -1,5 +1,6 @@
 package github.xevira.groves;
 
+import com.terraformersmc.terraform.boat.api.client.TerraformBoatClientHelper;
 import github.xevira.groves.client.event.KeyInputHandler;
 import github.xevira.groves.client.renderer.DruidEntityRenderer;
 import github.xevira.groves.client.renderer.MoonwellFluidLevelBER;
@@ -30,10 +31,15 @@ public class GrovesClient implements ClientModInitializer {
         // Render Layers
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
                 Registration.SANCTUM_SAPLING_BLOCK,
+                Registration.SANCTUM_DOOR_BLOCK,
+                Registration.SANCTUM_TRAPDOOR_BLOCK,
                 Registration.MOONWELL_BASIN_BLOCK);
 
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutoutMipped(),
                 Registration.SANCTUM_LEAVES_BLOCK);
+
+        // Boats
+        TerraformBoatClientHelper.registerModelLayers(Registration.SANCTUM_BOAT_ID);
 
         // Model Layers
         ModelTransformer modelTransformer = ModelTransformer.scaling(0.9375F);

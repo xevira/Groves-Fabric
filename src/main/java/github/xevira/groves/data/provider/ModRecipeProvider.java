@@ -8,17 +8,23 @@ import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.util.WaxHelper;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.block.Block;
+import net.minecraft.data.family.BlockFamily;
 import net.minecraft.data.server.recipe.RecipeExporter;
 import net.minecraft.data.server.recipe.RecipeGenerator;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.ShapelessRecipe;
 import net.minecraft.recipe.SmeltingRecipe;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.resource.featuretoggle.FeatureSet;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -159,6 +165,175 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 generateLunarCycleStonecutting(RecipeCategory.BUILDING_BLOCKS, Registration.MOONSTONE_BRICKS_BLOCK, CHISELED_MOONSTONE);
             }
 
+            private void planks(TagKey<Item> logs, Block planks)
+            {
+                createShapeless(RecipeCategory.BUILDING_BLOCKS, planks, 4)
+                        .input(logs)
+                        .criterion(hasTag(logs), conditionsFromTag(logs))
+                        .offerTo(exporter);
+            }
+
+            private void slab(Block block, Block slab)
+            {
+                createShaped(RecipeCategory.BUILDING_BLOCKS, slab, 6)
+                        .input('b', block)
+                        .pattern("bbb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .offerTo(exporter);
+            }
+
+            private void stairs(Block block, Block stairs)
+            {
+                createShaped(RecipeCategory.BUILDING_BLOCKS, stairs, 4)
+                        .input('b', block)
+                        .pattern("b  ")
+                        .pattern("bb ")
+                        .pattern("bbb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .offerTo(exporter);
+            }
+
+            private void door(Block block, Block door)
+            {
+                createShaped(RecipeCategory.BUILDING_BLOCKS, door, 3)
+                        .input('b', block)
+                        .pattern("bb")
+                        .pattern("bb")
+                        .pattern("bb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .offerTo(exporter);
+            }
+
+            private void trapdoor(Block block, Block trapdoor)
+            {
+                createShaped(RecipeCategory.BUILDING_BLOCKS, trapdoor, 2)
+                        .input('b', block)
+                        .pattern("bb")
+                        .pattern("bb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .offerTo(exporter);
+            }
+
+            private void pressureplate(Block block, Block plate)
+            {
+                createShaped(RecipeCategory.REDSTONE, plate, 2)
+                        .input('b', block)
+                        .pattern("bb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .offerTo(exporter);
+            }
+
+            private void button(Block block, Block button)
+            {
+                createShapeless(RecipeCategory.REDSTONE, button)
+                        .input(block)
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .offerTo(exporter);
+            }
+
+            private void fence(Block block, Block fence)
+            {
+                createShaped(RecipeCategory.BUILDING_BLOCKS, fence, 3)
+                        .input('b', block)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("bsb")
+                        .pattern("bsb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
+            private void gate(Block block, Block gate)
+            {
+                createShaped(RecipeCategory.BUILDING_BLOCKS, gate)
+                        .input('b', block)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("sbs")
+                        .pattern("sbs")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
+            private void sign(Block block, Block sign)
+            {
+                createShaped(RecipeCategory.DECORATIONS, sign, 3)
+                        .input('b', block)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("bbb")
+                        .pattern("bbb")
+                        .pattern(" s ")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
+            private void hanging(Block block, Block sign)
+            {
+                createShaped(RecipeCategory.DECORATIONS, sign, 6)
+                        .input('b', block)
+                        .input('c', ConventionalItemTags.CHAINS)
+                        .pattern("c c")
+                        .pattern("bbb")
+                        .pattern("bbb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .criterion(hasTag(ConventionalItemTags.CHAINS), conditionsFromTag(ConventionalItemTags.CHAINS))
+                        .offerTo(exporter);
+            }
+
+            private void boat(Block block, Item boat)
+            {
+                createShaped(RecipeCategory.TRANSPORTATION, boat)
+                        .input('b', block)
+                        .pattern("b b")
+                        .pattern("bbb")
+                        .criterion(hasItem(block), conditionsFromItem(block))
+                        .offerTo(exporter);
+            }
+
+            private void chestboat(Item boat, Item chestboat)
+            {
+                createShapeless(RecipeCategory.TRANSPORTATION, chestboat)
+                        .input(boat)
+                        .input(ConventionalItemTags.WOODEN_CHESTS)
+                        .criterion(hasItem(boat), conditionsFromItem(boat))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_CHESTS), conditionsFromTag(ConventionalItemTags.WOODEN_CHESTS))
+                        .offerTo(exporter);
+            }
+
+            private void generateSanctumRecipes()
+            {
+                planks(Registration.SANCTUM_LOG_ITEMS, Registration.SANCTUM_PLANKS_BLOCK);
+                slab(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_SLAB_BLOCK);
+                stairs(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_STAIRS_BLOCK);
+                door(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_DOOR_BLOCK);
+                trapdoor(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_TRAPDOOR_BLOCK);
+                fence(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_FENCE_BLOCK);
+                gate(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_FENCE_GATE_BLOCK);
+                button(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_BUTTON_BLOCK);
+                pressureplate(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_PRESSURE_PLATE_BLOCK);
+                sign(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_SIGN_BLOCK);
+                hanging(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_HANGING_SIGN_BLOCK);
+                boat(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_BOAT_ITEM);
+                chestboat(Registration.SANCTUM_BOAT_ITEM, Registration.SANCTUM_CHEST_BOAT_ITEM);
+
+                BlockFamily sanctumFamily = new BlockFamily.Builder(Registration.SANCTUM_PLANKS_BLOCK)
+                        .button(Registration.SANCTUM_BUTTON_BLOCK)
+                        .fence(Registration.SANCTUM_FENCE_BLOCK)
+                        .fenceGate(Registration.SANCTUM_FENCE_GATE_BLOCK)
+                        .pressurePlate(Registration.SANCTUM_PRESSURE_PLATE_BLOCK)
+                        .sign(Registration.SANCTUM_SIGN_BLOCK, Registration.SANCTUM_WALL_SIGN_BLOCK)
+                        .slab(Registration.SANCTUM_SLAB_BLOCK)
+                        .stairs(Registration.SANCTUM_STAIRS_BLOCK)
+                        .door(Registration.SANCTUM_DOOR_BLOCK)
+                        .trapdoor(Registration.SANCTUM_TRAPDOOR_BLOCK)
+                        .group("wooden")
+                        .unlockCriterionName("has_planks")
+                        .build();
+
+                generateFamily(sanctumFamily, FeatureSet.empty());
+            }
+
             private void smelt(List<ItemConvertible> inputs, RecipeCategory category, ItemConvertible output, float experience, int cookingTime, String group)
             {
                 offerSmelting(inputs, category, output, experience, cookingTime, group);
@@ -170,6 +345,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 
                 generateMoonstoneRecipes();
                 generateUnlockScrollRecipes();
+                generateSanctumRecipes();
 
                 createShaped(RecipeCategory.MISC, Registration.IMPRINTING_SIGIL_ITEM, 1)
                         .input('a', Registration.AQUAMARINE_ITEM)
@@ -203,6 +379,10 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 
     @Override
     public String getName() {
-        return "Groves Recipe Provider";
+        return "Recipe Provider";
+    }
+
+    private static @NotNull String hasTag(@NotNull TagKey<Item> tag) {
+        return "has_" + tag.id().toString();
     }
 }

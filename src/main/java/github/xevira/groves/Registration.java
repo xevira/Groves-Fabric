@@ -1,5 +1,10 @@
 package github.xevira.groves;
 
+import com.terraformersmc.terraform.boat.api.item.TerraformBoatItemHelper;
+import com.terraformersmc.terraform.sign.api.block.TerraformHangingSignBlock;
+import com.terraformersmc.terraform.sign.api.block.TerraformSignBlock;
+import com.terraformersmc.terraform.sign.api.block.TerraformWallHangingSignBlock;
+import com.terraformersmc.terraform.sign.api.block.TerraformWallSignBlock;
 import com.mojang.serialization.MapCodec;
 import github.xevira.groves.block.*;
 import github.xevira.groves.block.entity.*;
@@ -22,11 +27,19 @@ import github.xevira.groves.worldgen.foliage.SanctumFoliagePlacer;
 import github.xevira.groves.worldgen.trunk.SanctumTrunkPlacer;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
+import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
+import net.fabricmc.fabric.api.registry.CompostingChanceRegistry;
+import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
+import net.fabricmc.fabric.api.registry.FuelRegistryEvents;
+import net.fabricmc.fabric.api.registry.StrippableBlockRegistry;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.fabricmc.fabric.api.object.builder.v1.block.type.WoodTypeBuilder;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -46,23 +59,28 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.structure.rule.RuleTest;
+import net.minecraft.structure.rule.TagMatchRuleTest;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.gen.GenerationStep;
+import net.minecraft.world.gen.YOffset;
 import net.minecraft.world.gen.feature.*;
 import net.minecraft.world.gen.feature.size.TwoLayersFeatureSize;
 import net.minecraft.world.gen.foliage.FoliagePlacer;
 import net.minecraft.world.gen.foliage.FoliagePlacerType;
-import net.minecraft.world.gen.placementmodifier.PlacementModifier;
+import net.minecraft.world.gen.placementmodifier.*;
 import net.minecraft.world.gen.stateprovider.SimpleBlockStateProvider;
 import net.minecraft.world.gen.trunk.TrunkPlacer;
 import net.minecraft.world.gen.trunk.TrunkPlacerType;
@@ -73,6 +91,8 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class Registration {
+    public static final Map<Item, Item> BLOCK_TO_BLESSED = new HashMap<>();
+
     @SuppressWarnings("UnstableApiUsage")
     public static final AttachmentType<GrovesPOI.ClientGroveSanctuaryColorData> SANCTUARY_COLOR_DATA =
             AttachmentRegistry.createPersistent(Groves.id("sanctuary_color_data"),
@@ -92,18 +112,10 @@ public class Registration {
             RegistryKey.of(RegistryKeys.JUKEBOX_SONG, Groves.id("into_the_heart_of_the_universe"));
 
     // Wood Types
-    public static final WoodType SANCTUM_WOODTYPE = new WoodType(
-            Groves.id("sanctum").toString(),
-            SANCTUM_BLOCKSET,
-            BlockSoundGroup.WOOD,
-            BlockSoundGroup.HANGING_SIGN,
-            SoundEvents.BLOCK_FENCE_GATE_CLOSE,
-            SoundEvents.BLOCK_FENCE_GATE_OPEN
-    );
+//    public static final WoodType SANCTUM_WOODTYPE = new WoodTypeBuilder().register(Groves.id("sanctum"), SANCTUM_BLOCKSET);
 
-    // Component Types
-    public static final ComponentType<GroveAbility> GROVE_ABILITY =
-            registerComponent("grove_ability", builder -> builder.codec(GroveAbility.CODEC));
+    // Boats
+    public static final Identifier SANCTUM_BOAT_ID = Groves.id("sanctum");
 
     // Worldgen
 
@@ -114,9 +126,11 @@ public class Registration {
     public static final TrunkPlacerType<SanctumTrunkPlacer> SANCTUM_TRUNK_PLACER = registerTrunkPlacer("sanctum_trunk_placer", SanctumTrunkPlacer.CODEC);
 
     // - Configured Features
+    public static final RegistryKey<ConfiguredFeature<?, ?>> AQUAMARINE_ORE_CONFIG_KEY = registerConfigKey("aquamarine_ore");
     public static final RegistryKey<ConfiguredFeature<?, ?>> SANCTUM_TREE_CONFIG_KEY = registerConfigKey("sanctum_tree");
 
     // - Placed Features
+    public static final RegistryKey<PlacedFeature> AQUAMARINE_ORE_PLACED_KEY = registerPlacedKey("aquamarine_ore");
     public static final RegistryKey<PlacedFeature> SANCTUM_TREE_PLACED_KEY = registerPlacedKey("sanctum_tree");
 
     // Block Settings
@@ -204,6 +218,118 @@ public class Registration {
             "potted_sanctun_sapling",
             settings -> new FlowerPotBlock(SANCTUM_SAPLING_BLOCK, settings),
             Blocks.createFlowerPotSettings());
+
+
+    public static final Block SANCTUM_PLANKS_BLOCK = register(
+            "sanctum_planks",
+            Block::new,
+            AbstractBlock.Settings.create().mapColor(MapColor.ORANGE).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).sounds(BlockSoundGroup.WOOD).burnable()
+    );
+
+    public static final Block SANCTUM_SLAB_BLOCK = register(
+            "sanctum_slab",
+            SlabBlock::new,
+            AbstractBlock.Settings.create().mapColor(MapColor.ORANGE).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).sounds(BlockSoundGroup.WOOD).burnable()
+    );
+
+    public static final Block SANCTUM_BUTTON_BLOCK = register(
+            "sanctum_button",
+            settings -> new ButtonBlock(SANCTUM_BLOCKSET, 30, settings),
+            Blocks.createButtonSettings()
+    );
+
+    @SuppressWarnings("deprecation")
+    public static final Block SANCTUM_STAIRS_BLOCK = register(
+            "sanctum_stairs",
+            settings -> new StairsBlock(SANCTUM_PLANKS_BLOCK.getDefaultState(), settings),
+            AbstractBlock.Settings.copyShallow(SANCTUM_PLANKS_BLOCK)
+    );
+
+    public static final Block SANCTUM_DOOR_BLOCK = register(
+            "sanctum_door",
+            settings -> new DoorBlock(SANCTUM_BLOCKSET, settings),
+            AbstractBlock.Settings.create()
+                    .mapColor(SANCTUM_PLANKS_BLOCK.getDefaultMapColor())
+                    .instrument(NoteBlockInstrument.BASS)
+                    .strength(3.0F)
+                    .nonOpaque()
+                    .burnable()
+                    .pistonBehavior(PistonBehavior.DESTROY)
+    );
+
+    public static final Block SANCTUM_TRAPDOOR_BLOCK = register(
+            "sanctum_trapdoor",
+            settings -> new TrapdoorBlock(SANCTUM_BLOCKSET, settings),
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.ORANGE)
+                    .instrument(NoteBlockInstrument.BASS)
+                    .strength(3.0F)
+                    .nonOpaque()
+                    .allowsSpawning(Blocks::never)
+                    .burnable()
+    );
+
+    public static final Block SANCTUM_SIGN_BLOCK = register(
+            "sanctum_sign",
+            settings -> new TerraformSignBlock(Groves.id("entity/signs/sanctum"), settings),
+            AbstractBlock.Settings.create().mapColor(MapColor.ORANGE).solid().instrument(NoteBlockInstrument.BASS).noCollision().strength(1.0F).burnable()
+    );
+
+    public static final Block SANCTUM_WALL_SIGN_BLOCK = register(
+            "sanctum_wall_sign",
+            settings -> new TerraformWallSignBlock(Groves.id("entity/signs/sanctum"), settings),
+            copyLootTable(SANCTUM_SIGN_BLOCK, true).mapColor(MapColor.ORANGE).solid().instrument(NoteBlockInstrument.BASS).noCollision().strength(1.0F).burnable()
+    );
+
+    public static final Block SANCTUM_HANGING_SIGN_BLOCK = register(
+            "sanctum_hanging_sign",
+            settings -> new TerraformHangingSignBlock(Groves.id("entity/signs/hanging/sanctum"), Groves.id("textures/gui/hanging_signs/sanctum"), settings),
+            AbstractBlock.Settings.create().mapColor(SANCTUM_LOG_BLOCK.getDefaultMapColor()).solid().instrument(NoteBlockInstrument.BASS).noCollision().strength(1.0F).burnable()
+    );
+
+    public static final Block SANCTUM_WALL_HANGING_SIGN_BLOCK = register(
+            "sanctum_wall_hanging_sign",
+            settings -> new TerraformWallHangingSignBlock(Groves.id("entity/signs/hanging/sanctum"), Groves.id("textures/gui/hanging_signs/sanctum"), settings),
+            copyLootTable(SANCTUM_HANGING_SIGN_BLOCK, true)
+                    .mapColor(SANCTUM_LOG_BLOCK.getDefaultMapColor())
+                    .solid()
+                    .instrument(NoteBlockInstrument.BASS)
+                    .noCollision()
+                    .strength(1.0F)
+                    .burnable()
+    );
+
+    public static final Block SANCTUM_PRESSURE_PLATE_BLOCK = register(
+            "sanctum_pressure_plate",
+            settings -> new PressurePlateBlock(SANCTUM_BLOCKSET, settings),
+            AbstractBlock.Settings.create()
+                    .mapColor(SANCTUM_PLANKS_BLOCK.getDefaultMapColor())
+                    .solid()
+                    .instrument(NoteBlockInstrument.BASS)
+                    .noCollision()
+                    .strength(0.5F)
+                    .burnable()
+                    .pistonBehavior(PistonBehavior.DESTROY)
+    );
+
+    public static final Block SANCTUM_FENCE_BLOCK = register(
+            "sanctum_fence",
+            FenceBlock::new,
+            AbstractBlock.Settings.create()
+                    .mapColor(SANCTUM_PLANKS_BLOCK.getDefaultMapColor())
+                    .solid()
+                    .instrument(NoteBlockInstrument.BASS)
+                    .strength(2.0F, 3.0F)
+                    .sounds(BlockSoundGroup.WOOD)
+                    .burnable()
+    );
+
+    public static final Block SANCTUM_FENCE_GATE_BLOCK = register(
+            "sanctum_fence_gate",
+            settings -> new FenceGateBlock(WoodType.OAK, settings),
+            AbstractBlock.Settings.create().mapColor(SANCTUM_PLANKS_BLOCK.getDefaultMapColor()).solid().instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).burnable()
+    );
+
 
     @SuppressWarnings("deprecation")        // Vanilla uses copyShallow.
     public static final Block DEEPSLATE_AQUAMARINE_ORE_BLOCK = register(
@@ -509,6 +635,40 @@ public class Registration {
 
     public static final Item SANCTUM_SAPLING_ITEM = register(SANCTUM_SAPLING_BLOCK);
 
+    public static final Item SANCTUM_PLANKS_ITEM = register(SANCTUM_PLANKS_BLOCK);
+
+    public static final Item SANCTUM_SLAB_ITEM = register(SANCTUM_SLAB_BLOCK);
+
+    public static final Item SANCTUM_BUTTON_ITEM = register(SANCTUM_BUTTON_BLOCK);
+
+    public static final Item SANCTUM_STAIRS_ITEM = register(SANCTUM_STAIRS_BLOCK);
+
+    public static final Item SANCTUM_DOOR_ITEM = register(SANCTUM_DOOR_BLOCK);
+
+    public static final Item SANCTUM_TRAPDOOR_ITEM = register(SANCTUM_TRAPDOOR_BLOCK);
+
+    public static final SignItem SANCTUM_SIGN_ITEM = register(
+            "sanctum_sign",
+            settings -> new SignItem(SANCTUM_SIGN_BLOCK, SANCTUM_WALL_SIGN_BLOCK, settings),
+            new Item.Settings().maxCount(16)
+    );
+
+    public static final HangingSignItem SANCTUM_HANGING_SIGN_ITEM = register(
+            "sanctum_hanging_sign",
+            settings -> new HangingSignItem(SANCTUM_HANGING_SIGN_BLOCK, SANCTUM_WALL_HANGING_SIGN_BLOCK, settings),
+            new Item.Settings().maxCount(16)
+    );
+
+    public static final Item SANCTUM_PRESSURE_PLATE_ITEM = register(SANCTUM_PRESSURE_PLATE_BLOCK);
+
+    public static final Item SANCTUM_FENCE_ITEM = register(SANCTUM_FENCE_BLOCK);
+
+    public static final Item SANCTUM_FENCE_GATE_ITEM = register(SANCTUM_FENCE_GATE_BLOCK);
+
+    public static final Item SANCTUM_BOAT_ITEM = TerraformBoatItemHelper.registerBoatItem(SANCTUM_BOAT_ID, false);
+
+    public static final Item SANCTUM_CHEST_BOAT_ITEM = TerraformBoatItemHelper.registerBoatItem(SANCTUM_BOAT_ID, true);
+
     public static final Item AQUAMARINE_ORE_ITEM = register(AQUAMARINE_ORE_BLOCK);
 
     public static final Item AQUAMARINE_BLOCK_ITEM = register(AQUAMARINE_BLOCK_BLOCK);
@@ -709,6 +869,8 @@ public class Registration {
 
     public static final TagKey<Block> SANCTUM_LOG_BLOCKS = registerBlockTag("sanctum_log_blocks");
 
+    public static final TagKey<Item> SANCTUM_LOG_ITEMS = registerItemTag("sanctum_log_items");
+
     /** Valid fluids considered {@code Blessed Moon Water} **/
     public static final TagKey<Fluid> BLESSED_MOON_WATERS_TAG = registerFluidTag("blessed_moon_waters");
 
@@ -729,6 +891,20 @@ public class Registration {
             STRIPPED_SANCTUM_WOOD_ITEM,
             SANCTUM_LEAVES_ITEM,
             SANCTUM_SAPLING_ITEM,
+
+            SANCTUM_PLANKS_ITEM,
+            SANCTUM_SLAB_ITEM,
+            SANCTUM_STAIRS_ITEM,
+            SANCTUM_DOOR_ITEM,
+            SANCTUM_TRAPDOOR_ITEM,
+            SANCTUM_BUTTON_ITEM,
+            SANCTUM_PRESSURE_PLATE_ITEM,
+            SANCTUM_FENCE_ITEM,
+            SANCTUM_FENCE_GATE_ITEM,
+            SANCTUM_SIGN_ITEM,
+            SANCTUM_HANGING_SIGN_ITEM,
+            SANCTUM_BOAT_ITEM,
+            SANCTUM_CHEST_BOAT_ITEM,
 
             // Moonstone blocks
             MOONSTONE_BRICKS_ITEM,
@@ -974,9 +1150,27 @@ public class Registration {
         context.register(key, new PlacedFeature(config, List.copyOf(modifiers)));
     }
 
+    private static AbstractBlock.Settings copyLootTable(Block block, boolean copyTranslationKey) {
+        AbstractBlock.Settings settings = block.getSettings();
+        AbstractBlock.Settings settings2 = AbstractBlock.Settings.create().lootTable(block.getLootTableKey());
+        if (copyTranslationKey) {
+            settings2 = settings2.overrideTranslationKey(block.getTranslationKey());
+        }
+
+        return settings2;
+    }
+
     public static void bootstrapConfiguredFeature(Registerable<ConfiguredFeature<?, ?>> context)
     {
-        Groves.LOGGER.info("bootstrapConfiguredFeature");
+        RuleTest stoneOreReplaceables = new TagMatchRuleTest(BlockTags.STONE_ORE_REPLACEABLES);
+        RuleTest deepslateOreReplaceables = new TagMatchRuleTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES);
+
+        List<OreFeatureConfig.Target> overworldAquamarineTargets = List.of(
+                OreFeatureConfig.createTarget(stoneOreReplaceables, AQUAMARINE_ORE_BLOCK.getDefaultState()),
+                OreFeatureConfig.createTarget(deepslateOreReplaceables, DEEPSLATE_AQUAMARINE_ORE_BLOCK.getDefaultState()));
+
+        registerConfiguredFeature(context, AQUAMARINE_ORE_CONFIG_KEY, Feature.ORE, new OreFeatureConfig(overworldAquamarineTargets, 9));
+
         registerConfiguredFeature(context, SANCTUM_TREE_CONFIG_KEY, Feature.TREE, new TreeFeatureConfig.Builder(
                 SimpleBlockStateProvider.of(SANCTUM_LOG_BLOCK),
                 new SanctumTrunkPlacer(
@@ -995,8 +1189,11 @@ public class Registration {
 
     public static void bootstrapPlacedFeature(Registerable<PlacedFeature> context)
     {
-        Groves.LOGGER.info("bootstrapPlacedFeature");
         RegistryEntryLookup<ConfiguredFeature<?, ?>> registryLookup = context.getRegistryLookup(RegistryKeys.CONFIGURED_FEATURE);
+
+        registerPlacedFeature(context, AQUAMARINE_ORE_PLACED_KEY, registryLookup.getOrThrow(AQUAMARINE_ORE_CONFIG_KEY),
+                Modifiers.modifiersCount(9,
+                        HeightRangePlacementModifier.uniform(YOffset.fixed(-8), YOffset.fixed(24))));
 
         registerPlacedFeature(context, SANCTUM_TREE_PLACED_KEY, registryLookup.getOrThrow(SANCTUM_TREE_CONFIG_KEY),
                 VegetationPlacedFeatures.treeModifiersWithWouldSurvive(
@@ -1004,28 +1201,125 @@ public class Registration {
                         SANCTUM_SAPLING_BLOCK));
     }
 
-    public static final Map<Item, Item> BLOCK_TO_BLESSED = new HashMap<>();
 
-    public static void load() {
+    private static void registerFlammables()
+    {
+        FlammableBlockRegistry flammableRegistry = FlammableBlockRegistry.getDefaultInstance();
+
+        flammableRegistry.add(SANCTUM_PLANKS_BLOCK, 5, 20);
+        flammableRegistry.add(SANCTUM_SLAB_BLOCK, 5, 20);
+        flammableRegistry.add(SANCTUM_STAIRS_BLOCK, 5, 20);
+        flammableRegistry.add(SANCTUM_FENCE_BLOCK, 5, 20);
+        flammableRegistry.add(SANCTUM_FENCE_GATE_BLOCK, 5, 20);
+        flammableRegistry.add(SANCTUM_LOG_BLOCK, 5, 5);
+        flammableRegistry.add(STRIPPED_SANCTUM_LOG_BLOCK, 5, 5);
+        flammableRegistry.add(STRIPPED_SANCTUM_WOOD_BLOCK, 5, 5);
+        flammableRegistry.add(SANCTUM_WOOD_BLOCK, 5, 5);
+        flammableRegistry.add(SANCTUM_CORE_LOG_BLOCK, 5, 5);
+        flammableRegistry.add(SANCTUM_LEAVES_BLOCK, 30, 60);
+    }
+
+    private static void registerStrippables()
+    {
+        StrippableBlockRegistry.register(SANCTUM_LOG_BLOCK, STRIPPED_SANCTUM_LOG_BLOCK);
+        StrippableBlockRegistry.register(SANCTUM_WOOD_BLOCK, STRIPPED_SANCTUM_WOOD_BLOCK);
+    }
+
+    private static void registerCompostables()
+    {
+        CompostingChanceRegistry compostingRegistry = CompostingChanceRegistry.INSTANCE;
+        float LEAVES_CHANCE = compostingRegistry.get(Items.OAK_LEAVES);
+        float SAPLING_CHANCE = compostingRegistry.get(Items.OAK_SAPLING);
+
+        compostingRegistry.add(SANCTUM_LEAVES_ITEM, LEAVES_CHANCE);
+        compostingRegistry.add(SANCTUM_SAPLING_ITEM, SAPLING_CHANCE);
+    }
+
+    private static void registerFuels()
+    {
+        FuelRegistryEvents.BUILD.register((builder, context) -> {
+            builder.add(SANCTUM_LOG_ITEM, 300);
+            builder.add(SANCTUM_WOOD_ITEM, 300);
+            builder.add(STRIPPED_SANCTUM_LOG_ITEM, 300);
+            builder.add(STRIPPED_SANCTUM_WOOD_ITEM, 300);
+            builder.add(SANCTUM_PLANKS_ITEM, 300);
+            builder.add(SANCTUM_SLAB_ITEM, 150);
+            builder.add(SANCTUM_STAIRS_ITEM, 300);
+            builder.add(SANCTUM_BUTTON_ITEM, 100);
+            builder.add(SANCTUM_PRESSURE_PLATE_ITEM, 300);
+            builder.add(SANCTUM_DOOR_ITEM, 200);
+            builder.add(SANCTUM_TRAPDOOR_ITEM, 300);
+            builder.add(SANCTUM_FENCE_ITEM, 300);
+            builder.add(SANCTUM_FENCE_GATE_ITEM, 300);
+            builder.add(SANCTUM_SIGN_ITEM, 200);
+            builder.add(SANCTUM_HANGING_SIGN_ITEM, 200);
+            builder.add(SANCTUM_SAPLING_ITEM, 100);
+            // TODO: Add sanctum tools.
+        });
+    }
+
+    private static void registerBlessings()
+    {
         BLOCK_TO_BLESSED.put(Items.STONE_BRICKS, Registration.MOONSTONE_BRICKS_ITEM);
         BLOCK_TO_BLESSED.put(Items.STONE_BRICK_SLAB, Registration.MOONSTONE_BRICK_SLAB_ITEM);
         BLOCK_TO_BLESSED.put(Items.STONE_BRICK_WALL, Registration.MOONSTONE_BRICK_WALL_ITEM);
         BLOCK_TO_BLESSED.put(Items.CRACKED_STONE_BRICKS, Registration.CRACKED_MOONSTONE_BRICKS_ITEM);
         BLOCK_TO_BLESSED.put(Items.CHISELED_STONE_BRICKS, Registration.CHISELED_MOONSTONE_BRICKS_FULL_MOON_ITEM);
+    }
 
+    private static void registerFluidData()
+    {
         FluidSystem.registerFluid(BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
         FluidSystem.registerFluid(FLOWING_BLESSED_MOON_WATER_FLUID, BLESSED_MOON_WATER_FLUID_DATA);
         FluidSystem.registerFluid(MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
         FluidSystem.registerFluid(FLOWING_MOONLIGHT_FLUID, MOONLIGHT_FLUID_DATA);
+    }
+
+    private static void registerBiomeData()
+    {
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                AQUAMARINE_ORE_PLACED_KEY
+        );
+    }
+
+    private static void registerEntityData()
+    {
+        SpawnRestriction.register(DRUID_ENTITY, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, MobEntity::canMobSpawn);
+        FabricDefaultAttributeRegistry.register(DRUID_ENTITY, DruidEntity.addAttributes());
+    }
+
+    public static void load() {
+        registerFlammables();
+        registerStrippables();
+        registerCompostables();
+        registerFuels();
+        registerBlessings();
+        registerFluidData();
+        registerBiomeData();
+        registerEntityData();
+
 
         GroveAbilities.register();
         GroveUnlocks.register();
 
-        // TODO: Add to the item group where other music discs are
-
-        SpawnRestriction.register(DRUID_ENTITY, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, MobEntity::canMobSpawn);
-        FabricDefaultAttributeRegistry.register(DRUID_ENTITY, DruidEntity.addAttributes());
+        // TODO: Add items to other item groups
 
         Networking.register();
+    }
+
+    public static class Modifiers {
+        public static List<PlacementModifier> modifiers(PlacementModifier countModifier, PlacementModifier heightModifier) {
+            return List.of(countModifier, SquarePlacementModifier.of(), heightModifier, BiomePlacementModifier.of());
+        }
+
+        public static List<PlacementModifier> modifiersCount(int count, PlacementModifier heightModifier) {
+            return modifiers(CountPlacementModifier.of(count), heightModifier);
+        }
+
+        public static List<PlacementModifier> modifiersRarity(int chance, PlacementModifier heightModifier) {
+            return modifiers(RarityFilterPlacementModifier.of(chance), heightModifier);
+        }
     }
 }

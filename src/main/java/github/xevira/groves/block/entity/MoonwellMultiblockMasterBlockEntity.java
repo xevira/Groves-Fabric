@@ -25,6 +25,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,6 +56,9 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
 
     private GroveSanctuary sanctuary = null;
 
+    // Provides bonuses for placing the moonwell at a higher location, and penalties for placing it too low.
+    private final int heightPower;
+
     private final PropertyDelegate propertyDelegate = new PropertyDelegate() {
         @Override
         public int get(int index) {
@@ -79,6 +83,9 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
 
     public MoonwellMultiblockMasterBlockEntity(BlockPos pos, BlockState state) {
         super(Registration.MOONWELL_MULTIBLOCK_MASTER_BLOCK_ENTITY, pos, state);
+
+        int hp = MathHelper.floor((pos.getY() - 64) / 64.0f);
+        this.heightPower = (hp > 0) ? (hp * hp) : hp;
     }
 
     public int getMoonPhase()
@@ -180,7 +187,7 @@ public class MoonwellMultiblockMasterBlockEntity extends MultiblockMasterBlockEn
             if (!this.world.isDay()) {
                 int power = 100 + this.getTotalDecorations() * 2;
 
-                int fill = PHASE_RATES[phase] * power / 100;
+                int fill = (PHASE_RATES[phase] * (10 + this.heightPower) * power / 1000);
 
                 try (Transaction transaction = Transaction.openOuter()) {
                     long inserted = this.fluidStorage.insert(MOONLIGHT, fill, transaction);

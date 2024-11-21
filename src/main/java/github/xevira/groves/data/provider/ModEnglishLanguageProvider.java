@@ -120,6 +120,21 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.SANCTUM_LEAVES_BLOCK, "Sanctum Leaves");
         translationBuilder.add(Registration.SANCTUM_SAPLING_BLOCK, "Sanctum Sapling");
 
+        translationBuilder.add(Registration.SANCTUM_PLANKS_BLOCK, "Sanctum Planks");
+        translationBuilder.add(Registration.SANCTUM_SLAB_BLOCK, "Sanctum Slab");
+        translationBuilder.add(Registration.SANCTUM_STAIRS_BLOCK, "Sanctum Stairs");
+        translationBuilder.add(Registration.SANCTUM_BUTTON_BLOCK, "Sanctum Button");
+        translationBuilder.add(Registration.SANCTUM_DOOR_BLOCK, "Sanctum Door");
+        translationBuilder.add(Registration.SANCTUM_TRAPDOOR_BLOCK, "Sanctum Trapdoor");
+        translationBuilder.add(Registration.SANCTUM_PRESSURE_PLATE_BLOCK, "Sanctum Pressure Plate");
+        translationBuilder.add(Registration.SANCTUM_FENCE_BLOCK, "Sanctum Fence");
+        translationBuilder.add(Registration.SANCTUM_FENCE_GATE_BLOCK, "Sanctum Fence Gate");
+        translationBuilder.add(Registration.SANCTUM_SIGN_BLOCK, "Sanctum Sign");
+        translationBuilder.add(Registration.SANCTUM_HANGING_SIGN_BLOCK, "Sanctum Hanging Sign");
+
+        translationBuilder.add(Registration.SANCTUM_BOAT_ITEM, "Sanctum Boat");
+        translationBuilder.add(Registration.SANCTUM_CHEST_BOAT_ITEM, "Sanctum Boat with Chest");
+
         translationBuilder.add(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK, "Waxed Chiseled Moonstone Bricks");
         translationBuilder.add(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK, "Waxed Chiseled Moonstone Bricks");
         translationBuilder.add(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK, "Waxed Chiseled Moonstone Bricks");
@@ -153,6 +168,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, Registration.UNLOCK_SCROLL_ITEM, ".lore", "Craft with the required ingredients to make Grove Sanctuary unlock scrolls.");
 
         addText(translationBuilder, "entity", "druid", "Druid");
+        addText(translationBuilder, "entity", "sanctum_chest_boat", "Sanctum Boat with Chest");
 
         addText(translationBuilder, "tooltip", "hold.shift", "Hold Shift for more information.");
 

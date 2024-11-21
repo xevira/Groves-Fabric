@@ -3,6 +3,7 @@ package github.xevira.groves.mixin.fluid;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import github.xevira.groves.Groves;
 import net.minecraft.block.BlockState;
 import github.xevira.groves.fluid.FluidSystem;
 import net.minecraft.entity.EntityType;
@@ -67,17 +68,19 @@ public abstract class AbstractBoatEntityMixin extends VehicleEntity {
         FluidState fluidState = getWorld().getFluidState(getBlockPos().down());
         return FluidSystem.FLUIDS.values().stream()
                 .filter(FluidSystem::canBoatsWork)
-                .noneMatch(data -> fluidState.isIn(data.fluidTag()));
+                .anyMatch(data -> fluidState.isIn(data.fluidTag()));
     }
 
     @ModifyExpressionValue(method = "canAddPassenger",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;isSubmergedIn(Lnet/minecraft/registry/tag/TagKey;)Z"))
     private boolean grovesCanAddPassenger(boolean original) {
-        if (original)
+        if (original) {
             return true;
+        }
 
         return FluidSystem.FLUIDS.values().stream()
                 .filter(FluidSystem::canBoatsWork)
-                .noneMatch(data -> isSubmergedIn(data.fluidTag()));
-    }}
+                .anyMatch(data -> isSubmergedIn(data.fluidTag()));
+    }
+}

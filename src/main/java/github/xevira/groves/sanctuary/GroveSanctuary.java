@@ -658,9 +658,6 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
 
     private void processFoliage()
     {
-        // World must have daylight
-        if (!this.world.isDay()) return;
-
         // Step 1: update foliage count in currently selected chunk
         GroveChunkData data = getUpdatingChunk();
         if (data.onServerTick(this.server))
@@ -673,17 +670,18 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
         // Step 2: total number of (cached) foliage in the grove
         int totalFoliage = groveChunks.stream().map(chunk -> chunk.foliage).reduce(this.origin.foliage, Integer::sum);
 
-        // TODO: Configuration option for the rates.
-        float powerRating = this.world.isRaining() ? 0.05f : 0.15f;
+        float powerRating = ServerConfig.getFoliagePowerRating(this.world.isRaining());
 
-        // TODO: Configuration option for the enchanted rate bonus
-        if (this.enchanted) powerRating *= 1.5f;
+        if (this.enchanted) powerRating *= ServerConfig.getFoliageEnchantedMultiplier();
 
-        // Step 3: convert foliage count into solar power
-        long solarPower = (long)(totalFoliage * powerRating);
+        // World must have daylight
+        if (this.world.isDay()) {
+            // Step 3: convert foliage count into solar power
+            long solarPower = (long) (totalFoliage * powerRating);
 
-        if (solarPower > 0)
-            addSunlight(solarPower);
+            if (solarPower > 0)
+                addSunlight(solarPower);
+        }
 
         if (totalFoliage != lastTotalFoliage)
         {

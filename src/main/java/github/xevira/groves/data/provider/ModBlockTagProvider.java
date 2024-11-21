@@ -92,6 +92,39 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .addTag(Registration.SANCTUM_LOG_BLOCKS)
                 ;
 
+        getOrCreateTagBuilder(BlockTags.WOODEN_BUTTONS)
+                .add(Registration.SANCTUM_BUTTON_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WOODEN_DOORS)
+                .add(Registration.SANCTUM_DOOR_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WOODEN_TRAPDOORS)
+                .add(Registration.SANCTUM_TRAPDOOR_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WOODEN_FENCES)
+                .add(Registration.SANCTUM_FENCE_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WOODEN_PRESSURE_PLATES)
+                .add(Registration.SANCTUM_PRESSURE_PLATE_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WOODEN_SLABS)
+                .add(Registration.SANCTUM_SLAB_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WOODEN_STAIRS)
+                .add(Registration.SANCTUM_STAIRS_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.STANDING_SIGNS)
+                .add(Registration.SANCTUM_SIGN_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WALL_SIGNS)
+                .add(Registration.SANCTUM_WALL_SIGN_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.CEILING_HANGING_SIGNS)
+                .add(Registration.SANCTUM_HANGING_SIGN_BLOCK);
+
+        getOrCreateTagBuilder(BlockTags.WALL_HANGING_SIGNS)
+                .add(Registration.SANCTUM_WALL_HANGING_SIGN_BLOCK);
+
         getOrCreateTagBuilder(BlockTags.SLABS)
                 .add(Registration.MOONSTONE_BRICK_SLAB_BLOCK)
                 .add(Registration.MOONWELL_BRICK_SLAB_BLOCK)

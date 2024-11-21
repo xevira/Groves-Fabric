@@ -66,6 +66,18 @@ public class ModBlockLootTableProvider extends FabricBlockLootTableProvider {
         leavesDrops(Registration.SANCTUM_LEAVES_BLOCK, Registration.SANCTUM_SAPLING_BLOCK, SAPLING_DROP_CHANCE);
         addDrop(Registration.SANCTUM_SAPLING_BLOCK);
 
+        addDrop(Registration.SANCTUM_PLANKS_BLOCK);
+        slabDrops(Registration.SANCTUM_SLAB_BLOCK);
+        addDrop(Registration.SANCTUM_STAIRS_BLOCK);
+        doorDrops(Registration.SANCTUM_DOOR_BLOCK);
+        addDrop(Registration.SANCTUM_TRAPDOOR_BLOCK);
+        addDrop(Registration.SANCTUM_BUTTON_BLOCK);
+        addDrop(Registration.SANCTUM_PRESSURE_PLATE_BLOCK);
+        addDrop(Registration.SANCTUM_FENCE_BLOCK);
+        addDrop(Registration.SANCTUM_FENCE_GATE_BLOCK);
+        addDrop(Registration.SANCTUM_SIGN_BLOCK);
+        addDrop(Registration.SANCTUM_HANGING_SIGN_BLOCK);
+
         addDrop(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_FULL_MOON_BLOCK);
         addDrop(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_WANING_GIBBOUS_BLOCK);
         addDrop(Registration.WAXED_CHISELED_MOONSTONE_BRICKS_THIRD_QUARTER_BLOCK);

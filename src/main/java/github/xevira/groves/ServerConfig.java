@@ -36,6 +36,10 @@ public class ServerConfig {
 
     private final Map<String, Long> costMap = new HashMap<>();
 
+    private float foliagePowerClear;
+    private float foliagePowerRaining;
+    private float foliageEnchantedMultiplier;
+
     private long sunlightPerChunk;
     private int maxDarkness;
 
@@ -63,6 +67,11 @@ public class ServerConfig {
 
         this.sunlightPerChunk = 1000000L;
         this.maxDarkness = 1000000;
+
+        this.foliagePowerClear = 0.15f;
+        this.foliagePowerRaining = 0.05f;
+        this.foliageEnchantedMultiplier = 1.5f;
+
     }
 
     private void resetCosts()
@@ -206,6 +215,9 @@ public class ServerConfig {
 
         json.add("solarRepairBaseChance", new JsonPrimitive(this.solarRepairBaseChance));
         json.add("solarRepairExtraChance", new JsonPrimitive(this.solarRepairExtraChance));
+        json.add("foliagePowerClear", new JsonPrimitive(this.foliagePowerClear));
+        json.add("foliagePowerRaining", new JsonPrimitive(this.foliagePowerRaining));
+        json.add("foliageEnchantedMultiplier", new JsonPrimitive(this.foliageEnchantedMultiplier));
         json.add("sunlightPerChunk", new JsonPrimitive(this.sunlightPerChunk));
         json.add("maxDarkness", new JsonPrimitive(this.maxDarkness));
 
@@ -283,6 +295,9 @@ public class ServerConfig {
 
         this.solarRepairBaseChance = JSONHelper.getFloat(json, "solarRepairBaseChance", 0.05f, 0.0f, 1.0f);
         this.solarRepairExtraChance = JSONHelper.getFloat(json, "solarRepairExtraChance", 0.025f, 0.0f, 1.0f);
+        this.foliagePowerClear = JSONHelper.getFloat(json, "foliagePowerClear", 0.15f, 0.0f, 1.0f);
+        this.foliagePowerRaining = JSONHelper.getFloat(json, "foliagePowerRaining", 0.055f, 0.0f, 1.0f);
+        this.foliageEnchantedMultiplier = JSONHelper.getFloat(json, "foliageEnchantedMultiplier", 1.5f, 1.0f, 2.0f);
         this.sunlightPerChunk = JSONHelper.getLong(json, "sunlightPerChunk", 1000000L, 0L, 10000000L);
         this.maxDarkness = JSONHelper.getInt(json, "maxDarkness", 1000000, 0, 10000000);
     }
@@ -296,6 +311,11 @@ public class ServerConfig {
     public static long getBaseCostClaimChunk() { return currentConfig.getCost("baseClaimChunk"); }
     public static long getFormMoonwellCost() { return currentConfig.getCost("formMoonwell"); }
 
+    public static float getFoliagePowerRating(boolean raining)
+    {
+        return raining ? currentConfig.foliagePowerRaining : currentConfig.foliagePowerClear;
+    }
+
     public static int getFoliagePower(Block block) {
         Optional<RegistryKey<Block>> key = Registries.BLOCK.getKey(block);
         if (key.isPresent()) {
@@ -305,5 +325,9 @@ public class ServerConfig {
 
         return 1;
     }
+
+    public static float getFoliageEnchantedMultiplier() { return currentConfig.foliageEnchantedMultiplier; }
+
+
 
 }

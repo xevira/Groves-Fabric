@@ -372,7 +372,7 @@ public class ClientGroveSanctuary {
     }
 
     public void setFoliage(int foliage) {
-        this.foliage = MathHelper.clamp(foliage, 0, 256 * (this.groveChunks.size() + 1));
+        this.foliage = Math.max(foliage, 0);
     }
 
     public boolean isEnchanted() {

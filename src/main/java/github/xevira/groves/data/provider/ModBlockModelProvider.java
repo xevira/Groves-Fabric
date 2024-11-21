@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
 import net.minecraft.block.Block;
 import net.minecraft.data.client.*;
+import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 
@@ -122,6 +123,24 @@ public class ModBlockModelProvider extends FabricModelProvider {
         blockStateModelGenerator.registerLog(Registration.STRIPPED_SANCTUM_LOG_BLOCK).log(Registration.STRIPPED_SANCTUM_LOG_BLOCK).wood(Registration.STRIPPED_SANCTUM_WOOD_BLOCK);;
         blockStateModelGenerator.registerSimpleCubeAll(Registration.SANCTUM_LEAVES_BLOCK);
         blockStateModelGenerator.registerFlowerPotPlant(Registration.SANCTUM_SAPLING_BLOCK, Registration.POTTED_SANCTUM_SAPLING_BLOCK, BlockStateModelGenerator.TintType.NOT_TINTED);
+
+        BlockFamily sanctumFamily = new BlockFamily.Builder(Registration.SANCTUM_PLANKS_BLOCK)
+                .button(Registration.SANCTUM_BUTTON_BLOCK)
+                .fence(Registration.SANCTUM_FENCE_BLOCK)
+                .fenceGate(Registration.SANCTUM_FENCE_GATE_BLOCK)
+                .pressurePlate(Registration.SANCTUM_PRESSURE_PLATE_BLOCK)
+                .sign(Registration.SANCTUM_SIGN_BLOCK, Registration.SANCTUM_WALL_SIGN_BLOCK)
+                .slab(Registration.SANCTUM_SLAB_BLOCK)
+                .stairs(Registration.SANCTUM_STAIRS_BLOCK)
+                .door(Registration.SANCTUM_DOOR_BLOCK)
+                .trapdoor(Registration.SANCTUM_TRAPDOOR_BLOCK)
+                .group("wooden")
+                .unlockCriterionName("has_planks")
+                .build();
+        blockStateModelGenerator.registerCubeAllModelTexturePool(sanctumFamily.getBaseBlock())
+                        .family(sanctumFamily);
+
+        blockStateModelGenerator.registerHangingSign(Registration.STRIPPED_SANCTUM_LOG_BLOCK, Registration.SANCTUM_HANGING_SIGN_BLOCK, Registration.SANCTUM_WALL_HANGING_SIGN_BLOCK);
     }
 
     @Override
@@ -136,6 +155,8 @@ public class ModBlockModelProvider extends FabricModelProvider {
         itemModelGenerator.register(Registration.IRONWOOD_SHARD_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.SANCTUM_BOAT_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.SANCTUM_CHEST_BOAT_ITEM, Models.GENERATED);
 
         for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {
