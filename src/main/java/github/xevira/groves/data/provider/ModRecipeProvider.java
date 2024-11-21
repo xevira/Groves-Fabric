@@ -165,6 +165,71 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 generateLunarCycleStonecutting(RecipeCategory.BUILDING_BLOCKS, Registration.MOONSTONE_BRICKS_BLOCK, CHISELED_MOONSTONE);
             }
 
+            private void sword(Item item, Item sword)
+            {
+                createShaped(RecipeCategory.COMBAT, sword)
+                        .input('i', item)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("i")
+                        .pattern("i")
+                        .pattern("s")
+                        .criterion(hasItem(item), conditionsFromItem(item))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
+            private void pickaxe(Item item, Item pickaxe)
+            {
+                createShaped(RecipeCategory.TOOLS, pickaxe)
+                        .input('i', item)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("iii")
+                        .pattern(" s ")
+                        .pattern(" s ")
+                        .criterion(hasItem(item), conditionsFromItem(item))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
+            private void axe(Item item, Item axe)
+            {
+                createShaped(RecipeCategory.TOOLS, axe)
+                        .input('i', item)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("ii ")
+                        .pattern("is ")
+                        .pattern(" s ")
+                        .criterion(hasItem(item), conditionsFromItem(item))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
+            private void shovel(Item item, Item shovel)
+            {
+                createShaped(RecipeCategory.TOOLS, shovel)
+                        .input('i', item)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("i")
+                        .pattern("s")
+                        .pattern("s")
+                        .criterion(hasItem(item), conditionsFromItem(item))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
+            private void hoe(Item item, Item hoe)
+            {
+                createShaped(RecipeCategory.TOOLS, hoe)
+                        .input('i', item)
+                        .input('s', ConventionalItemTags.WOODEN_RODS)
+                        .pattern("ii")
+                        .pattern(" s")
+                        .pattern(" s")
+                        .criterion(hasItem(item), conditionsFromItem(item))
+                        .criterion(hasTag(ConventionalItemTags.WOODEN_RODS), conditionsFromTag(ConventionalItemTags.WOODEN_RODS))
+                        .offerTo(exporter);
+            }
+
             private void planks(TagKey<Item> logs, Block planks)
             {
                 createShapeless(RecipeCategory.BUILDING_BLOCKS, planks, 4)
@@ -303,6 +368,13 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 
             private void generateSanctumRecipes()
             {
+                createShaped(RecipeCategory.MISC, Items.STICK, 4)
+                        .input('p', Registration.SANCTUM_PLANKS_ITEM)
+                        .pattern("p")
+                        .pattern("p")
+                        .criterion(hasItem(Registration.SANCTUM_PLANKS_ITEM), conditionsFromItem(Registration.SANCTUM_PLANKS_ITEM))
+                        .offerTo(exporter);
+
                 planks(Registration.SANCTUM_LOG_ITEMS, Registration.SANCTUM_PLANKS_BLOCK);
                 slab(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_SLAB_BLOCK);
                 stairs(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_STAIRS_BLOCK);
@@ -316,6 +388,12 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 hanging(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_HANGING_SIGN_BLOCK);
                 boat(Registration.SANCTUM_PLANKS_BLOCK, Registration.SANCTUM_BOAT_ITEM);
                 chestboat(Registration.SANCTUM_BOAT_ITEM, Registration.SANCTUM_CHEST_BOAT_ITEM);
+
+                sword(Registration.SANCTUM_PLANKS_ITEM, Registration.SANCTUM_SWORD_ITEM);
+                pickaxe(Registration.SANCTUM_PLANKS_ITEM, Registration.SANCTUM_PICKAXE_ITEM);
+                axe(Registration.SANCTUM_PLANKS_ITEM, Registration.SANCTUM_AXE_ITEM);
+                shovel(Registration.SANCTUM_PLANKS_ITEM, Registration.SANCTUM_SHOVEL_ITEM);
+                hoe(Registration.SANCTUM_PLANKS_ITEM, Registration.SANCTUM_HOE_ITEM);
 
                 BlockFamily sanctumFamily = new BlockFamily.Builder(Registration.SANCTUM_PLANKS_BLOCK)
                         .button(Registration.SANCTUM_BUTTON_BLOCK)

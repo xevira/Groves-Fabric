@@ -157,6 +157,11 @@ public class ModBlockModelProvider extends FabricModelProvider {
         itemModelGenerator.register(Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.SANCTUM_BOAT_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.SANCTUM_CHEST_BOAT_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.SANCTUM_SWORD_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.SANCTUM_PICKAXE_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.SANCTUM_AXE_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.SANCTUM_SHOVEL_ITEM, Models.HANDHELD);
+        itemModelGenerator.register(Registration.SANCTUM_HOE_ITEM, Models.HANDHELD);
 
         for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {

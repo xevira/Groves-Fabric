@@ -163,6 +163,12 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, "Music Disc");
         addText(translationBuilder, Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, ".desc", "Druid Music - Into the Heart of the Universe");
 
+        translationBuilder.add(Registration.SANCTUM_SWORD_ITEM, "Sanctum Sword");
+        translationBuilder.add(Registration.SANCTUM_PICKAXE_ITEM, "Sanctum Pickaxe");
+        translationBuilder.add(Registration.SANCTUM_AXE_ITEM, "Sanctum Axe");
+        translationBuilder.add(Registration.SANCTUM_SHOVEL_ITEM, "Sanctum Shovel");
+        translationBuilder.add(Registration.SANCTUM_HOE_ITEM, "Sanctum Hoe");
+
         translationBuilder.add(Registration.FORBIDDEN_SCROLL_ITEM, "Forbidden Scroll");
         translationBuilder.add(Registration.UNLOCK_SCROLL_ITEM, "Blank Unlock Scroll");
         addText(translationBuilder, Registration.UNLOCK_SCROLL_ITEM, ".lore", "Craft with the required ingredients to make Grove Sanctuary unlock scrolls.");

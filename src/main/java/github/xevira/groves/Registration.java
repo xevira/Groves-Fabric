@@ -57,9 +57,11 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
@@ -111,8 +113,31 @@ public class Registration {
     public static final RegistryKey<JukeboxSong> INTO_THE_HEART_OF_THE_UNIVERSE_KEY =
             RegistryKey.of(RegistryKeys.JUKEBOX_SONG, Groves.id("into_the_heart_of_the_universe"));
 
-    // Wood Types
-//    public static final WoodType SANCTUM_WOODTYPE = new WoodTypeBuilder().register(Groves.id("sanctum"), SANCTUM_BLOCKSET);
+    // Tags
+    // -- Block
+    /** Valid blocks allowed in the formation of a {@code Moonwell} **/
+    public static final TagKey<Block> MOONSTONE_BLOCKS = registerBlockTag("moonstone_blocks");
+
+    /** Valid blocks that compose a {@code Moonwell} **/
+    public static final TagKey<Block> MOONWELL_BLOCKS = registerBlockTag("moonwell_blocks");
+
+    public static final TagKey<Block> MOONWELL_CONSTRUCTION_BLOCKS = registerBlockTag("moonwell_construction_blocks");
+
+    /** Valid blocks that compose a {@code Moonwell} for interacting with the screen **/
+    public static final TagKey<Block> MOONWELL_INTERACTION_BLOCKS = registerBlockTag("moonwell_interaction_blocks");
+
+    public static final TagKey<Block> SANCTUM_LOG_BLOCKS = registerBlockTag("sanctum_log_blocks");
+
+    public static final TagKey<Item> SANCTUM_PLANKS_ITEMS = registerItemTag("sanctum_planks_items");
+
+    public static final TagKey<Item> SANCTUM_LOG_ITEMS = registerItemTag("sanctum_log_items");
+
+    /** Valid fluids considered {@code Blessed Moon Water} **/
+    public static final TagKey<Fluid> BLESSED_MOON_WATERS_TAG = registerFluidTag("blessed_moon_waters");
+
+    /** Valid fluids considered {@code Moonlight} **/
+    public static final TagKey<Fluid> MOONLIGHT_TAG = registerFluidTag("moonlight");
+
 
     // Boats
     public static final Identifier SANCTUM_BOAT_ID = Groves.id("sanctum");
@@ -669,6 +694,39 @@ public class Registration {
 
     public static final Item SANCTUM_CHEST_BOAT_ITEM = TerraformBoatItemHelper.registerBoatItem(SANCTUM_BOAT_ID, true);
 
+    // Sanctum wood is harder than normal wood
+    public static final ToolMaterial SANCTUM_TOOL_MATERIAL = new ToolMaterial(BlockTags.INCORRECT_FOR_STONE_TOOL, 95, 4.0F, 1.0F, 15, SANCTUM_PLANKS_ITEMS);
+
+    public static final Item SANCTUM_SWORD_ITEM = register(
+            "sanctum_sword",
+            settings -> new SwordItem(SANCTUM_TOOL_MATERIAL, 3.0F, -2.4F, settings),
+            new Item.Settings()
+    );
+
+    public static final Item SANCTUM_PICKAXE_ITEM = register(
+            "sanctum_pickaxe",
+            settings -> new PickaxeItem(SANCTUM_TOOL_MATERIAL, 1.0F, -2.8F, settings),
+            new Item.Settings()
+    );
+
+    public static final Item SANCTUM_AXE_ITEM = register(
+            "sanctum_axe",
+            settings -> new AxeItem(SANCTUM_TOOL_MATERIAL, 7.0F, -3.2F, settings),
+            new Item.Settings()
+    );
+
+    public static final Item SANCTUM_SHOVEL_ITEM = register(
+            "sanctum_shovel",
+            settings -> new ShovelItem(SANCTUM_TOOL_MATERIAL, 1.5F, -3.0F, settings),
+            new Item.Settings()
+    );
+
+    public static final Item SANCTUM_HOE_ITEM = register(
+            "sanctum_hoe",
+            settings -> new HoeItem(SANCTUM_TOOL_MATERIAL, -1.0F, -2.0F, settings),
+            new Item.Settings()
+    );
+
     public static final Item AQUAMARINE_ORE_ITEM = register(AQUAMARINE_ORE_BLOCK);
 
     public static final Item AQUAMARINE_BLOCK_ITEM = register(AQUAMARINE_BLOCK_BLOCK);
@@ -854,28 +912,6 @@ public class Registration {
     public static final SoundEvent INTO_THE_HEART_OF_THE_UNIVERSE_SOUND = register("into_the_heart_of_the_universe");
     public static final RegistryEntry<SoundEvent> MACE_THUNDERING_SOUND = registerReference("mace_thundering");
 
-    // Tags
-    // -- Block
-    /** Valid blocks allowed in the formation of a {@code Moonwell} **/
-    public static final TagKey<Block> MOONSTONE_BLOCKS = registerBlockTag("moonstone_blocks");
-
-    /** Valid blocks that compose a {@code Moonwell} **/
-    public static final TagKey<Block> MOONWELL_BLOCKS = registerBlockTag("moonwell_blocks");
-
-    public static final TagKey<Block> MOONWELL_CONSTRUCTION_BLOCKS = registerBlockTag("moonwell_construction_blocks");
-
-    /** Valid blocks that compose a {@code Moonwell} for interacting with the screen **/
-    public static final TagKey<Block> MOONWELL_INTERACTION_BLOCKS = registerBlockTag("moonwell_interaction_blocks");
-
-    public static final TagKey<Block> SANCTUM_LOG_BLOCKS = registerBlockTag("sanctum_log_blocks");
-
-    public static final TagKey<Item> SANCTUM_LOG_ITEMS = registerItemTag("sanctum_log_items");
-
-    /** Valid fluids considered {@code Blessed Moon Water} **/
-    public static final TagKey<Fluid> BLESSED_MOON_WATERS_TAG = registerFluidTag("blessed_moon_waters");
-
-    /** Valid fluids considered {@code Moonlight} **/
-    public static final TagKey<Fluid> MOONLIGHT_TAG = registerFluidTag("moonlight");
 
     // Item Groups
     public static final ItemGroup GROVES_ITEM_GROUP = registerItemGroup("groves_items", MOONSTONE_BRICKS_ITEM, "groves_items",
@@ -905,6 +941,12 @@ public class Registration {
             SANCTUM_HANGING_SIGN_ITEM,
             SANCTUM_BOAT_ITEM,
             SANCTUM_CHEST_BOAT_ITEM,
+
+            SANCTUM_SWORD_ITEM,
+            SANCTUM_PICKAXE_ITEM,
+            SANCTUM_AXE_ITEM,
+            SANCTUM_SHOVEL_ITEM,
+            SANCTUM_HOE_ITEM,
 
             // Moonstone blocks
             MOONSTONE_BRICKS_ITEM,
