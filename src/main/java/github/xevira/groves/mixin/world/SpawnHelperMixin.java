@@ -1,6 +1,7 @@
 package github.xevira.groves.mixin.world;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import github.xevira.groves.poi.POIManager;
 import github.xevira.groves.poi.WindChimes;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.world.ServerWorld;
@@ -28,7 +29,7 @@ public abstract class SpawnHelperMixin {
             double squaredDistance)
     {
         if (original && group == SpawnGroup.MONSTER)
-            return WindChimes.canSpawn(world, pos);
+            return POIManager.canSpawn(world, pos);
 
         return original;
     }

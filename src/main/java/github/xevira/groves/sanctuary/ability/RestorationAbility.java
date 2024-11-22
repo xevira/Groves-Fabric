@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,8 +65,8 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
 
 
     @Override
-    public long useCost() {
-        return switch(getRank())
+    public long useCost(int rank) {
+        return switch(rank)
         {
             case 2 -> 75L;
             case 3 -> 50L;
@@ -135,7 +136,7 @@ public class RestorationAbility extends GroveAbility.ManualGroveAbility {
             stack.setDamage(damage - repair);
             sanctuary.useSunlight(cost);
 
-            // TODO: play sound
+            player.playSound(SoundEvents.BLOCK_ANVIL_USE);
             if (repair < damage)
                 player.sendMessage(Groves.text("text", "ability.item_partially_restored"), false);
             else

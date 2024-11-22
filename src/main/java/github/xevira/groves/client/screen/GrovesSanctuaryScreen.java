@@ -59,11 +59,11 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
         this.tabBackgroundWidth = 162;
         this.tabBackgroundHeight = 131;
 
-        List<ClientGroveSanctuary.ChunkData> chunks = this.handler.getSanctuary().getChunks();
-        for(ClientGroveSanctuary.ChunkData chunk : chunks)
-        {
-            Groves.LOGGER.info("Screen: chunk = {} ({})", chunk.pos(), chunk.chunkLoad());
-        }
+//        List<ClientGroveSanctuary.ChunkData> chunks = this.handler.getSanctuary().getChunks();
+//        for(ClientGroveSanctuary.ChunkData chunk : chunks)
+//        {
+//            Groves.LOGGER.info("Screen: chunk = {} ({})", chunk.pos(), chunk.chunkLoad());
+//        }
     }
 
     @Override
@@ -1227,6 +1227,7 @@ public class GrovesSanctuaryScreen extends HandledScreen<GrovesSanctuaryScreenHa
             boolean use = false;
             if (this.abilityListWidget.getSelectedCount() > 0) {
                 for (GroveAbility ability : this.abilityListWidget.getSelected()) {
+                    if (ability == null) continue;
                     if (ability.isAutomatic()) {
                         if (ability.isActive())
                             stop = true;

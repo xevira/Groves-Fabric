@@ -245,11 +245,26 @@ public abstract class GroveAbility {
         return true;
     }
 
-    public long startCost() { return 0L; }
+    public final long startCost()
+    {
+        return startCost(getRank());
+    }
 
-    public long tickCost() { return 0L; }
+    public long startCost(int rank) { return 0L; }
 
-    public long useCost() { return 0L; }
+    public final long tickCost()
+    {
+        return tickCost(getRank());
+    }
+
+    public long tickCost(int rank) { return 0L; }
+
+    public final long useCost()
+    {
+        return useCost(getRank());
+    }
+
+    public long useCost(int rank) { return 0L; }
 
     // Returns the reason why you can't unlock it.
     public @Nullable Text canUnlock(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player, int rank)
@@ -331,19 +346,21 @@ public abstract class GroveAbility {
         return false;
     }
 
-    public final void use(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
+    public final void use(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player, boolean notify)
     {
         if (canUse(sanctuary.getServer(), sanctuary, player)) {
             if (onUse(server, sanctuary, player)) {
                 onUseCooldown(server, sanctuary, player);
                 sanctuary.sendListeners(new UpdateAbilityPayload(this));
             }
-        } else if (inCooldown(sanctuary.getWorld())) {
-            MutableText msg = Groves.text("text", "ability." + getName())
-                    .append(Groves.text("error", "ability.on_cooldown.suffix"));
-            player.sendMessage(msg.formatted(Formatting.RED), false);
-        } else
-            sendFailure(sanctuary.getServer(), sanctuary, player);
+        } else if(notify) {
+            if (inCooldown(sanctuary.getWorld())) {
+                MutableText msg = Groves.text("text", "ability." + getName())
+                        .append(Groves.text("error", "ability.on_cooldown.suffix"));
+                player.sendMessage(msg.formatted(Formatting.RED), false);
+            } else
+                sendFailure(sanctuary.getServer(), sanctuary, player);
+        }
     }
 
     protected boolean onUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)

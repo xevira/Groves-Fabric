@@ -5,7 +5,9 @@ import github.xevira.groves.Groves;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.WorldSavePath;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
+import org.apache.logging.log4j.core.jmx.Server;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -151,6 +153,16 @@ public class POIManager {
     private static void purgeServer()
     {
         GrovesPOI.cleanup();
+    }
+
+
+    public static boolean canSpawn(ServerWorld world, BlockPos pos)
+    {
+        if (!WindChimes.canSpawn(world, pos)) return false;
+
+        if (!GrovesPOI.canSpawn(world, pos)) return false;
+
+        return true;
     }
 
 }

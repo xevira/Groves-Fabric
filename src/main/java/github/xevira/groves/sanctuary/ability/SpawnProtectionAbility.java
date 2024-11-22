@@ -12,40 +12,33 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
-    public static final long START_COST = 100000L;
-    public static final long TICK_COST = 100L;
-
-    public ChunkLoadAbility() {
-        super("chunk_load", true, true, false, false, 5);
+public class SpawnProtectionAbility extends GroveAbility.AutomaticGroveAbility {
+    public SpawnProtectionAbility() {
+        super("spawn_protection", true, true, false, false, 5);
     }
 
     @Override
     public Supplier<? extends GroveAbility> getConstructor() {
-        return ChunkLoadAbility::new;
+        return SpawnProtectionAbility::new;
     }
 
     @Override
     public @Nullable Item getRecipeIngredient(int rank) {
         return switch(rank)
         {
-            case 1 -> Items.ENDER_PEARL;
-            case 2 -> Items.ENDER_EYE;
-            case 3 -> null;                 // TODO: Add the Ender Heart
-            case 4 -> null;
-            case 5 -> null;
+            case 1 -> Items.TORCH;
             default -> null;
         };
     }
 
     @Override
     public String getEnglishTranslation() {
-        return "Chunk Load";
+        return "Hostile Spawn Protection";
     }
 
     @Override
     public String getEnglishLoreTranslation(int rank) {
-        return  "Allows your Grove Sanctuary to load enabled chunks.";
+        return "Prevents hostile mobs from spawning within a certain radius of sanctuary chunks.";
     }
 
     @Override
@@ -55,35 +48,41 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
 
     @Override
     public String getEnglishTickCostTranslation() {
-        return "%s sunlight per second per enabled chunk to maintain.";
+        return "%s sunlight per chunk to maintain.";
     }
 
     @Override
     public String getEnglishUseCostTranslation() {
-        return null;
+        return "%s sunlight per spawn blocked.";
     }
+
 
     @Override
     public long startCost(int rank) {
         return switch(rank)
         {
-            case 2 -> 50000L;
-            case 3 -> 25000L;
-            case 4 -> 12500L;
-            case 5 -> 6250L;
-            default -> 100000L;
+            case 2 -> 5000L;
+            case 3 -> 2500L;
+            case 4 -> 1250L;
+            case 5 -> 625L;
+            default -> 10000L;
         };
     }
 
     @Override
     public long tickCost(int rank) {
+        return 0;
+    }
+
+    @Override
+    public long useCost(int rank) {
         return switch(rank)
         {
-            case 2 -> 75L;
-            case 3 -> 50L;
-            case 4 -> 25L;
-            case 5 -> 10L;
-            default -> 100L;
+            case 2 -> 500L;
+            case 3 -> 250L;
+            case 4 -> 125L;
+            case 5 -> 60L;
+            default -> 1000L;
         };
     }
 
@@ -93,17 +92,14 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public void sendFailure(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player)
-    {
+    public void sendFailure(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
         sendError(player, Groves.text("text", "ability.not_enough_sunlight.activate", startCost()), false);
     }
 
     @Override
     protected void onActivate(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
-        // TODO:
-        sanctuary.setChunkLoading(true);
         sanctuary.useSunlight(startCost());
-        player.sendMessage(Text.literal("Designated chunks are now force loaded."), false);
+        player.sendMessage(Text.literal("Hostile spawn protection activated."), false);
     }
 
     @Override
@@ -114,17 +110,25 @@ public class ChunkLoadAbility extends GroveAbility.AutomaticGroveAbility {
             player = sanctuary.getOwnerPlayer();
 
         if (player != null)
-            player.sendMessage(Text.literal("Chunk loading in sanctuary deactivated."), false);
+            player.sendMessage(Text.literal("Hostile spawn protection deactivated."), false);
     }
 
     @Override
     public boolean onServerTick(MinecraftServer server, GroveSanctuary sanctuary) {
-        long cost = tickCost() * sanctuary.totalChunks(chunk -> chunk.chunkLoad);
+        // Deactivate once it can't block anymore spawns
+        return sanctuary.getTotalSunlight() < (useCost() * sanctuary.totalChunks());
+    }
 
-        if (sanctuary.getStoredSunlight() < cost)
-            return true;
+    @Override
+    public boolean canUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
+        return sanctuary.getTotalSunlight() >= (useCost() * sanctuary.totalChunks());
+    }
+
+    @Override
+    protected boolean onUse(MinecraftServer server, GroveSanctuary sanctuary, PlayerEntity player) {
+        long cost = useCost() * sanctuary.totalChunks();
 
         sanctuary.useSunlight(cost);
-        return false;
+        return true;
     }
 }

@@ -64,12 +64,12 @@ public class RegenerationAbility extends GroveAbility.AutomaticGroveAbility {
     }
 
     @Override
-    public long startCost() {
+    public long startCost(int rank) {
         return 5000L;
     }
 
     @Override
-    public long tickCost() {
+    public long tickCost(int rank) {
         return 200L;
     }
 

@@ -59,7 +59,6 @@ public class WindChimes {
 
             if (chimePos != null)
             {
-                Groves.LOGGER.info("Blocking spawn at {} by chime {}", pos, chimePos);
                 WindChimeBlock.protect(world, chimePos);
                 return false;
             }

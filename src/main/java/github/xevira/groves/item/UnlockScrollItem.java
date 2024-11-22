@@ -144,23 +144,23 @@ public class UnlockScrollItem extends Item {
                     tooltip.add(Groves.text("tooltip", "ability." + this.ability.getName() + ".unlock." + this.rank).formatted(Formatting.RED));
                 }
 
-                if (ability.startCost() > 0 || ability.tickCost() > 0 || ability.useCost() > 0) {
+                if (ability.startCost(this.rank) > 0 || ability.tickCost(this.rank) > 0 || ability.useCost(this.rank) > 0) {
                     tooltip.add(Text.empty());
 
-                    if (ability.startCost() > 0)
+                    if (ability.startCost(this.rank) > 0)
                         tooltip.add(Groves.text("tooltip", "ability.cost.start").formatted(Formatting.YELLOW)
                                 .append(" ")
-                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.start", ability.startCost())));
+                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.start", ability.startCost(this.rank))));
 
-                    if (ability.tickCost() > 0)
+                    if (ability.tickCost(this.rank) > 0)
                         tooltip.add(Groves.text("tooltip", "ability.cost.tick").formatted(Formatting.YELLOW)
                                 .append(" ")
-                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.tick", ability.tickCost())));
+                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.tick", ability.tickCost(this.rank))));
 
-                    if (ability.useCost() > 0)
+                    if (ability.useCost(this.rank) > 0)
                         tooltip.add(Groves.text("tooltip", "ability.cost.use").formatted(Formatting.YELLOW)
                                 .append(" ")
-                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.use", ability.useCost())));
+                                .append(Groves.text("tooltip", "ability." + this.ability.getName() + ".cost.use", ability.useCost(this.rank))));
                 }
             }
             else

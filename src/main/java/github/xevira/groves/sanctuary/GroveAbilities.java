@@ -3,10 +3,7 @@ package github.xevira.groves.sanctuary;
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.item.UnlockScrollItem;
-import github.xevira.groves.sanctuary.ability.ChunkLoadAbility;
-import github.xevira.groves.sanctuary.ability.RegenerationAbility;
-import github.xevira.groves.sanctuary.ability.RestorationAbility;
-import github.xevira.groves.sanctuary.ability.SummonDruidAbility;
+import github.xevira.groves.sanctuary.ability.*;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.entity.player.PlayerEntity;
@@ -127,7 +124,7 @@ public class GroveAbilities {
                     ability.activate(sanctuary.getServer(), sanctuary, player);
                 }
             } else if (ability.isEnabled()) {
-                ability.use(sanctuary.getServer(), sanctuary, player);
+                ability.use(sanctuary.getServer(), sanctuary, player, true);
             }
         }
     }
@@ -168,7 +165,7 @@ public class GroveAbilities {
 
             if (!ability.isAutomatic() && ability.isEnabled())
             {
-                ability.use(sanctuary.getServer(), sanctuary, player);
+                ability.use(sanctuary.getServer(), sanctuary, player, true);
             }
         }
     }
@@ -179,6 +176,7 @@ public class GroveAbilities {
         registerAbility(new RegenerationAbility());
         registerAbility(new RestorationAbility());
         registerAbility(new SummonDruidAbility());
+        registerAbility(new SpawnProtectionAbility());
 
         // Place all generated UNLOCK scrolls into the item group after the blank unlock scroll.
         ItemGroupEvents.modifyEntriesEvent(RegistryKey.of(RegistryKeys.ITEM_GROUP, Groves.id("groves_items")))

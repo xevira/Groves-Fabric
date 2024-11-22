@@ -9,6 +9,7 @@ import github.xevira.groves.Groves;
 import github.xevira.groves.ServerConfig;
 import github.xevira.groves.network.*;
 import github.xevira.groves.poi.GrovesPOI;
+import github.xevira.groves.sanctuary.ability.SpawnProtectionAbility;
 import github.xevira.groves.screenhandler.GrovesSanctuaryScreenHandler;
 import github.xevira.groves.util.ChunkHelper;
 import github.xevira.groves.util.JSONHelper;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanctuaryScreenPayload> {
     public static final Text TITLE = Groves.text("gui", "groves");
@@ -90,6 +92,8 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
 
     private final List<GroveUnlock> unlocks = new ArrayList<>();
 
+    private GroveAbility hostileSpawnProtection;
+
     public GroveSanctuary(final MinecraftServer server, final PlayerEntity player, final ServerWorld world, final ChunkPos pos, final boolean enchanted)
     {
         this(server, UUID.randomUUID(), player.getUuid(), player.getName().getString(), world, pos, enchanted);
@@ -127,6 +131,8 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
 
         this.lastServerTick = 0;
         this.updatingTickChunk = -1; // -1 == Origin
+
+        this.hostileSpawnProtection = null;
     }
 
     public UUID getUUID()
@@ -165,6 +171,7 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
         // Reset the abilities to the original default list
         // All previous abilities are lost, as the new owner did not earn them.
         this.groveAbilities.clear();
+        this.hostileSpawnProtection = null;
         GroveAbilities.autoInstallAbilities(this);
 
         return true;
@@ -452,6 +459,11 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
         return this.groveChunks.size() + 1;     // +1 for the origin
     }
 
+    public int totalChunks(Predicate<GroveChunkData> predicate)
+    {
+        return (int)(this.groveChunks.stream().filter(predicate).count() + 1);
+    }
+
     /**
      * Adds the specified chunk to the Grove Sanctuary.
      *
@@ -638,8 +650,29 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
             ability.setRank(rank);
             this.groveAbilities.add(ability);
 
+            if (ability instanceof SpawnProtectionAbility) this.hostileSpawnProtection = ability;
+
             // TODO: sendListeners
         }
+    }
+
+    public boolean protectsHostileSpawn()
+    {
+        if (this.hostileSpawnProtection != null && this.hostileSpawnProtection.isActive())
+        {
+            if (this.hostileSpawnProtection.canUse(this.server, this, null))
+            {
+                if (this.hostileSpawnProtection.onUse(this.server, this, null))
+                {
+                    this.sendListeners(new UpdateAbilityPayload(this.hostileSpawnProtection));
+                    return true;
+                }
+            }
+            else
+                this.hostileSpawnProtection.deactivate(this.server, this, null);
+        }
+
+        return false;
     }
 
     private boolean isOwnerOnline(MinecraftServer server)
@@ -1046,6 +1079,8 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
         GroveAbilities.autoInstallAbilities(sanctuary); // Add any missing abilities the sanctuary should have at the start
         sanctuary.availableChunks.addAll(available);
         sanctuary.unlocks.addAll(unlocks);
+
+        sanctuary.hostileSpawnProtection = sanctuary.getAbility("spawn_protection").orElse(null);
 
         JSONHelper.JsonToColor(json, "skyColor").ifPresent(color -> sanctuary.skyColor = color);
         JSONHelper.JsonToColor(json, "grassColor").ifPresent(color -> sanctuary.grassColor = color);

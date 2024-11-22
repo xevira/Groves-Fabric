@@ -8,6 +8,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import github.xevira.groves.Groves;
+import github.xevira.groves.ServerConfig;
+import github.xevira.groves.block.WindChimeBlock;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import github.xevira.groves.sanctuary.GroveSanctuary;
@@ -132,6 +134,28 @@ public class GrovesPOI {
 
         return getSanctuary(world, pos).isPresent();
     }
+
+    public static boolean canSpawn(ServerWorld world, BlockPos pos)
+    {
+        RegistryKey<World> key = world.getRegistryKey();
+        if (CHUNK_MAP.containsKey(key))
+        {
+            Map<ChunkPos, GroveSanctuary> chunks = CHUNK_MAP.get(key);
+
+            for(Map.Entry<ChunkPos, GroveSanctuary> chunk : chunks.entrySet())
+            {
+                if (chunk.getKey().getBlockPos(8, pos.getY(), 8).getSquaredDistance(pos) <= ServerConfig.getSanctuarySpawnProtectionRangeSquare())
+                {
+                    if (chunk.getValue().protectsHostileSpawn()) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
 
     public static void claimAvailable(World world, ChunkPos pos)
     {

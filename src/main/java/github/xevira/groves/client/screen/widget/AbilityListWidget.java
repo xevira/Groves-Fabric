@@ -50,6 +50,8 @@ public class AbilityListWidget extends ClickableWidget {
 
     public void select(GroveAbility ability)
     {
+        if (ability == null) return;
+
         if (this.selected.contains(ability))
             this.selected.remove(ability);
         else

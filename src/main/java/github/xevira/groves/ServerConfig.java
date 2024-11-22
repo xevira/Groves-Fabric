@@ -47,6 +47,9 @@ public class ServerConfig {
     private double windChimeRangeSq;
     private float windChimeChanceDamage;
 
+    private int sanctuarySpawnProtectionRange;
+    private double sanctuarySpawnProtectionRangeSq;
+
     private final Map<RegistryKey<Block>, Integer> foliageMap = new HashMap<>();
 
     public static void onServerLoad(MinecraftServer server) {
@@ -78,6 +81,9 @@ public class ServerConfig {
         this.windChimeRange = 32;
         this.windChimeRangeSq = (double) this.windChimeRange * (double) this.windChimeRange;
         this.windChimeChanceDamage = 0.05f;
+
+        this.sanctuarySpawnProtectionRange = 32;
+        this.sanctuarySpawnProtectionRangeSq = (double) this.sanctuarySpawnProtectionRange * (double) this.sanctuarySpawnProtectionRange;
     }
 
     private void resetCosts()
@@ -104,7 +110,7 @@ public class ServerConfig {
     private void resetFoliagePower()
     {
         this.foliageMap.clear();
-        addFoliagePower(Registration.SANCTUM_LEAVES_BLOCK, 10);     // SUPER powerful
+        addFoliagePower(Registration.SANCTUM_LEAVES_BLOCK, 6);
         addFoliagePower(Blocks.ACACIA_LEAVES, 1);
         addFoliagePower(Blocks.AZALEA_LEAVES, 1);
         addFoliagePower(Blocks.BIRCH_LEAVES, 1);
@@ -228,6 +234,7 @@ public class ServerConfig {
         json.add("maxDarkness", new JsonPrimitive(this.maxDarkness));
         json.add("windChimeRange", new JsonPrimitive(this.windChimeRange));
         json.add("windChimeChanceDamage", new JsonPrimitive(this.windChimeChanceDamage));
+        json.add("sanctuarySpawnProtectionRange", new JsonPrimitive(this.sanctuarySpawnProtectionRange));
 
         return json;
     }
@@ -311,6 +318,8 @@ public class ServerConfig {
         this.windChimeRange = JSONHelper.getInt(json, "windChimeRange", 32, 1, 128);
         this.windChimeRangeSq = (double) this.windChimeRange * (double) this.windChimeRange;
         this.windChimeChanceDamage = JSONHelper.getFloat(json,"windChimeChanceDamage", 0.05f, 0.0f, 1.0f);
+        this.sanctuarySpawnProtectionRange = JSONHelper.getInt(json, "sanctuarySpawnProtectionRange", 32, 1, 128);
+        this.sanctuarySpawnProtectionRangeSq = (double) this.sanctuarySpawnProtectionRange * (double) this.sanctuarySpawnProtectionRange;
     }
 
     public static float getSolarRepairBaseChance() { return currentConfig.solarRepairBaseChance; }
@@ -344,4 +353,8 @@ public class ServerConfig {
     public static double getWindChimeRangeSquare() { return currentConfig.windChimeRangeSq; }
 
     public static float getWindChimeChanceDamage() { return currentConfig.windChimeChanceDamage; }
+
+    public static int getSanctuarySpawnProtectionRange() { return currentConfig.sanctuarySpawnProtectionRange; }
+
+    public static double getSanctuarySpawnProtectionRangeSquare() { return currentConfig.sanctuarySpawnProtectionRangeSq; }
 }
