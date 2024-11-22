@@ -69,6 +69,7 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 .add(Registration.STRIPPED_SANCTUM_LOG_BLOCK)
                 .add(Registration.STRIPPED_SANCTUM_WOOD_BLOCK)
                 .add(Registration.SANCTUM_CORE_LOG_BLOCK)
+                .add(Registration.WIND_CHIME_BLOCK)
                 ;
 
         getOrCreateTagBuilder(BlockTags.NEEDS_STONE_TOOL)

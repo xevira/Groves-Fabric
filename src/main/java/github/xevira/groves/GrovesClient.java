@@ -33,7 +33,10 @@ public class GrovesClient implements ClientModInitializer {
                 Registration.SANCTUM_SAPLING_BLOCK,
                 Registration.SANCTUM_DOOR_BLOCK,
                 Registration.SANCTUM_TRAPDOOR_BLOCK,
-                Registration.MOONWELL_BASIN_BLOCK);
+                Registration.MOONWELL_BASIN_BLOCK,
+                Registration.WIND_CHIME_BLOCK,
+                Registration.WORN_WIND_CHIME_BLOCK,
+                Registration.DAMAGED_WIND_CHIME_BLOCK);
 
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutoutMipped(),
                 Registration.SANCTUM_LEAVES_BLOCK);

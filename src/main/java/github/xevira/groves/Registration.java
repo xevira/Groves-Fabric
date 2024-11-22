@@ -113,6 +113,43 @@ public class Registration {
     public static final RegistryKey<JukeboxSong> INTO_THE_HEART_OF_THE_UNIVERSE_KEY =
             RegistryKey.of(RegistryKeys.JUKEBOX_SONG, Groves.id("into_the_heart_of_the_universe"));
 
+
+    // Sound Events
+    public static final SoundEvent DRUID_APPEARED_SOUND = register("druid_appeared");
+    public static final SoundEvent DRUID_DEATH_SOUND = register("druid_death");
+    public static final SoundEvent DRUID_DISAPPEARED_SOUND = register("druid_disappeared");
+    public static final SoundEvent DRUID_DRINK_MILK_SOUND = register("druid_drink_milk");
+    public static final SoundEvent DRUID_DRINK_POTION_SOUND = register("druid_drink_potion");
+    public static final SoundEvent DRUID_TRADE_SOUND = register("druid_trade");
+    public static final SoundEvent DRUID_HURT_SOUND = register("druid_hurt");
+    public static final SoundEvent DRUID_AMBIENT_SOUND = register("druid_ambient");
+    public static final SoundEvent DRUID_NO_SOUND = register("druid_no");
+    public static final SoundEvent DRUID_REAPPEARED_SOUND = register("druid_reappeared");
+    public static final SoundEvent DRUID_YES_SOUND = register("druid_yes");
+
+    public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
+    public static final SoundEvent MOONWELL_DEACTIVATE_SOUND = register("moonwell_deactivate");
+    public static final SoundEvent INTO_THE_HEART_OF_THE_UNIVERSE_SOUND = register("into_the_heart_of_the_universe");
+    public static final RegistryEntry<SoundEvent> MACE_THUNDERING_SOUND = registerReference("mace_thundering");
+
+    public static final SoundEvent WIND_CHIME_BREAK_SOUND = register("wind_chime_break");
+    public static final SoundEvent WIND_CHIME_PLACE_SOUND = register("wind_chime_place");
+    public static final SoundEvent WIND_CHIME_STEP_SOUND = register("wind_chime_step");
+    public static final SoundEvent WIND_CHIME_HIT_SOUND = register("wind_chime_hit");
+    public static final SoundEvent WIND_CHIME_FALL_SOUND = register("wind_chime_fall");
+    public static final SoundEvent WIND_CHIME_COLLIDE_SOUND = register("wind_chime_collide");
+    public static final SoundEvent WIND_CHIME_PROTECT_SOUND = register("wind_chime_protect");
+
+    public static final BlockSoundGroup WIND_CHIME_BLOCK_SOUNDS = new BlockSoundGroup(
+            1.0F,
+            1.0F,
+            WIND_CHIME_BREAK_SOUND,
+            WIND_CHIME_STEP_SOUND,
+            WIND_CHIME_PLACE_SOUND,
+            WIND_CHIME_HIT_SOUND,
+            WIND_CHIME_FALL_SOUND
+    );
+
     // Tags
     // -- Block
     /** Valid blocks allowed in the formation of a {@code Moonwell} **/
@@ -589,7 +626,35 @@ public class Registration {
                     .instrument(NoteBlockInstrument.BASEDRUM)
                     .lootTable(MOONSTONE_BRICK_WALL_BLOCK.getLootTableKey())
                     .requiresTool().
-                    strength(2.0F, 6.0F));
+                    strength(2.0F, 6.0F)
+    );
+
+    public static final Block WIND_CHIME_BLOCK = register("wind_chime",
+            settings -> new WindChimeBlock(100, settings),
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.ORANGE)
+                    .instrument(NoteBlockInstrument.CHIME)
+                    .sounds(WIND_CHIME_BLOCK_SOUNDS)
+                    .strength(2.0F, 6.0F)
+            );
+
+    public static final Block WORN_WIND_CHIME_BLOCK = register("worn_wind_chime",
+            settings -> new WindChimeBlock(50, settings),
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.ORANGE)
+                    .instrument(NoteBlockInstrument.CHIME)
+                    .sounds(WIND_CHIME_BLOCK_SOUNDS)
+                    .strength(2.0F, 6.0F)
+    );
+
+    public static final Block DAMAGED_WIND_CHIME_BLOCK = register("damaged_wind_chime",
+            settings -> new WindChimeBlock(0, settings),
+            AbstractBlock.Settings.create()
+                    .mapColor(MapColor.ORANGE)
+                    .instrument(NoteBlockInstrument.CHIME)
+                    .sounds(WIND_CHIME_BLOCK_SOUNDS)
+                    .strength(2.0F, 6.0F)
+    );
 
 
     // -- Waxed Moonstone
@@ -797,6 +862,12 @@ public class Registration {
 
     public static final Item WAXED_MOONSTONE_BRICK_WALL_ITEM = register(WAXED_MOONSTONE_BRICK_WALL_BLOCK);
 
+    public static final Item WIND_CHIME_ITEM = register(WIND_CHIME_BLOCK);
+
+    public static final Item WORN_WIND_CHIME_ITEM = register(WORN_WIND_CHIME_BLOCK);
+
+    public static final Item DAMAGED_WIND_CHIME_ITEM = register(DAMAGED_WIND_CHIME_BLOCK);
+
     // Items
     public static final Item AQUAMARINE_ITEM = register(
             "aquamarine",
@@ -894,24 +965,6 @@ public class Registration {
     public static final ScreenHandlerType<MoonwellScreenHandler> MOONWELL_SCREEN_HANDLER = register("moonwell", MoonwellScreenHandler::new, MoonwellScreenPayload.PACKET_CODEC);
     public static final ScreenHandlerType<GrovesSanctuaryScreenHandler> GROVES_SANCTUARY_SCREEN_HANDLER = register("groves_sanctuary", GrovesSanctuaryScreenHandler::new, GrovesSanctuaryScreenPayload.PACKET_CODEC);
 
-    // Sound Events
-    public static final SoundEvent DRUID_APPEARED_SOUND = register("druid_appeared");
-    public static final SoundEvent DRUID_DEATH_SOUND = register("druid_death");
-    public static final SoundEvent DRUID_DISAPPEARED_SOUND = register("druid_disappeared");
-    public static final SoundEvent DRUID_DRINK_MILK_SOUND = register("druid_drink_milk");
-    public static final SoundEvent DRUID_DRINK_POTION_SOUND = register("druid_drink_potion");
-    public static final SoundEvent DRUID_TRADE_SOUND = register("druid_trade");
-    public static final SoundEvent DRUID_HURT_SOUND = register("druid_hurt");
-    public static final SoundEvent DRUID_AMBIENT_SOUND = register("druid_ambient");
-    public static final SoundEvent DRUID_NO_SOUND = register("druid_no");
-    public static final SoundEvent DRUID_REAPPEARED_SOUND = register("druid_reappeared");
-    public static final SoundEvent DRUID_YES_SOUND = register("druid_yes");
-
-    public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
-    public static final SoundEvent MOONWELL_DEACTIVATE_SOUND = register("moonwell_deactivate");
-    public static final SoundEvent INTO_THE_HEART_OF_THE_UNIVERSE_SOUND = register("into_the_heart_of_the_universe");
-    public static final RegistryEntry<SoundEvent> MACE_THUNDERING_SOUND = registerReference("mace_thundering");
-
 
     // Item Groups
     public static final ItemGroup GROVES_ITEM_GROUP = registerItemGroup("groves_items", MOONSTONE_BRICKS_ITEM, "groves_items",
@@ -989,7 +1042,11 @@ public class Registration {
             ENCHANTED_IMPRINTING_SIGIL_ITEM,
             INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM,
             IRONWOOD_SHARD_ITEM,
-            UNLOCK_SCROLL_ITEM);
+            UNLOCK_SCROLL_ITEM,
+            WIND_CHIME_ITEM,
+            WORN_WIND_CHIME_ITEM,
+            DAMAGED_WIND_CHIME_ITEM
+    );
 
     public static final FluidSystem BLESSED_MOON_WATER_FLUID_DATA = new FluidSystem.Builder(BLESSED_MOON_WATERS_TAG)
             .preventsBlockSpreading()

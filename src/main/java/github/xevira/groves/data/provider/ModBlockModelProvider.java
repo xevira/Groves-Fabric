@@ -141,6 +141,10 @@ public class ModBlockModelProvider extends FabricModelProvider {
                         .family(sanctumFamily);
 
         blockStateModelGenerator.registerHangingSign(Registration.STRIPPED_SANCTUM_LOG_BLOCK, Registration.SANCTUM_HANGING_SIGN_BLOCK, Registration.SANCTUM_WALL_HANGING_SIGN_BLOCK);
+
+        blockStateModelGenerator.registerSimpleState(Registration.WIND_CHIME_BLOCK);
+        blockStateModelGenerator.registerSimpleState(Registration.WORN_WIND_CHIME_BLOCK);
+        blockStateModelGenerator.registerSimpleState(Registration.DAMAGED_WIND_CHIME_BLOCK);
     }
 
     @Override

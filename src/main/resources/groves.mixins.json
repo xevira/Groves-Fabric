@@ -31,7 +31,8 @@
 		"fluid.TurtleEntityMixin",
 		"fluid.WaterCreatureEntityMixin",
 		"fluid.WitchEntityMixin",
-		"fluid.ZombieEntityMixin"
+		"fluid.ZombieEntityMixin",
+		"world.SpawnHelperMixin"
 	],
 	"client": [
 		"client.ChunkRendererRegionMixin",

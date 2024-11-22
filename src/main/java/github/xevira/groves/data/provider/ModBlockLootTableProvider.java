@@ -91,5 +91,9 @@ public class ModBlockLootTableProvider extends FabricBlockLootTableProvider {
         addDrop(Registration.WAXED_MOONSTONE_BRICK_SLAB_BLOCK);
         addDrop(Registration.WAXED_MOONSTONE_BRICK_STAIRS_BLOCK);
         addDrop(Registration.WAXED_MOONSTONE_BRICK_WALL_BLOCK);
+
+        addDrop(Registration.WIND_CHIME_BLOCK);
+        addDrop(Registration.WORN_WIND_CHIME_BLOCK);
+        addDrop(Registration.DAMAGED_WIND_CHIME_BLOCK);
     }
 }

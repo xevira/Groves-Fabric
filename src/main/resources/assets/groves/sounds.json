@@ -114,5 +114,118 @@
         "stream" : true
       }
     ]
+  },
+  "wind_chime_collide": {
+    "subtitle": "sound.groves.wind_chime.collide",
+    "sounds": [
+      "groves:wind_chime/collide1",
+      "groves:wind_chime/collide2",
+      "groves:wind_chime/collide3",
+      "groves:wind_chime/collide4",
+      "groves:wind_chime/collide5",
+      "groves:wind_chime/collide6",
+      "groves:wind_chime/collide7",
+      "groves:wind_chime/collide8",
+      "groves:wind_chime/collide9",
+      "groves:wind_chime/collide10",
+      "groves:wind_chime/collide11",
+      "groves:wind_chime/collide12",
+      "groves:wind_chime/collide13",
+      "groves:wind_chime/collide14"
+    ]
+  },
+  "wind_chime_protect": {
+    "subtitle": "sound.groves.wind_chime.protect",
+    "sounds": [
+      "groves:wind_chime/collide1",
+      "groves:wind_chime/collide2",
+      "groves:wind_chime/collide3",
+      "groves:wind_chime/collide4",
+      "groves:wind_chime/collide5",
+      "groves:wind_chime/collide6",
+      "groves:wind_chime/collide7",
+      "groves:wind_chime/collide8",
+      "groves:wind_chime/collide9",
+      "groves:wind_chime/collide10",
+      "groves:wind_chime/collide11",
+      "groves:wind_chime/collide12",
+      "groves:wind_chime/collide13",
+      "groves:wind_chime/collide14"
+    ]
+  },
+  "wind_chime_step": {
+    "subtitle": "sound.groves.wind_chime.step",
+    "sounds": [
+      "groves:wind_chime/collide1",
+      "groves:wind_chime/collide2",
+      "groves:wind_chime/collide3",
+      "groves:wind_chime/collide4",
+      "groves:wind_chime/collide5",
+      "groves:wind_chime/collide6",
+      "groves:wind_chime/collide7",
+      "groves:wind_chime/collide8",
+      "groves:wind_chime/collide9",
+      "groves:wind_chime/collide10",
+      "groves:wind_chime/collide11",
+      "groves:wind_chime/collide12",
+      "groves:wind_chime/collide13",
+      "groves:wind_chime/collide14"
+    ]
+  },
+  "wind_chime_hit": {
+    "subtitle": "sound.groves.wind_chime.hit",
+    "sounds": [
+      "groves:wind_chime/collide1",
+      "groves:wind_chime/collide2",
+      "groves:wind_chime/collide3",
+      "groves:wind_chime/collide4",
+      "groves:wind_chime/collide5",
+      "groves:wind_chime/collide6",
+      "groves:wind_chime/collide7",
+      "groves:wind_chime/collide8",
+      "groves:wind_chime/collide9",
+      "groves:wind_chime/collide10",
+      "groves:wind_chime/collide11",
+      "groves:wind_chime/collide12",
+      "groves:wind_chime/collide13",
+      "groves:wind_chime/collide14"
+    ]
+  },
+  "wind_chime_fall": {
+    "subtitle": "sound.groves.wind_chime.fall",
+    "sounds": [
+      "groves:wind_chime/collide1",
+      "groves:wind_chime/collide2",
+      "groves:wind_chime/collide3",
+      "groves:wind_chime/collide4",
+      "groves:wind_chime/collide5",
+      "groves:wind_chime/collide6",
+      "groves:wind_chime/collide7",
+      "groves:wind_chime/collide8",
+      "groves:wind_chime/collide9",
+      "groves:wind_chime/collide10",
+      "groves:wind_chime/collide11",
+      "groves:wind_chime/collide12",
+      "groves:wind_chime/collide13",
+      "groves:wind_chime/collide14"
+    ]
+  },
+  "wind_chime_break": {
+    "subtitle": "sound.groves.wind_chime.break",
+    "sounds": [
+      "groves:wind_chime/break1",
+      "groves:wind_chime/break2",
+      "groves:wind_chime/break3",
+      "groves:wind_chime/break4"
+    ]
+  },
+  "wind_chime_place": {
+    "subtitle": "sound.groves.wind_chime.place",
+    "sounds": [
+      "groves:wind_chime/break1",
+      "groves:wind_chime/break2",
+      "groves:wind_chime/break3",
+      "groves:wind_chime/break4"
+    ]
   }
 }

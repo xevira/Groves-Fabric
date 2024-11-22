@@ -43,6 +43,10 @@ public class ServerConfig {
     private long sunlightPerChunk;
     private int maxDarkness;
 
+    private int windChimeRange;
+    private double windChimeRangeSq;
+    private float windChimeChanceDamage;
+
     private final Map<RegistryKey<Block>, Integer> foliageMap = new HashMap<>();
 
     public static void onServerLoad(MinecraftServer server) {
@@ -71,7 +75,9 @@ public class ServerConfig {
         this.foliagePowerClear = 0.15f;
         this.foliagePowerRaining = 0.05f;
         this.foliageEnchantedMultiplier = 1.5f;
-
+        this.windChimeRange = 32;
+        this.windChimeRangeSq = (double) this.windChimeRange * (double) this.windChimeRange;
+        this.windChimeChanceDamage = 0.05f;
     }
 
     private void resetCosts()
@@ -220,6 +226,8 @@ public class ServerConfig {
         json.add("foliageEnchantedMultiplier", new JsonPrimitive(this.foliageEnchantedMultiplier));
         json.add("sunlightPerChunk", new JsonPrimitive(this.sunlightPerChunk));
         json.add("maxDarkness", new JsonPrimitive(this.maxDarkness));
+        json.add("windChimeRange", new JsonPrimitive(this.windChimeRange));
+        json.add("windChimeChanceDamage", new JsonPrimitive(this.windChimeChanceDamage));
 
         return json;
     }
@@ -300,6 +308,9 @@ public class ServerConfig {
         this.foliageEnchantedMultiplier = JSONHelper.getFloat(json, "foliageEnchantedMultiplier", 1.5f, 1.0f, 2.0f);
         this.sunlightPerChunk = JSONHelper.getLong(json, "sunlightPerChunk", 1000000L, 0L, 10000000L);
         this.maxDarkness = JSONHelper.getInt(json, "maxDarkness", 1000000, 0, 10000000);
+        this.windChimeRange = JSONHelper.getInt(json, "windChimeRange", 32, 1, 128);
+        this.windChimeRangeSq = (double) this.windChimeRange * (double) this.windChimeRange;
+        this.windChimeChanceDamage = JSONHelper.getFloat(json,"windChimeChanceDamage", 0.05f, 0.0f, 1.0f);
     }
 
     public static float getSolarRepairBaseChance() { return currentConfig.solarRepairBaseChance; }
@@ -328,6 +339,9 @@ public class ServerConfig {
 
     public static float getFoliageEnchantedMultiplier() { return currentConfig.foliageEnchantedMultiplier; }
 
+    public static int getWindChimeRange() { return currentConfig.windChimeRange; }
 
+    public static double getWindChimeRangeSquare() { return currentConfig.windChimeRangeSq; }
 
+    public static float getWindChimeChanceDamage() { return currentConfig.windChimeChanceDamage; }
 }

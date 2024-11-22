@@ -152,6 +152,10 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.BLESSED_MOON_WATER_BLOCK, "Blessed Moon Water");
         translationBuilder.add(Registration.MOONLIGHT_BLOCK, "Moonlight");
 
+        translationBuilder.add(Registration.WIND_CHIME_BLOCK, "Wind Chime");
+        translationBuilder.add(Registration.WORN_WIND_CHIME_BLOCK, "Worn Wind Chime");
+        translationBuilder.add(Registration.DAMAGED_WIND_CHIME_BLOCK, "Damaged Wind Chime");
+
         translationBuilder.add(Registration.AQUAMARINE_ITEM, "Aquamarine");
         translationBuilder.add(Registration.AQUAMARINE_DUST_ITEM, "Aquamarine Dust");
         translationBuilder.add(Registration.BLESSED_MOON_WATER_BUCKET_ITEM, "Bucket of Blessed Moon Water");
@@ -269,6 +273,14 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "sound", "moonwell.activate", "Moonwell activates");
         addText(translationBuilder, "sound", "moonwell.deactivate", "Moonwell deactivates");
         addText(translationBuilder, "sound", "mace.thundering", "Mace thunders");
+
+        addText(translationBuilder, "sound", "wind_chime.collide", "Someone collides with a wind chime");
+        addText(translationBuilder, "sound", "wind_chime.protect", "Wind chime chimes");
+        addText(translationBuilder, "sound", "wind_chime.step", "Wind chime chimes");
+        addText(translationBuilder, "sound", "wind_chime.place", "Wind chime placed");
+        addText(translationBuilder, "sound", "wind_chime.break", "Wind chime broken");
+        addText(translationBuilder, "sound", "wind_chime.hit", "Wind chime hit");
+        addText(translationBuilder, "sound", "wind_chime.fall", "Wind chime fell");
 
         addText(translationBuilder, "text", "imprinting.already_exists", "§cThere is already a Grove Sanctuary here.§r");
         addText(translationBuilder, "text", "imprinting.has_grove", "§cYou already possess a Grove Sanctuary.§r");

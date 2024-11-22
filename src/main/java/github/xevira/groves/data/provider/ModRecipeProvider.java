@@ -450,6 +450,17 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 ImmutableList<ItemConvertible> IRONWOOD_SHARDS = ImmutableList.of(Registration.IRONWOOD_SHARD_ITEM);
                 smelt(IRONWOOD_SHARDS, RecipeCategory.MISC, Items.IRON_NUGGET, 1.0F, 200, "ironwood_shard");
 
+                createShaped(RecipeCategory.MISC, Registration.WIND_CHIME_BLOCK)
+                        .input('s', Registration.SANCTUM_SLAB_ITEM)
+                        .input('c', ConventionalItemTags.CHAINS)
+                        .input('i', ConventionalItemTags.IRON_INGOTS)
+                        .pattern("sss")
+                        .pattern("c c")
+                        .pattern("i i")
+                        .criterion(hasItem(Registration.SANCTUM_SLAB_ITEM), conditionsFromItem(Registration.SANCTUM_SLAB_ITEM))
+                        .criterion(hasTag(ConventionalItemTags.CHAINS), conditionsFromTag(ConventionalItemTags.CHAINS))
+                        .criterion(hasTag(ConventionalItemTags.IRON_INGOTS), conditionsFromTag(ConventionalItemTags.IRON_INGOTS))
+                        .offerTo(exporter);
 
             }
         };

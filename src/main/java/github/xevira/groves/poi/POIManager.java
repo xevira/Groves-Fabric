@@ -109,6 +109,11 @@ public class POIManager {
         {
             Groves.LOGGER.error("Failed to load Groves POI data.");
         }
+
+        if (!WindChimes.deserializeServer(json, server))
+        {
+            Groves.LOGGER.error("Failed to load Wind Chime data.");
+        }
     }
 
     /**
@@ -126,6 +131,7 @@ public class POIManager {
         JsonObject json = new JsonObject();
 
         GrovesPOI.serializeServer(json, server);
+        WindChimes.serializeServer(json, server);
 
         return json;
     }
