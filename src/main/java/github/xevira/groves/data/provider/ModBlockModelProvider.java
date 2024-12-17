@@ -167,6 +167,15 @@ public class ModBlockModelProvider extends FabricModelProvider {
         itemModelGenerator.register(Registration.SANCTUM_SHOVEL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.SANCTUM_HOE_ITEM, Models.HANDHELD);
 
+        itemModelGenerator.register(Registration.ENDER_HEART_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.GHAST_HEART_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.SHULKER_BULLET_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.EAGLE_FEATHER_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.DOLPHIN_FIN_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.SPIDER_LEG_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.POLLEN_ITEM, Models.GENERATED);
+        itemModelGenerator.register(Registration.BEE_STINGER_ITEM, Models.GENERATED);
+
         for(GroveAbility ability : GroveAbilities.ABILITIES.values())
         {
             List<UnlockScrollItem> scrolls = GroveAbilities.UNLOCK_SCROLLS.get(ability.getName());

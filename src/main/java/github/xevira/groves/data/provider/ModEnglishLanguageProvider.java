@@ -3,12 +3,22 @@ package github.xevira.groves.data.provider;
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.block.entity.MoonwellMultiblockMasterBlockEntity;
+import github.xevira.groves.concoctions.potion.effects.*;
 import github.xevira.groves.item.UnlockScrollItem;
 import github.xevira.groves.sanctuary.*;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
+import net.minecraft.block.Block;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.potion.Potion;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
 import org.jetbrains.annotations.NotNull;
@@ -75,6 +85,31 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         } else {
             Groves.LOGGER.warn("Failed to add translation for text: {}", text.getString());
         }
+    }
+
+    private static void addStatusEffect(@NotNull TranslationBuilder builder, @NotNull RegistryEntry<StatusEffect> effect, @NotNull String value) {
+        addText(builder, effect.value().getTranslationKey(), value);
+    }
+
+    private static void addPotion(@NotNull TranslationBuilder builder, @NotNull RegistryEntry<Potion> potion, @NotNull String value) {
+        addText(builder, Items.POTION, ".effect." + potion.value().getBaseName(), "Potion of " + value);
+        addText(builder, Items.SPLASH_POTION, ".effect." + potion.value().getBaseName(), "Splash Potion of " + value);
+        addText(builder, Items.LINGERING_POTION, ".effect." + potion.value().getBaseName(), "Lingering Potion of " + value);
+        addText(builder, Items.TIPPED_ARROW, ".effect." + potion.value().getBaseName(), "Arrow of " + value);
+    }
+
+    private static void addPotion(@NotNull TranslationBuilder builder, @NotNull RegistryEntry<Potion> potion, @NotNull String base, @NotNull String splash, @NotNull String lingering, @NotNull String arrow) {
+
+        addText(builder, Items.POTION, ".effect." + potion.value().getBaseName(), base);
+        addText(builder, Items.SPLASH_POTION, ".effect." + potion.value().getBaseName(), splash);
+        addText(builder, Items.LINGERING_POTION, ".effect." + potion.value().getBaseName(), lingering);
+        addText(builder, Items.TIPPED_ARROW, ".effect." + potion.value().getBaseName(), arrow);
+    }
+
+    private static void addDeathMessages(@NotNull TranslationBuilder builder, @NotNull String type, @NotNull String value, @NotNull String playerValue)
+    {
+        addText(builder, "death.attack."  + type, value);
+        addText(builder, "death.attack."  + type + ".player", playerValue);
     }
 
     @Override
@@ -167,6 +202,15 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.add(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, "Music Disc");
         addText(translationBuilder, Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, ".desc", "Druid Music - Into the Heart of the Universe");
 
+        translationBuilder.add(Registration.ENDER_HEART_ITEM, "Ender Heart");
+        translationBuilder.add(Registration.GHAST_HEART_ITEM, "Ghast Heart");
+        translationBuilder.add(Registration.SHULKER_BULLET_ITEM, "Shulker Bullet");
+        translationBuilder.add(Registration.SPIDER_LEG_ITEM, "Spider Leg");
+        translationBuilder.add(Registration.EAGLE_FEATHER_ITEM, "Eagle Feather");
+        translationBuilder.add(Registration.DOLPHIN_FIN_ITEM, "Dolphin Fin");
+        addText(translationBuilder, Registration.DOLPHIN_FIN_ITEM, ".lore", "You monster...");
+        translationBuilder.add(Registration.BEE_STINGER_ITEM, "Bee Stinger");
+
         translationBuilder.add(Registration.SANCTUM_SWORD_ITEM, "Sanctum Sword");
         translationBuilder.add(Registration.SANCTUM_PICKAXE_ITEM, "Sanctum Pickaxe");
         translationBuilder.add(Registration.SANCTUM_AXE_ITEM, "Sanctum Axe");
@@ -236,6 +280,16 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         translationBuilder.addEnchantment(Registration.SOLAR_REPAIR_ENCHANTMENT_KEY, "Solar Repair");
         translationBuilder.addEnchantment(Registration.THUNDERING_ENCHANTMENT_KEY, "Thundering");
 
+        translationBuilder.add(Registration.MOONSTONE_BLOCKS, "Moonstone Blocks");
+        translationBuilder.add(Registration.MOONWELL_BLOCKS, "Moonwell Blocks");
+        translationBuilder.add(Registration.MOONWELL_CONSTRUCTION_BLOCKS, "Moonwell Construction Blocks");
+        translationBuilder.add(Registration.MOONWELL_INTERACTION_BLOCKS, "Moonwell Interaction Blocks");
+        translationBuilder.add(Registration.SANCTUM_LOG_BLOCKS, "Sanctum Logs");
+        translationBuilder.add(Registration.SANCTUM_PLANKS_ITEMS, "Sanctum Planks");
+        translationBuilder.add(Registration.SANCTUM_LOG_ITEMS, "Sanctum Logs");
+        translationBuilder.add(Registration.BLESSED_MOON_WATERS_TAG, "Blessed Moon Waters");
+        translationBuilder.add(Registration.MOONLIGHT_TAG, "Moonlight");
+
         addText(translationBuilder, MoonwellMultiblockMasterBlockEntity.TITLE, "Moonwell");
         addText(translationBuilder, GroveSanctuary.TITLE, "Grove Sanctuary");
 
@@ -269,6 +323,8 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "sound", "druid.reappeared", "Druid appears");
         addText(translationBuilder, "sound", "druid.trade", "Druid trades");
         addText(translationBuilder, "sound", "druid.yes", "Druid agrees");
+
+        addText(translationBuilder, "sound", "mob_effect.bouncy.bounce", "Someone bounces.");
 
         addText(translationBuilder, "sound", "moonwell.activate", "Moonwell activates");
         addText(translationBuilder, "sound", "moonwell.deactivate", "Moonwell deactivates");
@@ -394,5 +450,91 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addText(translationBuilder, "button", "start", "On");
         addText(translationBuilder, "button", "stop", "Off");
         addText(translationBuilder, "button", "use", "Use");
+
+        addDeathMessages(translationBuilder, "suffocation", "%1$s suffocated", "%1$s suffocated while fighting %2$s");
+        addDeathMessages(translationBuilder, "sunlight", "%1$s burned to death from the sun", "%1$s  burned to death from the sun while fighting %2$s");
+        addDeathMessages(translationBuilder, "void", "%1$s was devoured by the void", "%1$s was devoured bythe void while fighting %2$s");
+        addDeathMessages(translationBuilder, "water", "%1$s liquified", "%1$s liquified while fighting %2$s");
+
+        addStatusEffect(translationBuilder, Registration.AMOROUS_STATUS_EFFECT, "Amorous");
+        addStatusEffect(translationBuilder, Registration.ANCHOR_STATUS_EFFECT, "Anchor");
+        addStatusEffect(translationBuilder, Registration.ANTIDOTE_STATUS_EFFECT, "Antidote");
+        addStatusEffect(translationBuilder, Registration.AQUAPHOBIA_STATUS_EFFECT, "Aquaphobia");
+        addStatusEffect(translationBuilder, Registration.BOUNCY_STATUS_EFFECT, "Bouncy");
+        addStatusEffect(translationBuilder, Registration.CHANNELING_STATUS_EFFECT, "Channeling");
+        addStatusEffect(translationBuilder, Registration.CORROSION_STATUS_EFFECT, "Corrosion");
+        addStatusEffect(translationBuilder, Registration.DANGER_SENSE_STATUS_EFFECT, "Danger Sense");
+        addStatusEffect(translationBuilder, Registration.DROWNING_STATUS_EFFECT, "Drowning");
+        addStatusEffect(translationBuilder, Registration.ECHO_STATUS_EFFECT, "Echo");
+        addStatusEffect(translationBuilder, Registration.EXPLOSIVE_STATUS_EFFECT, "Explosive");
+        addStatusEffect(translationBuilder, Registration.FLOURISHING_STATUS_EFFECT, "Flourishing");
+        addStatusEffect(translationBuilder, Registration.FREEZING_STATUS_EFFECT, "Freezing");
+        addStatusEffect(translationBuilder, Registration.GILLS_STATUS_EFFECT, "Gills");
+        addStatusEffect(translationBuilder, Registration.GRAVITY_STATUS_EFFECT, "Gravity");
+        addStatusEffect(translationBuilder, Registration.INFERNO_STATUS_EFFECT, "Inferno");
+        addStatusEffect(translationBuilder, Registration.INTANGIBLE_STATUS_EFFECT, "Intangible");
+        addStatusEffect(translationBuilder, Registration.PHOTOSYNTHESIS_STATUS_EFFECT, "Photosynthesis");
+        addStatusEffect(translationBuilder, Registration.PORPHYRIA_STATUS_EFFECT, "Porphyria");
+        addStatusEffect(translationBuilder, Registration.RADIANCE_STATUS_EFFECT, "Radiance");
+        addStatusEffect(translationBuilder, Registration.RECALL_STATUS_EFFECT, "Recall");
+        addStatusEffect(translationBuilder, Registration.REVEAL_STATUS_EFFECT, "Reveal");
+        addStatusEffect(translationBuilder, Registration.SILENCE_STATUS_EFFECT, "Silence");
+        addStatusEffect(translationBuilder, Registration.SPIDER_WALKING_STATUS_EFFECT, "Spider Walking");
+        addStatusEffect(translationBuilder, Registration.STICKY_STATUS_EFFECT, "Sticky");
+        addStatusEffect(translationBuilder, Registration.SWARMING_STATUS_EFFECT, "Swarming");
+        addStatusEffect(translationBuilder, Registration.TAMING_STATUS_EFFECT, "Taming");
+        addStatusEffect(translationBuilder, Registration.VOID_STATUS_EFFECT, "Void");
+        addStatusEffect(translationBuilder, Registration.WARMING_STATUS_EFFECT, "Warming");
+
+        // Base potions
+        addPotion(translationBuilder, Registration.ACRID_BASE_POTION, "Acrid Potion", "Splash Acrid Potion", "Lingering Acrid Potion", "Tipped Arrow");
+        addPotion(translationBuilder, Registration.FOUL_BASE_POTION, "Foul Potion", "Splash Foul Potion", "Lingering Foul Potion", "Tipped Arrow");
+
+        // Vanilla potions
+        addPotion(translationBuilder, Registration.HASTE_POTION, "Haste");
+        addPotion(translationBuilder, Registration.DULLNESS_POTION, "Dullness");
+        addPotion(translationBuilder, Registration.BLINDNESS_POTION, "Blindness");
+        addPotion(translationBuilder, Registration.HUNGER_POTION, "Hunger");
+        addPotion(translationBuilder, Registration.DECAY_POTION, "Decay");
+        addPotion(translationBuilder, Registration.RESISTANCE_POTION, "Resistance");
+        addPotion(translationBuilder, Registration.NOTCH_POTION, "Notch");
+        addPotion(translationBuilder, Registration.LEVITATION_POTION, "Levitation");
+        addPotion(translationBuilder, Registration.NAUSEA_POTION, "Nausea");
+        addPotion(translationBuilder, Registration.GLOWING_POTION, "Glowing");
+        addPotion(translationBuilder, Registration.LUCK_POTION, "Luck");
+        addPotion(translationBuilder, Registration.UNLUCK_POTION, "Bad Luck");
+        addPotion(translationBuilder, Registration.NEPTUNE_POTION, "Neptune");
+        addPotion(translationBuilder, Registration.GRACE_POTION, "Grace");
+
+        // Groves potions
+        addPotion(translationBuilder, Registration.ANCHOR_POTION, "Anchoring");
+        addPotion(translationBuilder, Registration.ANTIDOTE_POTION, "Antidote", "Splash Antidote", "Lingering Antidote", "Arrow of Antidote");
+        addPotion(translationBuilder, Registration.AQUAPHOBIA_POTION, "Aquaphobia");
+        addPotion(translationBuilder, Registration.BOUNCY_POTION, "Bouncing");
+        addPotion(translationBuilder, Registration.CHANNELING_POTION, "Channeling");
+        addPotion(translationBuilder, Registration.CORROSIVE_POTION, "Corrosive");
+        addPotion(translationBuilder, Registration.DANGER_SENSE_POTION, "Danger Sense");
+        addPotion(translationBuilder, Registration.DROWNING_POTION, "Drowning");
+        addPotion(translationBuilder, Registration.ECHO_POTION, "Echoing");
+        addPotion(translationBuilder, Registration.EXPLOSIVE_POTION, "Nitroglycerin", "Splash Nitroglycerin", "Lingering Nitroglycerin", "Arrow of Nitroglycerin");
+        addPotion(translationBuilder, Registration.FLOURISHING_POTION, "Flourishing");
+        addPotion(translationBuilder, Registration.FREEZING_POTION, "Freezing");
+        addPotion(translationBuilder, Registration.GILLS_POTION, "Gills");
+        addPotion(translationBuilder, Registration.GRAVITY_POTION, "Gravity");
+        addPotion(translationBuilder, Registration.INFERNO_POTION, "the Inferno");
+        addPotion(translationBuilder, Registration.INTANGIBLE_POTION, "Intangibility");
+        addPotion(translationBuilder, Registration.LOVE_POTION, "Love");
+        addPotion(translationBuilder, Registration.PHOTOSYNTHESIS_POTION, "Photosynthesis");
+        addPotion(translationBuilder, Registration.PORPHYRIA_POTION, "Porphyria");
+        addPotion(translationBuilder, Registration.RADIANCE_POTION, "Radiance");
+        addPotion(translationBuilder, Registration.RECALL_POTION, "Recall");
+        addPotion(translationBuilder, Registration.REVEAL_POTION, "Revealing");
+        addPotion(translationBuilder, Registration.SILENCE_POTION, "Silencing");
+        addPotion(translationBuilder, Registration.SPIDER_WALKING_POTION, "Spider Walking");
+        addPotion(translationBuilder, Registration.STICKY_POTION, "Sticking");
+        addPotion(translationBuilder, Registration.SWARMING_POTION, "Swarming");
+        addPotion(translationBuilder, Registration.TAMING_POTION, "Taming");
+        addPotion(translationBuilder, Registration.VOID_POTION, "the Void");
+        addPotion(translationBuilder, Registration.WARMING_POTION, "Warming");
     }
 }

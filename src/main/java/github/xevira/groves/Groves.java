@@ -2,6 +2,7 @@ package github.xevira.groves;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import github.xevira.groves.concoctions.brewing.BrewingRegistry;
 import github.xevira.groves.events.*;
 import github.xevira.groves.poi.POIManager;
 import net.fabricmc.api.ModInitializer;
@@ -10,7 +11,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -32,6 +32,7 @@ public class Groves implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STARTED.register(ServerConfig::onServerLoad);
 		ServerLifecycleEvents.SERVER_STARTED.register(POIManager::onServerStarted);
 		ServerLifecycleEvents.SERVER_STARTED.register(ModServerTickEvents::onServerStarted);
+		ServerLifecycleEvents.SERVER_STARTED.register(BrewingRegistry::onServerStarted);
 		ServerLifecycleEvents.SERVER_STOPPED.register(POIManager::onServerStopped);
 		ServerLifecycleEvents.SERVER_STOPPED.register(ServerConfig::onServerSave);
 		ServerLifecycleEvents.AFTER_SAVE.register(POIManager::onAfterSave);
@@ -42,6 +43,8 @@ public class Groves implements ModInitializer {
 		UseItemCallback.EVENT.register(ModUseItemEvents::onUseItem);
 		ServerTickEvents.START_WORLD_TICK.register(ModServerTickEvents::onStartWorldTick);
 		ServerTickEvents.END_SERVER_TICK.register(ModServerTickEvents::onEndServerTick);
+
+		ServerTickEvents.END_SERVER_TICK.register(server -> BouncingHandler.onEndTick());
 	}
 
 	public static Identifier id(String path) {

@@ -1,4 +1,14 @@
 {
+  "mob_effect_bouncy_squish": {
+    "subtitle": "sound.groves.mob_effect.bouncy.bounce",
+    "sounds": [
+      "groves:mob_effect/bouncy/squish1",
+      "groves:mob_effect/bouncy/squish2",
+      "groves:mob_effect/bouncy/squish3",
+      "groves:mob_effect/bouncy/squish4",
+      "groves:mob_effect/bouncy/squish5"
+    ]
+  },
   "druid_appeared" : {
     "subtitle": "sound.groves.druid.appeared",
     "sounds": [

@@ -25,6 +25,7 @@
 			"github.xevira.groves.GrovesDataGenerator"
 		]
 	},
+	"accessWidener": "groves.accesswidener",
 	"mixins": [
 		"groves.mixins.json"
 	],

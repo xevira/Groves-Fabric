@@ -3,9 +3,13 @@
 	"package": "github.xevira.groves.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"BrewingRecipeRegistryBuilderMixin",
 		"PlayerManagerMixin",
 		"block.PowderSnowBlockMixin",
-		"entity.ServerPlayerEntityMixin",
+		"entity.EntityMixin",
+		"entity.LivingEntityMixin",
+		"entity.PlayerEntityMixin",
+		"entity.effect.PoisonStatusEffectMixin",
 		"fluid.BoatDispenserBehaviorMixin",
 		"fluid.AbstractBoatEntityMixin",
 		"fluid.BucketItemMixin",
@@ -32,6 +36,7 @@
 		"fluid.WaterCreatureEntityMixin",
 		"fluid.WitchEntityMixin",
 		"fluid.ZombieEntityMixin",
+		"world.CollisionMixin",
 		"world.SpawnHelperMixin"
 	],
 	"client": [
