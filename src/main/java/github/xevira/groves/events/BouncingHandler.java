@@ -43,15 +43,19 @@ public class BouncingHandler {
 
     public void endTick()
     {
+        boolean isRemote = this.entity.getWorld().isClient;
         if (!this.entity.isGliding())
         {
             // Bounce up
-            if (this.entity.age == this.bounceAge)
+            if (this.entity.age == this.bounceAge || (this.entity.age == this.bounceAge + 1) || (this.entity.age == this.bounceAge - 1))
             {
                 Vec3d motion = this.entity.getVelocity();
                 this.entity.setVelocity(motion.x, this.bounce, motion.z);
                 this.entity.setOnGround(false);
                 this.entity.velocityDirty = true;
+
+                Groves.LOGGER.info("BouncingHandler.endTick({}): ages - {}, {}, v - {}", isRemote, this.entity.age, this.bounceAge, this.entity.getVelocity());
+
                 this.bounceAge = 0;
             }
 
@@ -112,7 +116,7 @@ public class BouncingHandler {
         else if (bounce != 0)
         {
             handler.bounce = bounce;
-            handler.bounceAge = entity.age + 1;
+            handler.bounceAge = entity.age;
         }
     }
 }

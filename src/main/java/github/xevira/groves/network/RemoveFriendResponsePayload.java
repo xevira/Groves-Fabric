@@ -15,7 +15,7 @@ public record RemoveFriendResponsePayload(UUID uuid, boolean success, Text reaso
     public static final Id<RemoveFriendResponsePayload> ID = new Id<>(Groves.id("remove_friend"));
     public static final PacketCodec<RegistryByteBuf, RemoveFriendResponsePayload> PACKET_CODEC = PacketCodec.tuple(
             Uuids.PACKET_CODEC, RemoveFriendResponsePayload::uuid,
-            PacketCodecs.BOOL, RemoveFriendResponsePayload::success,
+            PacketCodecs.BOOLEAN, RemoveFriendResponsePayload::success,
             TextCodecs.UNLIMITED_REGISTRY_PACKET_CODEC, RemoveFriendResponsePayload::reason,
             RemoveFriendResponsePayload::new);
 

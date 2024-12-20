@@ -378,11 +378,21 @@ public class GroveSanctuary  implements ExtendedScreenHandlerFactory<GrovesSanct
      **/
     public void addSunlight(long sunlight)
     {
-        sunlight = Math.max(0L, sunlight);
+        long max = getMaxStoredSunlight();
 
-        this.storedSunlight = MathHelper.clamp(this.storedSunlight + sunlight, 0, getMaxStoredSunlight());
-        this.totalSunlight += sunlight;
-        sendListeners(new UpdateSunlightPayload(this.storedSunlight, this.totalSunlight));
+        // Once capped, ignore it
+        if (this.storedSunlight < max) {
+            sunlight = Math.max(0L, sunlight);
+            long stored = this.storedSunlight + sunlight;
+            if (stored > max) {
+                sunlight -= stored - max;
+                stored = max;
+            }
+
+            this.storedSunlight = stored;
+            this.totalSunlight += sunlight;
+            sendListeners(new UpdateSunlightPayload(this.storedSunlight, this.totalSunlight));
+        }
     }
 
     public void useSunlight(long sunlight)

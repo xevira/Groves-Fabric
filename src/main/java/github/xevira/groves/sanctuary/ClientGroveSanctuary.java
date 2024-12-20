@@ -19,11 +19,11 @@ public class ClientGroveSanctuary {
         @Override
         public ClientGroveSanctuary decode(RegistryByteBuf buf) {
             UUID uuid = Uuids.PACKET_CODEC.decode(buf);
-            boolean abandoned = PacketCodecs.BOOL.decode(buf);
+            boolean abandoned = PacketCodecs.BOOLEAN.decode(buf);
             String groveName = PacketCodecs.STRING.decode(buf);
             ChunkData origin = ChunkData.PACKET_CODEC.decode(buf);
-            boolean enchanted = PacketCodecs.BOOL.decode(buf);
-            boolean chunkLoading = PacketCodecs.BOOL.decode(buf);
+            boolean enchanted = PacketCodecs.BOOLEAN.decode(buf);
+            boolean chunkLoading = PacketCodecs.BOOLEAN.decode(buf);
 
             BlockPos spawnPoint = BlockPos.PACKET_CODEC.decode(buf);
 
@@ -50,7 +50,7 @@ public class ClientGroveSanctuary {
             sanctuary.setTotalDarkness(PacketCodecs.LONG.decode(buf));
 
 
-            if (PacketCodecs.BOOL.decode(buf))
+            if (PacketCodecs.BOOLEAN.decode(buf))
                 sanctuary.setMoonwell(BlockPos.PACKET_CODEC.decode(buf));
 
             int friends = PacketCodecs.INTEGER.decode(buf);
@@ -73,11 +73,11 @@ public class ClientGroveSanctuary {
         @Override
         public void encode(RegistryByteBuf buf, ClientGroveSanctuary value) {
             Uuids.PACKET_CODEC.encode(buf, value.uuid);
-            PacketCodecs.BOOL.encode(buf, value.abandoned);
+            PacketCodecs.BOOLEAN.encode(buf, value.abandoned);
             PacketCodecs.STRING.encode(buf, value.groveName);
             ChunkData.PACKET_CODEC.encode(buf, value.origin);
-            PacketCodecs.BOOL.encode(buf, value.enchanted);
-            PacketCodecs.BOOL.encode(buf, value.chunkLoading);
+            PacketCodecs.BOOLEAN.encode(buf, value.enchanted);
+            PacketCodecs.BOOLEAN.encode(buf, value.chunkLoading);
 
             BlockPos.PACKET_CODEC.encode(buf, value.spawnPoint);
 
@@ -97,10 +97,10 @@ public class ClientGroveSanctuary {
 
             BlockPos well = value.getMoonwell();
             if (well != null) {
-                PacketCodecs.BOOL.encode(buf, true);
+                PacketCodecs.BOOLEAN.encode(buf, true);
                 BlockPos.PACKET_CODEC.encode(buf, well);
             } else
-                PacketCodecs.BOOL.encode(buf, false);
+                PacketCodecs.BOOLEAN.encode(buf, false);
 
             PacketCodecs.INTEGER.encode(buf, value.groveFriends.size());
             value.groveFriends.forEach(friend -> {

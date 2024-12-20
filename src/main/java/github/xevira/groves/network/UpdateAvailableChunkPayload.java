@@ -11,7 +11,7 @@ public record UpdateAvailableChunkPayload(ChunkPos pos, boolean add) implements 
     public static final Id<UpdateAvailableChunkPayload> ID = new Id<>(Groves.id("update_available_chunk"));
     public static final PacketCodec<RegistryByteBuf, UpdateAvailableChunkPayload> PACKET_CODEC = PacketCodec.tuple(
             ChunkPos.PACKET_CODEC, UpdateAvailableChunkPayload::pos,
-            PacketCodecs.BOOL, UpdateAvailableChunkPayload::add,
+            PacketCodecs.BOOLEAN, UpdateAvailableChunkPayload::add,
             UpdateAvailableChunkPayload::new
     );
 

@@ -1,19 +1,23 @@
 package github.xevira.groves.data.provider;
 
-import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
+import github.xevira.groves.client.item.MoonPhaseProperty;
 import github.xevira.groves.item.UnlockScrollItem;
 import github.xevira.groves.sanctuary.GroveAbilities;
 import github.xevira.groves.sanctuary.GroveAbility;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
+import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.minecraft.block.Block;
-import net.minecraft.data.client.*;
+import net.minecraft.client.data.*;
+import net.minecraft.client.render.item.model.ItemModel;
+import net.minecraft.client.render.item.model.RangeDispatchItemModel;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ModBlockModelProvider extends FabricModelProvider {
     public ModBlockModelProvider(FabricDataOutput output) {
@@ -122,7 +126,7 @@ public class ModBlockModelProvider extends FabricModelProvider {
         blockStateModelGenerator.registerLog(Registration.SANCTUM_CORE_LOG_BLOCK).log(Registration.SANCTUM_CORE_LOG_BLOCK);
         blockStateModelGenerator.registerLog(Registration.STRIPPED_SANCTUM_LOG_BLOCK).log(Registration.STRIPPED_SANCTUM_LOG_BLOCK).wood(Registration.STRIPPED_SANCTUM_WOOD_BLOCK);;
         blockStateModelGenerator.registerSimpleCubeAll(Registration.SANCTUM_LEAVES_BLOCK);
-        blockStateModelGenerator.registerFlowerPotPlant(Registration.SANCTUM_SAPLING_BLOCK, Registration.POTTED_SANCTUM_SAPLING_BLOCK, BlockStateModelGenerator.TintType.NOT_TINTED);
+        blockStateModelGenerator.registerFlowerPotPlant(Registration.SANCTUM_SAPLING_BLOCK, Registration.POTTED_SANCTUM_SAPLING_BLOCK, BlockStateModelGenerator.CrossType.NOT_TINTED);
 
         BlockFamily sanctumFamily = new BlockFamily.Builder(Registration.SANCTUM_PLANKS_BLOCK)
                 .button(Registration.SANCTUM_BUTTON_BLOCK)
@@ -153,8 +157,11 @@ public class ModBlockModelProvider extends FabricModelProvider {
         itemModelGenerator.register(Registration.AQUAMARINE_DUST_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.BLESSED_MOON_WATER_BUCKET_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
-        itemModelGenerator.register(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
+
+        // TODO: Verify this
+        itemModelGenerator.registerWithTextureSource(Registration.ENCHANTED_IMPRINTING_SIGIL_ITEM, Registration.IMPRINTING_SIGIL_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.INTO_THE_HEART_OF_THE_UNIVERSE_MUSIC_DISC_ITEM, Models.GENERATED);
+        registerMoonPhial(itemModelGenerator, Registration.MOON_PHIAL_ITEM);
         itemModelGenerator.register(Registration.MOONLIGHT_BUCKET_ITEM, Models.HANDHELD);
         itemModelGenerator.register(Registration.IRONWOOD_SHARD_ITEM, Models.GENERATED);
         itemModelGenerator.register(Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
@@ -183,11 +190,33 @@ public class ModBlockModelProvider extends FabricModelProvider {
 
                 scrolls.forEach(scroll -> {
                     if (ability.isForbidden())
-                        itemModelGenerator.register(scroll, Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
+                        itemModelGenerator.registerWithTextureSource(scroll, Registration.FORBIDDEN_SCROLL_ITEM, Models.HANDHELD);
                     else
-                        itemModelGenerator.register(scroll, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
+                        itemModelGenerator.registerWithTextureSource(scroll, Registration.UNLOCK_SCROLL_ITEM, Models.HANDHELD);
                 });
             }
         }
+    }
+
+    private void registerMoonPhial(ItemModelGenerator generator, Item phial)
+    {
+        List<RangeDispatchItemModel.Entry> list = new ArrayList<>();
+        ItemModel.Unbaked unbaked = ItemModels.basic(generator.upload(phial, Models.GENERATED));
+        list.add(ItemModels.rangeDispatchEntry(unbaked, 0.0f));
+
+        for (int i = 1; i < 16; i++) {
+            ItemModel.Unbaked unbaked2 = ItemModels.basic(generator.registerSubModel(phial, String.format(Locale.ROOT, "_%02d", i), Models.GENERATED));
+            list.add(ItemModels.rangeDispatchEntry(unbaked2, (float)i));
+        }
+
+        generator.output
+                .accept(
+                        phial,
+                        ItemModels.overworldSelect(
+                                ItemModels.rangeDispatch(new MoonPhaseProperty.Overworld(), 16.0f, list),
+                                ItemModels.rangeDispatch(new MoonPhaseProperty.Unknown(), 16.0f, list)
+                        )
+                );
+
     }
 }

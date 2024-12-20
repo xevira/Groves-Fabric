@@ -11,7 +11,7 @@ public record MoonwellScreenPayload(BlockPos pos, boolean day, int phase) implem
     public static final Id<MoonwellScreenPayload> ID = new Id<>(Groves.id("moonwell_screen"));
     public static final PacketCodec<RegistryByteBuf, MoonwellScreenPayload> PACKET_CODEC = PacketCodec.tuple(
                     BlockPos.PACKET_CODEC, MoonwellScreenPayload::pos,
-                    PacketCodecs.BOOL, MoonwellScreenPayload::day,
+                    PacketCodecs.BOOLEAN, MoonwellScreenPayload::day,
                     PacketCodecs.INTEGER, MoonwellScreenPayload::phase,
                     MoonwellScreenPayload::new);
 

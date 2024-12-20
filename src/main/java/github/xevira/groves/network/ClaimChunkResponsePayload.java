@@ -13,7 +13,7 @@ public record ClaimChunkResponsePayload(ChunkPos pos, boolean success, Text reas
     public static final Id<ClaimChunkResponsePayload> ID = new Id<>(Groves.id("claim_chunk_response"));
     public static final PacketCodec<RegistryByteBuf, ClaimChunkResponsePayload> PACKET_CODEC = PacketCodec.tuple(
             ChunkPos.PACKET_CODEC, ClaimChunkResponsePayload::pos,
-            PacketCodecs.BOOL, ClaimChunkResponsePayload::success,
+            PacketCodecs.BOOLEAN, ClaimChunkResponsePayload::success,
             TextCodecs.UNLIMITED_REGISTRY_PACKET_CODEC, ClaimChunkResponsePayload::reason,
             ClaimChunkResponsePayload::new);
 

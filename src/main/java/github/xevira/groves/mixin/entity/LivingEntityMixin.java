@@ -2,30 +2,27 @@ package github.xevira.groves.mixin.entity;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import github.xevira.groves.Groves;
 import github.xevira.groves.Registration;
 import github.xevira.groves.events.BouncingHandler;
 import github.xevira.groves.network.BouncePayload;
+import github.xevira.groves.network.UpdateVelocityPayload;
 import github.xevira.groves.util.EnchantHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.*;
@@ -33,7 +30,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @SuppressWarnings("deprecation")
 @Mixin(LivingEntity.class)
@@ -162,7 +158,7 @@ public abstract class LivingEntityMixin extends Entity {
         if (bouncy != null) {
             World world = this.getWorld();
 
-            //Groves.LOGGER.info("Bouncy: {}, {}", this.isSneaking(), distance.get());
+            Groves.LOGGER.info("Bouncy: {}, {}, {}", world.isClient, this.isSneaking(), distance.get());
 
             if (!this.isSneaking() && distance.get() > 2.0f) {
                 multiplier.set(0.0f);
@@ -174,13 +170,21 @@ public abstract class LivingEntityMixin extends Entity {
                     this.setVelocity(motion.x, -0.9 * motion.y, motion.z);
                     this.setOnGround(false);
 
-                    //Groves.LOGGER.info("Bouncy: {}, {}", this.getVelocity(), this.isOnGround());
+                    Groves.LOGGER.info("Bouncy: {}, {}", this.getVelocity(), this.isOnGround());
 
 //                    ClientPlayNetworking.send(new BouncePayload());
                 }
 
-                this.playSound(Registration.MOB_EFFECT_BOUNCY_BOUNC_SOUND, 1f, 1f);
-                BouncingHandler.addHandler((LivingEntity) (Object) this, this.getVelocity().y);
+                if (world instanceof ServerWorld serverWorld)
+                {
+                    for(ServerPlayerEntity player : serverWorld.getPlayers())
+                    {
+                        ServerPlayNetworking.send(player, new BouncePayload(this.getId(), this.getVelocity()));
+                    }
+                }
+
+                this.playSound(Registration.MOB_EFFECT_BOUNCY_BOUNCE_SOUND, 1f, 1f);
+                BouncingHandler.addHandler((LivingEntity) (Object) this, -0.9 * this.getVelocity().y);
             } else if (!world.isClient && this.isSneaking())
                 multiplier.set(multiplier.get() * 0.2f);
         }

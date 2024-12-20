@@ -13,7 +13,7 @@ public record SetSpawnPointResponsePayload(BlockPos pos, boolean success, Text r
     public static final Id<SetSpawnPointResponsePayload> ID = new Id<>(Groves.id("set_spawn_point_response"));
     public static final PacketCodec<RegistryByteBuf, SetSpawnPointResponsePayload> PACKET_CODEC = PacketCodec.tuple(
             BlockPos.PACKET_CODEC, SetSpawnPointResponsePayload::pos,
-            PacketCodecs.BOOL, SetSpawnPointResponsePayload::success,
+            PacketCodecs.BOOLEAN, SetSpawnPointResponsePayload::success,
             TextCodecs.UNLIMITED_REGISTRY_PACKET_CODEC, SetSpawnPointResponsePayload::reason,
             SetSpawnPointResponsePayload::new);
 

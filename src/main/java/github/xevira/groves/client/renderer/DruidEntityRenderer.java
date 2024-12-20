@@ -18,9 +18,10 @@ public class DruidEntityRenderer  extends MobEntityRenderer<DruidEntity, Village
 
     public DruidEntityRenderer(EntityRendererFactory.Context context) {
         super(context, new VillagerResemblingModel(context.getPart(MAIN_LAYER)), 0.5f);
-        this.addFeature(new HeadFeatureRenderer<>(this, context.getModelLoader(), context.getItemRenderer()));
-        this.addFeature(new VillagerHeldItemFeatureRenderer<>(this, context.getItemRenderer()));
+        this.addFeature(new HeadFeatureRenderer<>(this, context.getEntityModels()));
+        this.addFeature(new VillagerHeldItemFeatureRenderer<>(this));
     }
+
     public Identifier getTexture(VillagerEntityRenderState villagerEntityRenderState) {
         return TEXTURE;
     }

@@ -2,6 +2,7 @@ package github.xevira.groves;
 
 import com.terraformersmc.terraform.boat.api.client.TerraformBoatClientHelper;
 import github.xevira.groves.client.event.KeyInputHandler;
+import github.xevira.groves.client.item.MoonPhaseProperty;
 import github.xevira.groves.client.renderer.DruidEntityRenderer;
 import github.xevira.groves.client.renderer.MoonwellFluidLevelBER;
 import github.xevira.groves.client.screen.GrovesSanctuaryScreen;
@@ -9,7 +10,6 @@ import github.xevira.groves.client.screen.MoonwellScreen;
 import github.xevira.groves.events.BouncingHandler;
 import github.xevira.groves.events.client.DangerSenseHandler;
 import github.xevira.groves.events.client.HudRenderEvents;
-import github.xevira.groves.item.MoonPhialItem;
 import github.xevira.groves.network.Networking;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -21,12 +21,12 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
-import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.model.ModelTransformer;
 import net.minecraft.client.render.entity.model.VillagerResemblingModel;
+import net.minecraft.client.render.item.property.numeric.NumericProperties;
 
 public class GrovesClient implements ClientModInitializer {
     @Override
@@ -65,7 +65,7 @@ public class GrovesClient implements ClientModInitializer {
                 new SimpleFluidRenderHandler(Groves.id("block/moonlight_still"), Groves.id("block/moonlight_flowing")));
 
         // Model Predicates
-        ModelPredicateProviderRegistry.register(Groves.id("lunar_phase"), MoonPhialItem::getModelPredicate);
+        //ModelPredicateProviderRegistry.register(Groves.id("lunar_phase"), MoonPhialItem::getModelPredicate);
 
         // ScreenHandlers
         HandledScreens.register(Registration.MOONWELL_SCREEN_HANDLER, MoonwellScreen::new);
@@ -85,5 +85,8 @@ public class GrovesClient implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(ignored -> DangerSenseHandler.MobHandler.onClientStartTick());
         ClientEntityEvents.ENTITY_UNLOAD.register((entity, clientWorld) -> DangerSenseHandler.MobHandler.onEntityUnload(entity));
         ClientTickEvents.END_CLIENT_TICK.register(ignored -> BouncingHandler.onEndTick());
+
+        NumericProperties.ID_MAPPER.put(Groves.id("moon_phase_overworld"), MoonPhaseProperty.Overworld.CODEC);
+        NumericProperties.ID_MAPPER.put(Groves.id("moon_phase_unknown"), MoonPhaseProperty.Unknown.CODEC);
     }
 }

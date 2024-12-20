@@ -52,8 +52,6 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.ClampedEntityAttribute;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.damage.DamageEffects;
-import net.minecraft.entity.damage.DamageScaling;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -148,12 +146,13 @@ public class Registration {
     public static final RegistryEntry<StatusEffect> ANCHOR_STATUS_EFFECT = register("anchor", new AnchorStatusEffect());                        //
     public static final RegistryEntry<StatusEffect> ANTIDOTE_STATUS_EFFECT = register("antidote", new AntidoteStatusEffect());                  // Tested
     public static final RegistryEntry<StatusEffect> AQUAPHOBIA_STATUS_EFFECT = register("aquaphobia", new AquaphobiaStatusEffect());            // Tested
-    public static final RegistryEntry<StatusEffect> BOUNCY_STATUS_EFFECT = register("bouncy", new BouncyStatusEffect());                        // Tested
+    public static final RegistryEntry<StatusEffect> BOUNCY_STATUS_EFFECT = register("bouncy", new BouncyStatusEffect());                        // TODO: Need to fix this.  Currently disabling the potion recipe.
     public static final RegistryEntry<StatusEffect> CHANNELING_STATUS_EFFECT = register("channeling", new ChannelingStatusEffect());            // Tested... particles need to be looked at.  They are flying off in some weird direction, also need to make more likely to strike
     public static final RegistryEntry<StatusEffect> CORROSION_STATUS_EFFECT = register("corrosion", new CorrosionStatusEffect());               // Tested
     public static final RegistryEntry<StatusEffect> DANGER_SENSE_STATUS_EFFECT = register("danger_sense", new DangerSenseStatusEffect());       // Tested
     public static final RegistryEntry<StatusEffect> DROWNING_STATUS_EFFECT = register("drowning", new DrowningStatusEffect());                  // Tested
     public static final RegistryEntry<StatusEffect> ECHO_STATUS_EFFECT = register("echo", new EchoStatusEffect());                              // Tested
+    public static final RegistryEntry<StatusEffect> EMBIGGEN_STATUS_EFFECT = register("embiggen", new EmbiggenStatusEffect());                  //
     public static final RegistryEntry<StatusEffect> EXPLOSIVE_STATUS_EFFECT = register("explosive", new ExplosiveStatusEffect());               // WIP... Doesn't appear to actually damage the entity with the explosion
     public static final RegistryEntry<StatusEffect> FLOURISHING_STATUS_EFFECT = register("flourishing", new FlourishingStatusEffect());         // Tested
     public static final RegistryEntry<StatusEffect> FREEZING_STATUS_EFFECT = register("freezing", new FreezingStatusEffect());                  // Tested... need to make it show the freezing vignette
@@ -166,6 +165,7 @@ public class Registration {
     public static final RegistryEntry<StatusEffect> RADIANCE_STATUS_EFFECT = register("radiance", new RadianceStatusEffect());                  // Tested
     public static final RegistryEntry<StatusEffect> RECALL_STATUS_EFFECT = register("recall", new RecallStatusEffect());                        // Tested
     public static final RegistryEntry<StatusEffect> REVEAL_STATUS_EFFECT = register("reveal", new RevealStatusEffect());                        // Tested
+    public static final RegistryEntry<StatusEffect> SHRINK_STATUS_EFFECT = register("shrink", new ShrinkStatusEffect());                        // 
     public static final RegistryEntry<StatusEffect> SILENCE_STATUS_EFFECT = register("silence", new SilenceStatusEffect());                     // Tested
     public static final RegistryEntry<StatusEffect> SPIDER_WALKING_STATUS_EFFECT = register("spider_walking", new SpiderWalkingStatusEffect()); // Tested
     public static final RegistryEntry<StatusEffect> STICKY_STATUS_EFFECT = register("sticky", new StickyStatusEffect());                        // WIP - does not handle vertical colliding.
@@ -204,6 +204,10 @@ public class Registration {
     // -- Blindness
     public static final RegistryEntry<Potion> BLINDNESS_POTION = register("blindness", new StatusEffectInstance(StatusEffects.BLINDNESS, THREE_QUARTER_MINUTE));
     public static final RegistryEntry<Potion> LONG_BLINDNESS_POTION = register("long_blindness","blindness", new StatusEffectInstance(StatusEffects.BLINDNESS, TWO_MINUTES));
+
+    // -- Darkness
+    public static final RegistryEntry<Potion> DARKNESS_POTION = register("darkness", new StatusEffectInstance(StatusEffects.DARKNESS, HALF_MINUTE));
+    public static final RegistryEntry<Potion> LONG_DARKNESS_POTION = register("long_darkness", "darkness", new StatusEffectInstance(StatusEffects.DARKNESS, MINUTE_THIRD));
 
     // -- Hunger
     public static final RegistryEntry<Potion> HUNGER_POTION = register("hunger", new StatusEffectInstance(StatusEffects.HUNGER, HALF_MINUTE));
@@ -298,6 +302,11 @@ public class Registration {
     // -- Echo [INSTANT]
     public static final RegistryEntry<Potion> ECHO_POTION = register("echo", new StatusEffectInstance(ECHO_STATUS_EFFECT));
 
+    // -- Embiggen
+    public static final RegistryEntry<Potion> EMBIGGEN_POTION = register("embiggen", new StatusEffectInstance(EMBIGGEN_STATUS_EFFECT, THREE_MINUTES));
+    public static final RegistryEntry<Potion> LONG_EMBIGGEN_POTION = register("long_embiggen", "embiggen", new StatusEffectInstance(EMBIGGEN_STATUS_EFFECT, EIGHT_MINUTES));
+    public static final RegistryEntry<Potion> STRONG_EMBIGGEN_POTION = register("strong_embiggen", "embiggen", new StatusEffectInstance(EMBIGGEN_STATUS_EFFECT, MINUTE_HALF, 1));
+
     // -- Explosive
     public static final RegistryEntry<Potion> EXPLOSIVE_POTION = register("explosive", new StatusEffectInstance(EXPLOSIVE_STATUS_EFFECT, HALF_MINUTE));
     public static final RegistryEntry<Potion> LONG_EXPLOSIVE_POTION = register("long_explosive", "explosive", new StatusEffectInstance(EXPLOSIVE_STATUS_EFFECT, MINUTE_THIRD));
@@ -358,6 +367,11 @@ public class Registration {
     // -- Reveal [INSTANT]
     public static final RegistryEntry<Potion> REVEAL_POTION = register("reveal", new StatusEffectInstance(REVEAL_STATUS_EFFECT));
 
+    // -- Shrink
+    public static final RegistryEntry<Potion> SHRINK_POTION = register("shrink", new StatusEffectInstance(SHRINK_STATUS_EFFECT, THREE_MINUTES));
+    public static final RegistryEntry<Potion> LONG_SHRINK_POTION = register("long_shrink", "shrink", new StatusEffectInstance(SHRINK_STATUS_EFFECT, EIGHT_MINUTES));
+    public static final RegistryEntry<Potion> STRONG_SHRINK_POTION = register("strong_shrink", "shrink", new StatusEffectInstance(SHRINK_STATUS_EFFECT, MINUTE_HALF, 1));
+
     // -- Silence [INSTANT]
     public static final RegistryEntry<Potion> SILENCE_POTION = register("silence", new StatusEffectInstance(SILENCE_STATUS_EFFECT));
 
@@ -408,7 +422,7 @@ public class Registration {
     public static final SoundEvent DRUID_REAPPEARED_SOUND = register("druid_reappeared");
     public static final SoundEvent DRUID_YES_SOUND = register("druid_yes");
 
-    public static final SoundEvent MOB_EFFECT_BOUNCY_BOUNC_SOUND = register("mob_effect_bouncy_squish");
+    public static final SoundEvent MOB_EFFECT_BOUNCY_BOUNCE_SOUND = register("mob_effect_bouncy_squish");
 
     public static final SoundEvent MOONWELL_ACTIVATE_SOUND = register("moonwell_activate");
     public static final SoundEvent MOONWELL_DEACTIVATE_SOUND = register("moonwell_deactivate");
@@ -1867,15 +1881,14 @@ public class Registration {
             // Vanilla Effects
             registerPotionRecipe(builder, Potions.AWKWARD, Items.GOLDEN_PICKAXE, HASTE_POTION, LONG_HASTE_POTION, STRONG_HASTE_POTION);
             registerPotionRecipe(builder, HASTE_POTION, LONG_HASTE_POTION, STRONG_HASTE_POTION, Items.FERMENTED_SPIDER_EYE, DULLNESS_POTION, LONG_DULLNESS_POTION, STRONG_DULLNESS_POTION);
-            // TODO: Include Open Eyeblossom after updating to 1.21.4+
-            registerPotionRecipe(builder, Potions.NIGHT_VISION, Potions.LONG_NIGHT_VISION, null, Items.AZURE_BLUET, BLINDNESS_POTION, LONG_BLINDNESS_POTION, null);
+            registerPotionRecipe(builder, Potions.NIGHT_VISION, Potions.LONG_NIGHT_VISION, null, Items.OPEN_EYEBLOSSOM, BLINDNESS_POTION, LONG_BLINDNESS_POTION, null);
+            registerPotionRecipe(builder, Potions.NIGHT_VISION, Potions.LONG_NIGHT_VISION, null, Items.SCULK_CATALYST, DARKNESS_POTION, LONG_DARKNESS_POTION, null);
             registerPotionRecipe(builder, Potions.AWKWARD, Items.ROTTEN_FLESH, HUNGER_POTION, LONG_HUNGER_POTION, STRONG_HUNGER_POTION);
             registerPotionRecipe(builder, Potions.AWKWARD, Items.WITHER_ROSE, DECAY_POTION, LONG_DECAY_POTION, STRONG_DECAY_POTION);
             registerPotionRecipe(builder, Potions.AWKWARD, Items.IRON_INGOT, RESISTANCE_POTION, LONG_RESISTANCE_POTION, STRONG_RESISTANCE_POTION);
             registerPotionRecipe(builder, Potions.AWKWARD, Items.GOLDEN_APPLE, NOTCH_POTION, LONG_NOTCH_POTION, STRONG_NOTCH_POTION);
             registerPotionRecipe(builder, Potions.AWKWARD, SHULKER_BULLET_ITEM, LEVITATION_POTION, LONG_LEVITATION_POTION, STRONG_LEVITATION_POTION);
-            // TODO: Change this to the Closed Eyeblossom after updating to 1.21.4+
-            registerPotionRecipe(builder, HUNGER_POTION, LONG_HUNGER_POTION, null, Items.FERMENTED_SPIDER_EYE, NAUSEA_POTION, LONG_NAUSEA_POTION, null);
+            registerPotionRecipe(builder, HUNGER_POTION, LONG_HUNGER_POTION, null, Items.CLOSED_EYEBLOSSOM, NAUSEA_POTION, LONG_NAUSEA_POTION, null);
             registerPotionRecipe(builder, Potions.AWKWARD, Items.GLOW_BERRIES, GLOWING_POTION, LONG_GLOWING_POTION, null);
             // TODO: Change to Four Leaf Clover once created
             registerPotionRecipe(builder, Potions.AWKWARD, Items.LAPIS_BLOCK, LUCK_POTION, LONG_LUCK_POTION, STRONG_LUCK_POTION);
@@ -1887,8 +1900,9 @@ public class Registration {
             registerPotionRecipe(builder, Potions.AWKWARD, Items.NETHERITE_SCRAP, ANCHOR_POTION, LONG_ANCHOR_POTION, null);
             registerPotionRecipe(builder, Potions.POISON, Potions.LONG_POISON, null, Items.APPLE, ANTIDOTE_POTION, LONG_ANTIDOTE_POTION, null);
             registerPotionRecipe(builder, Potions.WATER_BREATHING, Potions.LONG_WATER_BREATHING, null, Items.ENDER_PEARL, AQUAPHOBIA_POTION, LONG_AQUAPHOBIA_POTION, STRONG_AQUAPHOBIA_POTION);
-            registerPotionRecipe(builder, Potions.LEAPING, Potions.LONG_LEAPING, null, Items.SLIME_BLOCK, BOUNCY_POTION, LONG_BOUNCY_POTION, null);
-            registerPotionRecipe(builder, Potions.STRONG_LEAPING, Items.SLIME_BLOCK, LONG_BOUNCY_POTION, null, null);
+            // TODO: Bouncing system is broken right now.  Need to figure out how to get it working.
+//            registerPotionRecipe(builder, Potions.LEAPING, Potions.LONG_LEAPING, null, Items.SLIME_BLOCK, BOUNCY_POTION, LONG_BOUNCY_POTION, null);
+//            registerPotionRecipe(builder, Potions.STRONG_LEAPING, Items.SLIME_BLOCK, LONG_BOUNCY_POTION, null, null);
             // TODO: Look into a new ingredient
             registerPotionRecipe(builder, Potions.AWKWARD, Items.LIGHTNING_ROD, CHANNELING_POTION, LONG_CHANNELING_POTION, STRONG_CHANNELING_POTION);
             // TODO: Corrosive Potion

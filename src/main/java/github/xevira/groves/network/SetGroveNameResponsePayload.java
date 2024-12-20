@@ -12,7 +12,7 @@ public record SetGroveNameResponsePayload(String name, boolean success, Text rea
     public static final Id<SetGroveNameResponsePayload> ID = new Id<>(Groves.id("set_grove_name"));
     public static final PacketCodec<RegistryByteBuf, SetGroveNameResponsePayload> PACKET_CODEC = PacketCodec.tuple(
             PacketCodecs.STRING, SetGroveNameResponsePayload::name,
-            PacketCodecs.BOOL, SetGroveNameResponsePayload::success,
+            PacketCodecs.BOOLEAN, SetGroveNameResponsePayload::success,
             TextCodecs.UNLIMITED_REGISTRY_PACKET_CODEC, SetGroveNameResponsePayload::reason,
             SetGroveNameResponsePayload::new);
 

@@ -14,8 +14,8 @@ public record SanctuaryEnterPayload(UUID uuid, String name, String groveName, bo
     public static final PacketCodec<RegistryByteBuf, SanctuaryEnterPayload> PACKET_CODEC = new PacketCodec<RegistryByteBuf, SanctuaryEnterPayload>() {
         @Override
         public SanctuaryEnterPayload decode(RegistryByteBuf buf) {
-            boolean entry = PacketCodecs.BOOL.decode(buf);
-            boolean abandoned = PacketCodecs.BOOL.decode(buf);
+            boolean entry = PacketCodecs.BOOLEAN.decode(buf);
+            boolean abandoned = PacketCodecs.BOOLEAN.decode(buf);
             String groveName= PacketCodecs.STRING.decode(buf);
             UUID uuid;
             String name;
@@ -32,8 +32,8 @@ public record SanctuaryEnterPayload(UUID uuid, String name, String groveName, bo
 
         @Override
         public void encode(RegistryByteBuf buf, SanctuaryEnterPayload value) {
-            PacketCodecs.BOOL.encode(buf, value.entry);
-            PacketCodecs.BOOL.encode(buf, value.abandoned);
+            PacketCodecs.BOOLEAN.encode(buf, value.entry);
+            PacketCodecs.BOOLEAN.encode(buf, value.abandoned);
             PacketCodecs.STRING.encode(buf, value.groveName);
 
             if (!value.abandoned) {

@@ -466,6 +466,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addStatusEffect(translationBuilder, Registration.DANGER_SENSE_STATUS_EFFECT, "Danger Sense");
         addStatusEffect(translationBuilder, Registration.DROWNING_STATUS_EFFECT, "Drowning");
         addStatusEffect(translationBuilder, Registration.ECHO_STATUS_EFFECT, "Echo");
+        addStatusEffect(translationBuilder, Registration.EMBIGGEN_STATUS_EFFECT, "Embiggen");
         addStatusEffect(translationBuilder, Registration.EXPLOSIVE_STATUS_EFFECT, "Explosive");
         addStatusEffect(translationBuilder, Registration.FLOURISHING_STATUS_EFFECT, "Flourishing");
         addStatusEffect(translationBuilder, Registration.FREEZING_STATUS_EFFECT, "Freezing");
@@ -478,6 +479,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addStatusEffect(translationBuilder, Registration.RADIANCE_STATUS_EFFECT, "Radiance");
         addStatusEffect(translationBuilder, Registration.RECALL_STATUS_EFFECT, "Recall");
         addStatusEffect(translationBuilder, Registration.REVEAL_STATUS_EFFECT, "Reveal");
+        addStatusEffect(translationBuilder, Registration.SHRINK_STATUS_EFFECT, "Shrink");
         addStatusEffect(translationBuilder, Registration.SILENCE_STATUS_EFFECT, "Silence");
         addStatusEffect(translationBuilder, Registration.SPIDER_WALKING_STATUS_EFFECT, "Spider Walking");
         addStatusEffect(translationBuilder, Registration.STICKY_STATUS_EFFECT, "Sticky");
@@ -491,20 +493,21 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addPotion(translationBuilder, Registration.FOUL_BASE_POTION, "Foul Potion", "Splash Foul Potion", "Lingering Foul Potion", "Tipped Arrow");
 
         // Vanilla potions
-        addPotion(translationBuilder, Registration.HASTE_POTION, "Haste");
-        addPotion(translationBuilder, Registration.DULLNESS_POTION, "Dullness");
-        addPotion(translationBuilder, Registration.BLINDNESS_POTION, "Blindness");
-        addPotion(translationBuilder, Registration.HUNGER_POTION, "Hunger");
-        addPotion(translationBuilder, Registration.DECAY_POTION, "Decay");
-        addPotion(translationBuilder, Registration.RESISTANCE_POTION, "Resistance");
-        addPotion(translationBuilder, Registration.NOTCH_POTION, "Notch");
-        addPotion(translationBuilder, Registration.LEVITATION_POTION, "Levitation");
-        addPotion(translationBuilder, Registration.NAUSEA_POTION, "Nausea");
-        addPotion(translationBuilder, Registration.GLOWING_POTION, "Glowing");
-        addPotion(translationBuilder, Registration.LUCK_POTION, "Luck");
         addPotion(translationBuilder, Registration.UNLUCK_POTION, "Bad Luck");
-        addPotion(translationBuilder, Registration.NEPTUNE_POTION, "Neptune");
+        addPotion(translationBuilder, Registration.BLINDNESS_POTION, "Blindness");
+        addPotion(translationBuilder, Registration.DARKNESS_POTION, "Darkness");
+        addPotion(translationBuilder, Registration.DECAY_POTION, "Decay");
+        addPotion(translationBuilder, Registration.DULLNESS_POTION, "Dullness");
+        addPotion(translationBuilder, Registration.GLOWING_POTION, "Glowing");
         addPotion(translationBuilder, Registration.GRACE_POTION, "Grace");
+        addPotion(translationBuilder, Registration.HASTE_POTION, "Haste");
+        addPotion(translationBuilder, Registration.HUNGER_POTION, "Hunger");
+        addPotion(translationBuilder, Registration.LEVITATION_POTION, "Levitation");
+        addPotion(translationBuilder, Registration.LUCK_POTION, "Luck");
+        addPotion(translationBuilder, Registration.NAUSEA_POTION, "Nausea");
+        addPotion(translationBuilder, Registration.NEPTUNE_POTION, "Neptune");
+        addPotion(translationBuilder, Registration.NOTCH_POTION, "Notch");
+        addPotion(translationBuilder, Registration.RESISTANCE_POTION, "Resistance");
 
         // Groves potions
         addPotion(translationBuilder, Registration.ANCHOR_POTION, "Anchoring");
@@ -516,6 +519,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addPotion(translationBuilder, Registration.DANGER_SENSE_POTION, "Danger Sense");
         addPotion(translationBuilder, Registration.DROWNING_POTION, "Drowning");
         addPotion(translationBuilder, Registration.ECHO_POTION, "Echoing");
+        addPotion(translationBuilder, Registration.EMBIGGEN_POTION, "Embiggening");
         addPotion(translationBuilder, Registration.EXPLOSIVE_POTION, "Nitroglycerin", "Splash Nitroglycerin", "Lingering Nitroglycerin", "Arrow of Nitroglycerin");
         addPotion(translationBuilder, Registration.FLOURISHING_POTION, "Flourishing");
         addPotion(translationBuilder, Registration.FREEZING_POTION, "Freezing");
@@ -529,6 +533,7 @@ public class ModEnglishLanguageProvider extends FabricLanguageProvider {
         addPotion(translationBuilder, Registration.RADIANCE_POTION, "Radiance");
         addPotion(translationBuilder, Registration.RECALL_POTION, "Recall");
         addPotion(translationBuilder, Registration.REVEAL_POTION, "Revealing");
+        addPotion(translationBuilder, Registration.SHRINK_POTION, "Shrinking");
         addPotion(translationBuilder, Registration.SILENCE_POTION, "Silencing");
         addPotion(translationBuilder, Registration.SPIDER_WALKING_POTION, "Spider Walking");
         addPotion(translationBuilder, Registration.STICKY_POTION, "Sticking");

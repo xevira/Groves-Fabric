@@ -16,7 +16,7 @@ public record AddFriendResponsePayload(UUID uuid, String name, boolean success, 
     public static final PacketCodec<RegistryByteBuf, AddFriendResponsePayload> PACKET_CODEC = PacketCodec.tuple(
             Uuids.PACKET_CODEC, AddFriendResponsePayload::uuid,
             PacketCodecs.STRING, AddFriendResponsePayload::name,
-            PacketCodecs.BOOL, AddFriendResponsePayload::success,
+            PacketCodecs.BOOLEAN, AddFriendResponsePayload::success,
             TextCodecs.UNLIMITED_REGISTRY_PACKET_CODEC, AddFriendResponsePayload::reason,
             AddFriendResponsePayload::new);
 

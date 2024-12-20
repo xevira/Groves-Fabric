@@ -1,7 +1,6 @@
 package github.xevira.groves.client.screen.widget;
 
 import com.mojang.authlib.GameProfile;
-import github.xevira.groves.client.SkinCache;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;

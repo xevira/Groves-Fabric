@@ -11,7 +11,7 @@ public record SetChunkLoadingPayload(ChunkPos pos, boolean loaded) implements Cu
     public static final Id<SetChunkLoadingPayload> ID = new Id<>(Groves.id("set_chunk_loading"));
     public static final PacketCodec<RegistryByteBuf, SetChunkLoadingPayload> PACKET_CODEC = PacketCodec.tuple(
             ChunkPos.PACKET_CODEC, SetChunkLoadingPayload::pos,
-            PacketCodecs.BOOL, SetChunkLoadingPayload::loaded,
+            PacketCodecs.BOOLEAN, SetChunkLoadingPayload::loaded,
             SetChunkLoadingPayload::new);
 
     @Override

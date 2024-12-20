@@ -11,7 +11,7 @@ public record UpdateAbilityPayload(String name, boolean active, long start, long
     public static final Id<UpdateAbilityPayload> ID = new Id<>(Groves.id("update_grove_ability"));
     public static final PacketCodec<RegistryByteBuf, UpdateAbilityPayload> PACKET_CODEC = PacketCodec.tuple(
             PacketCodecs.STRING, UpdateAbilityPayload::name,
-            PacketCodecs.BOOL, UpdateAbilityPayload::active,
+            PacketCodecs.BOOLEAN, UpdateAbilityPayload::active,
             PacketCodecs.LONG, UpdateAbilityPayload::start,
             PacketCodecs.LONG, UpdateAbilityPayload::end,
             PacketCodecs.INTEGER, UpdateAbilityPayload::rank,

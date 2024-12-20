@@ -1,6 +1,7 @@
 package github.xevira.groves.network;
 
 import github.xevira.groves.Groves;
+import github.xevira.groves.events.BouncingHandler;
 import github.xevira.groves.events.client.DangerSenseHandler;
 import github.xevira.groves.events.client.HudRenderEvents;
 import github.xevira.groves.item.ImprintingSigilItem;
@@ -21,6 +22,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.Optional;
@@ -178,6 +180,23 @@ public class Networking {
         ClientPlayNetworking.registerGlobalReceiver(DangerSensePayload.ID, (payload, context) -> {
            DangerSenseHandler.INSTANCE.enable();
         });
+
+
+        ClientPlayNetworking.registerGlobalReceiver(BouncePayload.ID, (payload, context) -> {
+            if (MinecraftClient.getInstance().world != null) {
+                Entity entity = MinecraftClient.getInstance().world.getEntityById(payload.id());
+
+                if (entity instanceof LivingEntity living) {
+//                    Groves.LOGGER.info("Bounce: {}, {}", payload.velocity(), living.getVelocity());
+                    Vec3d v = new Vec3d(payload.velocity().x, -0.9 * payload.velocity().y, payload.velocity().z);
+                    living.setVelocity(v);
+                    living.setOnGround(false);
+                    living.velocityDirty = true;
+//                    BouncingHandler.addHandler(living, -0.9 * payload.velocity().y);
+                }
+            }
+        });
+
     }
 
     public static void register()
@@ -195,7 +214,6 @@ public class Networking {
         PayloadTypeRegistry.playC2S().register(StartGroveAbitlityPayload.ID, StartGroveAbitlityPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(StopGroveAbitlityPayload.ID, StopGroveAbitlityPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(UseGroveAbitlityPayload.ID, UseGroveAbitlityPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(BouncePayload.ID, BouncePayload.PACKET_CODEC);
 
         // - Server -> Client
         PayloadTypeRegistry.playS2C().register(UpdateSunlightPayload.ID, UpdateSunlightPayload.PACKET_CODEC);
@@ -219,6 +237,7 @@ public class Networking {
         PayloadTypeRegistry.playS2C().register(GroveUnlockToastPayload.ID, GroveUnlockToastPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdateVelocityPayload.ID, UpdateVelocityPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(DangerSensePayload.ID, DangerSensePayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(BouncePayload.ID, BouncePayload.PACKET_CODEC);
 
         // Packet Handlers
         // - Server Side
@@ -311,10 +330,6 @@ public class Networking {
             Optional<GroveSanctuary> sanctuary = GrovesPOI.getSanctuary(context.player());
 
             sanctuary.ifPresent(groveSanctuary -> GroveAbilities.useAbility(payload.name(), groveSanctuary, context.player()));
-        });
-
-        ServerPlayNetworking.registerGlobalReceiver(BouncePayload.ID, (payload, context) -> {
-           context.player().fallDistance = 0.0f;
         });
     }
 }

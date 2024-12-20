@@ -13,7 +13,7 @@ public record UpdateMoonwellPayload(@Nullable BlockPos pos) implements CustomPay
     public static final PacketCodec<RegistryByteBuf, UpdateMoonwellPayload> PACKET_CODEC = new PacketCodec<RegistryByteBuf, UpdateMoonwellPayload>() {
         @Override
         public UpdateMoonwellPayload decode(RegistryByteBuf buf) {
-            if (PacketCodecs.BOOL.decode(buf))
+            if (PacketCodecs.BOOLEAN.decode(buf))
                 return new UpdateMoonwellPayload(BlockPos.PACKET_CODEC.decode(buf));
             else
                 return new UpdateMoonwellPayload(null);
@@ -23,11 +23,11 @@ public record UpdateMoonwellPayload(@Nullable BlockPos pos) implements CustomPay
         public void encode(RegistryByteBuf buf, UpdateMoonwellPayload value) {
             if (value.pos() != null)
             {
-                PacketCodecs.BOOL.encode(buf, true);
+                PacketCodecs.BOOLEAN.encode(buf, true);
                 BlockPos.PACKET_CODEC.encode(buf, value.pos());
             }
             else
-                PacketCodecs.BOOL.encode(buf, false);
+                PacketCodecs.BOOLEAN.encode(buf, false);
         }
     };
 

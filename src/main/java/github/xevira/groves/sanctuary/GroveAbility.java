@@ -29,7 +29,7 @@ public abstract class GroveAbility {
         @Override
         public GroveAbility decode(RegistryByteBuf buf) {
             String name = PacketCodecs.STRING.decode(buf);
-            boolean active = PacketCodecs.BOOL.decode(buf);
+            boolean active = PacketCodecs.BOOLEAN.decode(buf);
             long start = PacketCodecs.LONG.decode(buf);
             long end = PacketCodecs.LONG.decode(buf);
             int rank = PacketCodecs.INTEGER.decode(buf);
@@ -51,7 +51,7 @@ public abstract class GroveAbility {
         @Override
         public void encode(RegistryByteBuf buf, GroveAbility value) {
             PacketCodecs.STRING.encode(buf, value.getName());
-            PacketCodecs.BOOL.encode(buf, value.isActive());
+            PacketCodecs.BOOLEAN.encode(buf, value.isActive());
             PacketCodecs.LONG.encode(buf, value.startCooldown);
             PacketCodecs.LONG.encode(buf, value.endCooldown);
             PacketCodecs.INTEGER.encode(buf, value.rank);
