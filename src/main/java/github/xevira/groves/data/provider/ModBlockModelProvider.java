@@ -213,8 +213,8 @@ public class ModBlockModelProvider extends FabricModelProvider {
                 .accept(
                         phial,
                         ItemModels.overworldSelect(
-                                ItemModels.rangeDispatch(new MoonPhaseProperty.Overworld(), 16.0f, list),
-                                ItemModels.rangeDispatch(new MoonPhaseProperty.Unknown(), 16.0f, list)
+                                ItemModels.rangeDispatch(new MoonPhaseProperty(false), 16.0f, list),
+                                ItemModels.rangeDispatch(new MoonPhaseProperty(true), 16.0f, list)
                         )
                 );
 

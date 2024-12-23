@@ -201,8 +201,6 @@ public class MoonPhialItem extends Item {
 
     @Environment(EnvType.CLIENT)
     public static float getModelPredicate(ItemStack stack, ClientWorld world, LivingEntity entity, int seed) {
-        if (stack == null) return 0.0f;
-
         return getLunarPhase(world);
     }
 

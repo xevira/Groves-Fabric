@@ -86,7 +86,6 @@ public class GrovesClient implements ClientModInitializer {
         ClientEntityEvents.ENTITY_UNLOAD.register((entity, clientWorld) -> DangerSenseHandler.MobHandler.onEntityUnload(entity));
         ClientTickEvents.END_CLIENT_TICK.register(ignored -> BouncingHandler.onEndTick());
 
-        NumericProperties.ID_MAPPER.put(Groves.id("moon_phase_overworld"), MoonPhaseProperty.Overworld.CODEC);
-        NumericProperties.ID_MAPPER.put(Groves.id("moon_phase_unknown"), MoonPhaseProperty.Unknown.CODEC);
+        NumericProperties.ID_MAPPER.put(Groves.id("moon_phase"), MoonPhaseProperty.CODEC);
     }
 }
